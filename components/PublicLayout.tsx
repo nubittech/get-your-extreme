@@ -15,15 +15,15 @@ const PublicLayout: React.FC = () => {
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden font-display">
       {/* Header */}
-      <header className="absolute top-0 left-0 z-50 w-full px-4 md:px-8 py-3">
+      <header className="absolute top-0 left-0 z-50 w-full px-4 md:px-8 py-3 pointer-events-none">
         <div className="flex w-full items-start justify-between">
           {/* Logo */}
-          <Link to="/" className="-ml-2 md:-ml-4 flex items-center group">
+          <Link to="/" className="-ml-2 md:-ml-4 flex items-center group pointer-events-auto">
             <img src={MEDIA_ASSETS.logo} alt="Get Your Extreme logo" className="h-24 w-24 md:h-40 md:w-40 object-contain drop-shadow-2xl group-hover:scale-105 transition-transform" />
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex flex-1 justify-end gap-8 items-center pr-4 lg:pr-8 xl:pr-12">
+          <div className="hidden md:flex flex-1 justify-end gap-8 items-center pr-4 lg:pr-8 xl:pr-12 pointer-events-auto">
             <nav className="flex items-center gap-8">
               <Link to="/" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/') ? { color: theme.accent } : undefined}>Home</Link>
               <Link to="/routes" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/routes') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/routes') ? { color: theme.accent } : undefined}>Routes</Link>
@@ -41,14 +41,14 @@ const PublicLayout: React.FC = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden mt-1 ml-auto text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <div className="md:hidden mt-1 ml-auto text-white pointer-events-auto" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <span className="material-symbols-outlined cursor-pointer">menu</span>
           </div>
         </div>
 
         {/* Mobile Nav */}
         {isMenuOpen && (
-           <div className="md:hidden absolute top-full left-0 w-full bg-[#101a22]/90 backdrop-blur-sm p-4 flex flex-col gap-4 shadow-xl">
+           <div className="md:hidden absolute top-full left-0 w-full bg-[#101a22]/90 backdrop-blur-sm p-4 flex flex-col gap-4 shadow-xl pointer-events-auto">
               <Link to="/" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/') ? '' : 'text-white/85'}`} style={isActive('/') ? { color: theme.accent } : undefined}>Home</Link>
               <Link to="/routes" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/routes') ? '' : 'text-white/85'}`} style={isActive('/routes') ? { color: theme.accent } : undefined}>Routes</Link>
               <Link to="/gallery" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/gallery') ? '' : 'text-white/85'}`} style={isActive('/gallery') ? { color: theme.accent } : undefined}>Gallery</Link>
@@ -59,7 +59,7 @@ const PublicLayout: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 w-full bg-[#f6f7f8] dark:bg-[#101a22]">
+      <main className="flex-1 w-full pt-24 md:pt-44 bg-[#f6f7f8] dark:bg-[#101a22]">
         <Outlet />
       </main>
 

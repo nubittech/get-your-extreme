@@ -32,7 +32,7 @@ const Home: React.FC = () => {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <div className="relative min-h-[850px] w-full flex flex-col items-center justify-center bg-[#101a22] overflow-hidden">
+      <div className="relative -mt-24 md:-mt-44 min-h-[850px] w-full flex flex-col items-center justify-center bg-[#101a22] overflow-hidden">
         {/* Background Image - Using img tag for reliability */}
         <div className="absolute inset-0 z-0">
           <img 
@@ -46,7 +46,7 @@ const Home: React.FC = () => {
         </div>
         
         {/* Hero Content */}
-        <div className="relative z-10 w-full max-w-[1200px] px-6 py-12 flex flex-col items-center text-center">
+        <div className="relative z-10 w-full max-w-[1200px] px-6 pt-28 md:pt-48 pb-12 flex flex-col items-center text-center">
           <div className="w-full max-w-[560px] mb-8">
             <div
               className="relative grid grid-cols-3 p-1 rounded-xl border border-white/15 bg-black/25 backdrop-blur-md"
