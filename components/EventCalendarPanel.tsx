@@ -380,8 +380,14 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
           </div>
         )}
 
-        <div className={`grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] items-start gap-6 ${embedded ? 'text-white' : ''}`}>
-          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-4 md:p-5">
+        <div
+          className={`grid grid-cols-1 items-start gap-6 ${embedded ? 'lg:grid-cols-[0.92fr_1.08fr] text-white' : 'lg:grid-cols-[1.2fr_1fr]'}`}
+        >
+          <div
+            className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-4 md:p-5 ${
+              embedded ? 'lg:self-start lg:h-fit' : ''
+            }`}
+          >
             <div className="flex items-center justify-between mb-4">
               <button
                 type="button"
@@ -412,7 +418,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
 
             <div className="grid grid-cols-7 gap-2">
               {Array.from({ length: leadingEmptyCells }).map((_, idx) => (
-                <div key={`empty-${idx}`} className="h-12 md:h-14 rounded-md bg-transparent"></div>
+                <div key={`empty-${idx}`} className={`${embedded ? 'h-10 md:h-11' : 'h-12 md:h-14'} rounded-md bg-transparent`}></div>
               ))}
 
               {Array.from({ length: daysInMonth }).map((_, idx) => {
@@ -426,7 +432,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                     key={isoDate}
                     type="button"
                     onClick={() => setActiveDate(isoDate)}
-                    className={`h-12 md:h-14 rounded-md border text-sm font-bold relative ${embedded ? 'text-white' : ''}`}
+                    className={`${embedded ? 'h-10 md:h-11' : 'h-12 md:h-14'} rounded-md border text-sm font-bold relative ${embedded ? 'text-white' : ''}`}
                     style={
                       isActive
                         ? { borderColor: theme.accent, backgroundColor: theme.accentSoft, color: theme.accent }
