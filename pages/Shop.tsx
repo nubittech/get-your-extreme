@@ -44,11 +44,6 @@ const products: Product[] = [
   }
 ];
 
-const buildInquiryLink = (productName: string) =>
-  `https://wa.me/905425550000?text=${encodeURIComponent(
-    `Hello, I want details for: ${productName}`
-  )}`;
-
 const Shop: React.FC = () => {
   return (
     <div className="flex flex-col items-center">
@@ -141,15 +136,6 @@ const Shop: React.FC = () => {
                 </p>
                 <p className="text-[#9dadb9] text-sm font-medium">{product.summary}</p>
                 <p className="text-[#1183d4] text-sm font-bold mt-2">{product.tag}</p>
-                <a
-                  href={buildInquiryLink(product.name)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-3 flex items-center justify-center gap-2 w-full py-3 bg-[#283239] hover:bg-[#1183d4] text-white rounded-lg font-bold text-sm transition-all"
-                >
-                  <span className="material-symbols-outlined text-base">chat</span>
-                  Inquire Now
-                </a>
               </div>
             </article>
           ))}
