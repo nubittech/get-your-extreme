@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createReservation } from '../services/reservations';
 import { useExperience } from '../context/ExperienceContext';
+import EventCalendarPanel from '../components/EventCalendarPanel';
 
 const getTodayISODate = () => {
   const today = new Date();
@@ -238,6 +239,8 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <EventCalendarPanel />
 
       {/* Why Choose Us Section */}
       <section className="py-24 bg-[#f6f7f8] dark:bg-[#101a22]">
