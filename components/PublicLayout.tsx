@@ -15,7 +15,7 @@ const PublicLayout: React.FC = () => {
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden font-display">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full px-4 md:px-8 py-3">
+      <header className="absolute top-0 left-0 z-50 w-full px-4 md:px-8 py-3">
         <div className="flex w-full items-start justify-between">
           {/* Logo */}
           <Link to="/" className="-ml-2 md:-ml-4 flex items-center group">
