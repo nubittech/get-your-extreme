@@ -1,4 +1,5 @@
 import { Reservation, ReservationCreateInput } from '../types/reservation';
+import { requireSupabase, SUPABASE_RESERVATIONS_TABLE } from './supabase';
 
 const STORAGE_KEY = 'reservations';
 const API_MODE = import.meta.env.VITE_RESERVATIONS_API_MODE ?? 'local';
@@ -103,8 +104,104 @@ const requestJson = async <T>(path: string, init?: RequestInit): Promise<T> => {
 };
 
 const isRemoteMode = () => API_MODE === 'remote';
+const isSupabaseMode = () => API_MODE === 'supabase';
+
+const parseReservationId = (value: unknown): number => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return Date.now();
+};
+
+const mapSupabaseRowToReservation = (row: Record<string, unknown>): Reservation => ({
+  id: parseReservationId(row.id),
+  customerName: String(row.customer_name ?? row.customerName ?? ''),
+  customerPhone: String(row.customer_phone ?? row.customerPhone ?? ''),
+  activity: String(row.activity ?? ''),
+  route: String(row.route ?? ''),
+  date: String(row.date ?? ''),
+  status: String(row.status ?? 'Pending') as Reservation['status'],
+  timestamp: String(row.timestamp ?? row.created_at ?? new Date().toISOString())
+});
+
+const listSupabaseReservations = async (): Promise<Reservation[]> => {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from(SUPABASE_RESERVATIONS_TABLE)
+    .select('*')
+    .order('id', { ascending: false });
+
+  if (error) {
+    throw new Error(`Supabase list failed: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => mapSupabaseRowToReservation(row as Record<string, unknown>));
+};
+
+const createSupabaseReservation = async (
+  input: ReservationCreateInput
+): Promise<Reservation> => {
+  const supabase = requireSupabase();
+
+  const snakePayload = {
+    customer_name: input.customerName,
+    customer_phone: input.customerPhone,
+    activity: input.activity,
+    route: input.route,
+    date: input.date,
+    status: 'Pending',
+    timestamp: new Date().toISOString()
+  };
+
+  let insertResult = await supabase
+    .from(SUPABASE_RESERVATIONS_TABLE)
+    .insert(snakePayload)
+    .select('*')
+    .single();
+
+  // Compatibility fallback for camelCase column names.
+  if (insertResult.error) {
+    insertResult = await supabase
+      .from(SUPABASE_RESERVATIONS_TABLE)
+      .insert({
+        customerName: input.customerName,
+        customerPhone: input.customerPhone,
+        activity: input.activity,
+        route: input.route,
+        date: input.date,
+        status: 'Pending',
+        timestamp: new Date().toISOString()
+      })
+      .select('*')
+      .single();
+  }
+
+  if (insertResult.error || !insertResult.data) {
+    throw new Error(`Supabase create failed: ${insertResult.error?.message ?? 'Unknown error'}`);
+  }
+
+  return mapSupabaseRowToReservation(insertResult.data as Record<string, unknown>);
+};
+
+const deleteSupabaseReservation = async (reservationId: number): Promise<void> => {
+  const supabase = requireSupabase();
+  const { error } = await supabase
+    .from(SUPABASE_RESERVATIONS_TABLE)
+    .delete()
+    .eq('id', reservationId);
+
+  if (error) {
+    throw new Error(`Supabase delete failed: ${error.message}`);
+  }
+};
 
 export const listReservations = async (): Promise<Reservation[]> => {
+  if (isSupabaseMode()) {
+    return listSupabaseReservations();
+  }
+
   if (isRemoteMode()) {
     return requestJson<Reservation[]>('/reservations');
   }
@@ -115,6 +212,10 @@ export const listReservations = async (): Promise<Reservation[]> => {
 export const createReservation = async (
   input: ReservationCreateInput
 ): Promise<Reservation> => {
+  if (isSupabaseMode()) {
+    return createSupabaseReservation(input);
+  }
+
   if (isRemoteMode()) {
     return requestJson<Reservation>('/reservations', {
       method: 'POST',
@@ -139,6 +240,11 @@ export const createReservation = async (
 };
 
 export const deleteReservation = async (reservationId: number): Promise<void> => {
+  if (isSupabaseMode()) {
+    await deleteSupabaseReservation(reservationId);
+    return;
+  }
+
   if (isRemoteMode()) {
     await requestJson<void>(`/reservations/${reservationId}`, {
       method: 'DELETE'

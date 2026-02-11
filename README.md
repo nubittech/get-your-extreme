@@ -19,16 +19,20 @@ Prerequisite: Node.js
 The app is now backend-ready with a service layer in `/services/reservations.ts`.
 
 - Default mode: `local` (uses browser `localStorage`)
-- Future mode: `remote` (uses your API/Supabase endpoint)
+- Remote REST mode: `remote` (uses your own API endpoint)
+- Supabase mode: `supabase` (direct `@supabase/supabase-js` integration)
 
 Configure with `.env.local`:
 
 ```env
 VITE_RESERVATIONS_API_MODE=local
 VITE_RESERVATIONS_API_URL=http://localhost:3001
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+VITE_SUPABASE_RESERVATIONS_TABLE=reservations
 ```
 
-When you are ready to connect backend:
+When you are ready to connect backend with your own API:
 
 1. Set `VITE_RESERVATIONS_API_MODE=remote`
 2. Set `VITE_RESERVATIONS_API_URL` to your backend base URL
@@ -36,3 +40,18 @@ When you are ready to connect backend:
    - `GET /reservations`
    - `POST /reservations`
    - `DELETE /reservations/:id`
+
+When you are ready to connect Supabase:
+
+1. Set `VITE_RESERVATIONS_API_MODE=supabase`
+2. Set `VITE_SUPABASE_URL`
+3. Set `VITE_SUPABASE_PUBLISHABLE_KEY`
+4. Create `reservations` table (or set `VITE_SUPABASE_RESERVATIONS_TABLE`) with fields:
+   - `id` bigint generated identity primary key
+   - `customer_name` text
+   - `customer_phone` text
+   - `activity` text
+   - `route` text
+   - `date` date or text
+   - `status` text
+   - `timestamp` timestamptz
