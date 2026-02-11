@@ -84,18 +84,10 @@ const Home: React.FC = () => {
           <p className="text-white text-lg md:text-xl font-medium leading-relaxed max-w-2xl mb-12 drop-shadow-lg text-shadow-sm">
             {theme.heroSubtitle}
           </p>
-          <div className="bg-[#101a22]/80 backdrop-blur-md border border-white/10 w-full max-w-5xl rounded-2xl p-6 md:p-8 shadow-2xl text-left">
-            <p className="text-white text-lg md:text-xl font-bold mb-2">Event-based booking is active.</p>
-            <p className="text-white/75 text-sm md:text-base">
-              Use the calendar below to see available events and pick your day.
-              For custom plans, open the right-side <strong>Ozel Rezervasyon</strong> drawer.
-            </p>
+          <div id="booking-form" className="w-full max-w-6xl mt-2">
+            <EventCalendarPanel embedded />
           </div>
         </div>
-      </div>
-
-      <div id="booking-form">
-        <EventCalendarPanel />
       </div>
 
       {/* Why Choose Us Section */}

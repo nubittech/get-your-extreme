@@ -27,7 +27,11 @@ const formatISODateLabel = (isoDate: string) => {
   });
 };
 
-const EventCalendarPanel: React.FC = () => {
+type EventCalendarPanelProps = {
+  embedded?: boolean;
+};
+
+const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = false }) => {
   const { activeCategory, activeDate, setActiveDate, theme } = useExperience();
   const [viewYearMonth, setViewYearMonth] = useState(activeDate.slice(0, 7));
 
@@ -56,18 +60,20 @@ const EventCalendarPanel: React.FC = () => {
   };
 
   return (
-    <section className="py-16 bg-white dark:bg-[#0f171e]">
-      <div className="max-w-[1200px] mx-auto px-6">
-        <div className="mb-8">
-          <h2 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
-            Event Calendar
-          </h2>
-          <p className="text-slate-600 dark:text-white/70 mt-2">
-            Select a day to see {theme.label} events and available slots.
-          </p>
-        </div>
+    <section className={embedded ? '' : 'py-16 bg-white dark:bg-[#0f171e]'}>
+      <div className={embedded ? '' : 'max-w-[1200px] mx-auto px-6'}>
+        {!embedded && (
+          <div className="mb-8">
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
+              Event Calendar
+            </h2>
+            <p className="text-slate-600 dark:text-white/70 mt-2">
+              Select a day to see {theme.label} events and available slots.
+            </p>
+          </div>
+        )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-6">
+        <div className={`grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-6 ${embedded ? 'text-white' : ''}`}>
           <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-4 md:p-5">
             <div className="flex items-center justify-between mb-4">
               <button
@@ -113,13 +119,16 @@ const EventCalendarPanel: React.FC = () => {
                     key={isoDate}
                     type="button"
                     onClick={() => setActiveDate(isoDate)}
-                    className="h-12 md:h-14 rounded-md border text-sm font-bold relative"
-                    style={
-                      isActive
-                        ? { borderColor: theme.accent, backgroundColor: theme.accentSoft, color: theme.accent }
-                        : { borderColor: 'rgba(148,163,184,0.35)', color: '#334155' }
-                    }
-                  >
+                  className={`h-12 md:h-14 rounded-md border text-sm font-bold relative ${embedded ? 'text-white' : ''}`}
+                  style={
+                    isActive
+                      ? { borderColor: theme.accent, backgroundColor: theme.accentSoft, color: theme.accent }
+                      : {
+                          borderColor: 'rgba(148,163,184,0.35)',
+                          color: embedded ? 'rgba(226,232,240,0.9)' : '#334155'
+                        }
+                  }
+                >
                     {day}
                     {hasEvent && (
                       <span
