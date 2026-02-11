@@ -1,6 +1,7 @@
 import React from 'react';
 import { useExperience } from '../context/ExperienceContext';
 import { ExperienceCategory } from '../data/experienceThemes';
+import { MEDIA_ASSETS } from '../data/mediaAssets';
 
 type Product = {
   id: string;
@@ -19,7 +20,7 @@ const productsByCategory: Record<ExperienceCategory, Product[]> = {
       category: 'SUP Boards',
       summary: 'Stable race-friendly board for tours and all-day rentals.',
       tag: 'Rental / Sale',
-      image: 'https://images.unsplash.com/photo-1551334787-21e6bd3ab135?q=80&w=1965&auto=format&fit=crop'
+      image: MEDIA_ASSETS.shopMain
     },
     {
       id: 'sup-paddle',
@@ -27,7 +28,7 @@ const productsByCategory: Record<ExperienceCategory, Product[]> = {
       category: 'Paddles',
       summary: 'Lightweight paddle with ergonomic grip and fast response.',
       tag: 'Inquiry',
-      image: 'https://images.unsplash.com/photo-1596484552882-628d7d3d1a49?q=80&w=1887&auto=format&fit=crop'
+      image: MEDIA_ASSETS.supGalleryA
     },
     {
       id: 'sup-vest',
@@ -35,7 +36,7 @@ const productsByCategory: Record<ExperienceCategory, Product[]> = {
       category: 'Safety',
       summary: 'Certified vest set in multiple sizes for group reservations.',
       tag: 'Rental / Sale',
-      image: 'https://images.unsplash.com/photo-1528532729063-42e131d21f8a?q=80&w=1887&auto=format&fit=crop'
+      image: MEDIA_ASSETS.supGalleryB
     }
   ],
   BIKE: [

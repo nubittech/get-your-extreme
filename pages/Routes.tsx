@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useExperience } from '../context/ExperienceContext';
 import { ExperienceCategory } from '../data/experienceThemes';
+import { MEDIA_ASSETS } from '../data/mediaAssets';
 
 type RouteItem = {
   id: string;
@@ -22,28 +23,52 @@ type RouteItem = {
 const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
   SUP: [
     {
-      id: 'sup-konyaalti',
-      title: 'Konyaalti Loop and Social',
+      id: 'sup-beachpark',
+      title: 'Beach Park Social Loop',
       tag: 'Beginner Friendly',
       tagColor: '#16a34a',
       description:
-        'A relaxed loop route ideal for first-time paddlers and mixed groups.',
+        'A relaxed loop route ideal for first-time paddlers and mixed groups with smooth shoreline waters.',
       stats: { distance: '3 KM', time: '2 Hours', level: 'Easy', type: 'Loop' },
       meetingPoint: 'Beach Park Main Gate',
       bestFor: 'Families and social sessions',
-      image: 'https://lh3.googleusercontent.com/d/1-k_VFt1TA_lg1Nku979YKOldNObLOz_R'
+      image: MEDIA_ASSETS.routeBeachpark
     },
     {
-      id: 'sup-cliffs',
-      title: 'Antalya Cliffs (Falez)',
+      id: 'sup-beachpark-lara',
+      title: 'Beach Park to Lara Coast',
       tag: 'Most Popular',
       tagColor: '#1183d4',
       description:
-        'One-way route with open-water views and premium coastal scenery.',
+        'One-way coastal line with open-sea views and long glide sections.',
       stats: { distance: '7 KM', time: '3-4 Hours', level: 'Moderate', type: 'One Way' },
       meetingPoint: 'Beach Park Start Zone',
       bestFor: 'Active groups with prior paddling',
-      image: 'https://lh3.googleusercontent.com/d/1RELZVyCj6EeQBjyMn7l_Mq1NsmRRpSQu'
+      image: MEDIA_ASSETS.routeBeachparkLara
+    },
+    {
+      id: 'sup-duden',
+      title: 'Duden Waterline Route',
+      tag: 'Scenic',
+      tagColor: '#0ea5e9',
+      description:
+        'Scenic paddling route around Duden coastal views with guide support and timing checkpoints.',
+      stats: { distance: '5 KM', time: '2.5 Hours', level: 'Moderate', type: 'Scenic Line' },
+      meetingPoint: 'Duden Pickup Point',
+      bestFor: 'Photo-focused and mixed-skill groups',
+      image: MEDIA_ASSETS.routeDuden
+    },
+    {
+      id: 'sup-karacagoren',
+      title: 'Karacagoren Expedition',
+      tag: 'Long Tour',
+      tagColor: '#0284c7',
+      description:
+        'Long-form SUP tour with transfer support, rest point briefing and return coordination.',
+      stats: { distance: '9 KM', time: '4 Hours', level: 'Advanced', type: 'Expedition' },
+      meetingPoint: 'Karacagoren Transfer Hub',
+      bestFor: 'Full-day adventure programs',
+      image: MEDIA_ASSETS.routeKaracagoren
     }
   ],
   BIKE: [

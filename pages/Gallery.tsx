@@ -1,6 +1,7 @@
 import React from 'react';
 import { useExperience } from '../context/ExperienceContext';
 import { ExperienceCategory } from '../data/experienceThemes';
+import { MEDIA_ASSETS } from '../data/mediaAssets';
 
 type GalleryItem = {
   image: string;
@@ -9,10 +10,10 @@ type GalleryItem = {
 
 const galleryByCategory: Record<ExperienceCategory, GalleryItem[]> = {
   SUP: [
-    { image: 'https://lh3.googleusercontent.com/d/1COxd_ojMEjpyNVJNqyqUzzLebzO2i4Lr', caption: 'SUP Breakfast Club' },
-    { image: 'https://lh3.googleusercontent.com/d/1JKLnxGLuMQ09TzBA4NAcC2d3ymo7ny4l', caption: 'River SUP Session' },
-    { image: 'https://lh3.googleusercontent.com/d/197AkaC7nRTjFXay5NKuW4LfamS7Yno_1', caption: 'Group Coast Paddle' },
-    { image: 'https://lh3.googleusercontent.com/d/1or3oVMFBX2BCPtjDpVc3BlLFySt7yWJV', caption: 'Equipment Day' }
+    { image: MEDIA_ASSETS.supGalleryB, caption: 'SUP Breakfast Club' },
+    { image: MEDIA_ASSETS.supGalleryA, caption: 'River SUP Session' },
+    { image: MEDIA_ASSETS.routeBeachparkLara, caption: 'Group Coast Paddle' },
+    { image: MEDIA_ASSETS.routeDuden, caption: 'Duden Scenic Session' }
   ],
   BIKE: [
     { image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=2070&auto=format&fit=crop', caption: 'City Ride Briefing' },

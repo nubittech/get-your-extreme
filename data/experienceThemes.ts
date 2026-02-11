@@ -1,3 +1,5 @@
+import { MEDIA_ASSETS } from './mediaAssets';
+
 export type ExperienceCategory = 'SUP' | 'BIKE' | 'SKI';
 
 export type ExperienceTheme = {
@@ -22,8 +24,7 @@ export const EXPERIENCE_THEMES: Record<ExperienceCategory, ExperienceTheme> = {
     accent: '#1183d4',
     accentSoft: '#d7ecfb',
     headerGradient: 'linear-gradient(90deg, #0f2230 0%, #0c1b27 100%)',
-    heroImage:
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2070&auto=format&fit=crop',
+    heroImage: MEDIA_ASSETS.supHero,
     heroTitle: "Experience the Thrill of Antalya's Waters",
     heroSubtitle:
       'Premium stand up paddle sessions for groups, private classes, and coastal route explorers.',
@@ -38,8 +39,7 @@ export const EXPERIENCE_THEMES: Record<ExperienceCategory, ExperienceTheme> = {
     accent: '#d97706',
     accentSoft: '#fff0d9',
     headerGradient: 'linear-gradient(90deg, #2c1c06 0%, #1f1404 100%)',
-    heroImage:
-      'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=2070&auto=format&fit=crop',
+    heroImage: MEDIA_ASSETS.bikeHero,
     heroTitle: 'Ride Antalya with Guided Bike Programs',
     heroSubtitle:
       'City, forest and coastal bike experiences designed for visitors, companies and active groups.',
