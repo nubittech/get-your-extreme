@@ -14,3 +14,16 @@ export interface EventScheduleItem {
   details: string;
   serviceStops: string[];
 }
+
+export interface EventCreateInput {
+  category: ExperienceCategory;
+  date: string;
+  time: string;
+  durationHours: number;
+  capacity: number;
+  price: number;
+  title: string;
+  summary: string;
+  details: string;
+  serviceStops: string[];
+}

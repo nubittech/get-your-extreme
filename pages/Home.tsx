@@ -8,7 +8,7 @@ const heroCategoryItems: Array<{
   label: string;
   icon: string;
 }> = [
-  { key: 'SUP', label: 'SURF', icon: 'surfing' },
+  { key: 'SUP', label: 'SUP', icon: 'surfing' },
   { key: 'BIKE', label: 'BISIKLET', icon: 'directions_bike' },
   { key: 'SKI', label: 'KAYAK', icon: 'downhill_skiing' }
 ];

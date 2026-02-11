@@ -95,7 +95,8 @@ const SpecialRequestDrawer: React.FC = () => {
         customerPhone: trimmedPhone,
         activity: `Special Request (${formData.category})`,
         route: requestSummary,
-        date: formData.preferredDate
+        date: formData.preferredDate,
+        source: 'special'
       });
 
       alert('Special reservation request sent.');

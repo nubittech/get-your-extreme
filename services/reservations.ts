@@ -49,7 +49,10 @@ const isReservation = (value: unknown): value is Reservation => {
     typeof item.route === 'string' &&
     typeof item.date === 'string' &&
     typeof item.status === 'string' &&
-    typeof item.timestamp === 'string'
+    typeof item.timestamp === 'string' &&
+    (item.amount === undefined || typeof item.amount === 'number') &&
+    (item.source === undefined || item.source === 'event' || item.source === 'special') &&
+    (item.eventId === undefined || typeof item.eventId === 'string')
   );
 };
 
@@ -123,7 +126,19 @@ const mapSupabaseRowToReservation = (row: Record<string, unknown>): Reservation 
   route: String(row.route ?? ''),
   date: String(row.date ?? ''),
   status: String(row.status ?? 'Pending') as Reservation['status'],
-  timestamp: String(row.timestamp ?? row.created_at ?? new Date().toISOString())
+  timestamp: String(row.timestamp ?? row.created_at ?? new Date().toISOString()),
+  source:
+    String(row.source ?? '').toLowerCase() === 'special'
+      ? 'special'
+      : String(row.source ?? '').toLowerCase() === 'event'
+        ? 'event'
+        : undefined,
+  amount:
+    row.amount === null || row.amount === undefined ? undefined : Number(row.amount),
+  eventId:
+    row.event_id === null || row.event_id === undefined
+      ? undefined
+      : String(row.event_id)
 });
 
 const listSupabaseReservations = async (): Promise<Reservation[]> => {
@@ -152,7 +167,10 @@ const createSupabaseReservation = async (
     route: input.route,
     date: input.date,
     status: 'Pending',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    source: input.source ?? 'event',
+    amount: input.amount ?? null,
+    event_id: input.eventId ?? null
   };
 
   let insertResult = await supabase
@@ -172,7 +190,10 @@ const createSupabaseReservation = async (
         route: input.route,
         date: input.date,
         status: 'Pending',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        source: input.source ?? 'event',
+        amount: input.amount ?? null,
+        eventId: input.eventId ?? null
       })
       .select('*')
       .single();
@@ -231,7 +252,10 @@ export const createReservation = async (
     route: input.route,
     date: input.date,
     status: 'Pending',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    source: input.source,
+    amount: input.amount,
+    eventId: input.eventId
   };
 
   const currentReservations = readLocalReservations();

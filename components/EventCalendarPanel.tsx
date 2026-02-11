@@ -2,10 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { useExperience } from '../context/ExperienceContext';
-import {
-  getDatesWithEventsForCategory,
-  getEventsForDateAndCategory
-} from '../data/eventSchedule';
+import { listEvents } from '../services/events';
 import { createReservation } from '../services/reservations';
 import { EventScheduleItem } from '../types/event';
 
@@ -202,6 +199,9 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
   const [viewYearMonth, setViewYearMonth] = useState(activeDate.slice(0, 7));
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEventsLoading, setIsEventsLoading] = useState(true);
+  const [eventsLoadError, setEventsLoadError] = useState<string | null>(null);
+  const [events, setEvents] = useState<EventScheduleItem[]>([]);
   const [generatedTicket, setGeneratedTicket] = useState<GeneratedTicket | null>(null);
   const [reservationForm, setReservationForm] = useState<ReservationFormState>({
     pickupStop: '',
@@ -216,13 +216,15 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
   const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
   const leadingEmptyCells = firstDayOfMonth.getDay();
 
-  const datesWithEvents = useMemo(
-    () => new Set(getDatesWithEventsForCategory(activeCategory)),
-    [activeCategory]
-  );
+  const datesWithEvents = useMemo(() => {
+    return new Set(
+      events.filter((item) => item.category === activeCategory).map((item) => item.date)
+    );
+  }, [events, activeCategory]);
   const selectedDayEvents = useMemo(
-    () => getEventsForDateAndCategory(activeDate, activeCategory),
-    [activeDate, activeCategory]
+    () =>
+      events.filter((item) => item.date === activeDate && item.category === activeCategory),
+    [events, activeDate, activeCategory]
   );
   const selectedEvent = useMemo(
     () => selectedDayEvents.find((item) => item.id === selectedEventId) ?? selectedDayEvents[0] ?? null,
@@ -232,6 +234,33 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
   useEffect(() => {
     setViewYearMonth(activeDate.slice(0, 7));
   }, [activeDate]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchEvents = async () => {
+      setIsEventsLoading(true);
+      setEventsLoadError(null);
+      try {
+        const loaded = await listEvents();
+        if (isMounted) {
+          setEvents(loaded);
+        }
+      } catch {
+        if (isMounted) {
+          setEventsLoadError('Events could not be loaded.');
+        }
+      } finally {
+        if (isMounted) {
+          setIsEventsLoading(false);
+        }
+      }
+    };
+
+    fetchEvents();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     setSelectedEventId(selectedDayEvents[0]?.id ?? null);
@@ -308,7 +337,10 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
         customerPhone: phone,
         activity: `${theme.label} Event: ${selectedEvent.title}`,
         route: `Pickup ${reservationForm.pickupStop} | Seats ${seatsRequested} | ${selectedEvent.serviceStops.join(' -> ')}`,
-        date: activeDate
+        date: activeDate,
+        source: 'event',
+        amount: selectedEvent.price * seatsRequested,
+        eventId: selectedEvent.id
       });
 
       const ticket = buildTicketPayload(
@@ -481,7 +513,21 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
             </p>
 
             <div className="mt-4 space-y-3">
-              {selectedDayEvents.length === 0 && (
+              {eventsLoadError && (
+                <div className="rounded-xl border border-red-300/30 px-4 py-3 text-sm text-red-300 bg-red-500/10">
+                  {eventsLoadError}
+                </div>
+              )}
+
+              {isEventsLoading && (
+                <div className="rounded-xl border border-dashed border-slate-300 dark:border-white/20 px-4 py-6 text-center">
+                  <p className="text-slate-600 dark:text-white/70 text-sm font-medium">
+                    Loading events...
+                  </p>
+                </div>
+              )}
+
+              {!isEventsLoading && selectedDayEvents.length === 0 && (
                 <div className="rounded-xl border border-dashed border-slate-300 dark:border-white/20 px-4 py-6 text-center">
                   <p className="text-slate-600 dark:text-white/70 text-sm font-medium">
                     No event published for this day.

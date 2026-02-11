@@ -9,6 +9,9 @@ export interface Reservation {
   date: string;
   status: ReservationStatus;
   timestamp: string;
+  source?: 'event' | 'special';
+  amount?: number;
+  eventId?: string;
 }
 
 export interface ReservationCreateInput {
@@ -17,4 +20,7 @@ export interface ReservationCreateInput {
   activity: string;
   route: string;
   date: string;
+  source?: 'event' | 'special';
+  amount?: number;
+  eventId?: string;
 }

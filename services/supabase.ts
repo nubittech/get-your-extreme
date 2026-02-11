@@ -5,6 +5,8 @@ const SUPABASE_PUBLISHABLE_KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY 
 
 export const SUPABASE_RESERVATIONS_TABLE =
   (import.meta.env.VITE_SUPABASE_RESERVATIONS_TABLE ?? 'reservations').trim() || 'reservations';
+export const SUPABASE_EVENTS_TABLE =
+  (import.meta.env.VITE_SUPABASE_EVENTS_TABLE ?? 'events').trim() || 'events';
 
 const hasSupabaseConfig = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
 

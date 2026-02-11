@@ -2,12 +2,31 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { deleteReservation, listReservations } from '../services/reservations';
 import { Reservation } from '../types/reservation';
+import { createEvent, deleteEvent, listEvents } from '../services/events';
+import { EventScheduleItem } from '../types/event';
+import { ExperienceCategory } from '../data/experienceThemes';
 
 const AdminDashboard: React.FC = () => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [events, setEvents] = useState<EventScheduleItem[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventsLoadError, setEventsLoadError] = useState<string | null>(null);
+  const [isCreatingEvent, setIsCreatingEvent] = useState(false);
+  const [eventForm, setEventForm] = useState({
+    category: 'SUP' as ExperienceCategory,
+    date: '',
+    time: '08:00',
+    durationHours: '2',
+    capacity: '12',
+    price: '55',
+    title: '',
+    summary: '',
+    details: '',
+    serviceStops: 'Kemer Saat Kulesi, Goynuk, Liman'
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -38,6 +57,34 @@ const AdminDashboard: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchEvents = async () => {
+      setEventsLoading(true);
+      setEventsLoadError(null);
+      try {
+        const loadedEvents = await listEvents();
+        if (isMounted) {
+          setEvents(loadedEvents);
+        }
+      } catch {
+        if (isMounted) {
+          setEventsLoadError('Events could not be loaded.');
+        }
+      } finally {
+        if (isMounted) {
+          setEventsLoading(false);
+        }
+      }
+    };
+
+    fetchEvents();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this reservation?')) {
       return;
@@ -48,6 +95,87 @@ const AdminDashboard: React.FC = () => {
       setReservations((current) => current.filter((item) => item.id !== id));
     } catch {
       alert('Reservation could not be deleted. Please try again.');
+    }
+  };
+
+  const handleEventFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    setEventForm((current) => ({ ...current, [e.target.name]: e.target.value }));
+  };
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const title = eventForm.title.trim();
+    const summary = eventForm.summary.trim();
+    const details = eventForm.details.trim();
+    const serviceStops = eventForm.serviceStops
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    if (!eventForm.date || !eventForm.time || !title || !summary || !details || serviceStops.length === 0) {
+      alert('Please fill all event fields including service stops.');
+      return;
+    }
+
+    const durationHours = Number(eventForm.durationHours);
+    const capacity = Number(eventForm.capacity);
+    const price = Number(eventForm.price);
+
+    if (!Number.isFinite(durationHours) || durationHours <= 0) {
+      alert('Duration must be greater than 0.');
+      return;
+    }
+
+    if (!Number.isInteger(capacity) || capacity <= 0) {
+      alert('Capacity must be a positive integer.');
+      return;
+    }
+
+    if (!Number.isFinite(price) || price <= 0) {
+      alert('Price must be greater than 0.');
+      return;
+    }
+
+    setIsCreatingEvent(true);
+    try {
+      const created = await createEvent({
+        category: eventForm.category,
+        date: eventForm.date,
+        time: eventForm.time,
+        durationHours,
+        capacity,
+        price,
+        title,
+        summary,
+        details,
+        serviceStops
+      });
+      setEvents((current) =>
+        [...current, created].sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
+      );
+      setEventForm((current) => ({
+        ...current,
+        title: '',
+        summary: '',
+        details: ''
+      }));
+    } catch {
+      alert('Event could not be created. Please check backend settings.');
+    } finally {
+      setIsCreatingEvent(false);
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!confirm('Delete this event from schedule?')) return;
+    try {
+      await deleteEvent(eventId);
+      setEvents((current) => current.filter((item) => item.id !== eventId));
+    } catch {
+      alert('Event could not be deleted.');
     }
   };
 
@@ -71,6 +199,11 @@ const AdminDashboard: React.FC = () => {
       item.status.toLowerCase().includes(normalizedSearch)
     );
   });
+
+  const estimatedRevenue = filteredReservations.reduce(
+    (sum, item) => sum + (typeof item.amount === 'number' ? item.amount : 0),
+    0
+  );
 
   return (
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#f6f7f8] dark:bg-[#101a22]">
@@ -193,11 +326,192 @@ const AdminDashboard: React.FC = () => {
                 <span className="material-symbols-outlined text-emerald-500">payments</span>
               </div>
               <p className="text-slate-900 dark:text-white tracking-light text-3xl font-bold leading-tight">
-                €{filteredReservations.length * 50}
+                €{estimatedRevenue.toFixed(0)}
               </p>
               <div className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[#0bda5b] text-sm">info</span>
-                <p className="text-[#0bda5b] text-sm font-medium">Based on avg. price</p>
+                <p className="text-[#0bda5b] text-sm font-medium">From reservation totals</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Event Management */}
+          <div className="px-8 pb-4">
+            <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-4">
+              <form
+                onSubmit={handleCreateEvent}
+                className="rounded-xl p-5 border border-slate-200 dark:border-[#3b4954] bg-white dark:bg-[#101a22]/50 shadow-sm space-y-3"
+              >
+                <div>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">Create Event</p>
+                  <p className="text-xs text-[#9dadb9]">
+                    SUP / Bisiklet / Kayak etkinligini tarih tablosuna ekler.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="text-xs font-bold text-slate-600 dark:text-white/70">
+                    Category
+                    <select
+                      name="category"
+                      value={eventForm.category}
+                      onChange={handleEventFormChange}
+                      className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                    >
+                      <option value="SUP">SUP</option>
+                      <option value="BIKE">Bisiklet</option>
+                      <option value="SKI">Kayak</option>
+                    </select>
+                  </label>
+                  <label className="text-xs font-bold text-slate-600 dark:text-white/70">
+                    Date
+                    <input
+                      type="date"
+                      name="date"
+                      value={eventForm.date}
+                      onChange={handleEventFormChange}
+                      className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                    />
+                  </label>
+                </div>
+                <div className="grid grid-cols-4 gap-3">
+                  <label className="text-xs font-bold text-slate-600 dark:text-white/70">
+                    Time
+                    <input
+                      type="time"
+                      name="time"
+                      value={eventForm.time}
+                      onChange={handleEventFormChange}
+                      className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                    />
+                  </label>
+                  <label className="text-xs font-bold text-slate-600 dark:text-white/70">
+                    Duration(h)
+                    <input
+                      type="number"
+                      name="durationHours"
+                      min="0.5"
+                      step="0.5"
+                      value={eventForm.durationHours}
+                      onChange={handleEventFormChange}
+                      className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                    />
+                  </label>
+                  <label className="text-xs font-bold text-slate-600 dark:text-white/70">
+                    Capacity
+                    <input
+                      type="number"
+                      name="capacity"
+                      min="1"
+                      value={eventForm.capacity}
+                      onChange={handleEventFormChange}
+                      className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                    />
+                  </label>
+                  <label className="text-xs font-bold text-slate-600 dark:text-white/70">
+                    Price (EUR)
+                    <input
+                      type="number"
+                      name="price"
+                      min="1"
+                      value={eventForm.price}
+                      onChange={handleEventFormChange}
+                      className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                    />
+                  </label>
+                </div>
+                <label className="block text-xs font-bold text-slate-600 dark:text-white/70">
+                  Title
+                  <input
+                    type="text"
+                    name="title"
+                    value={eventForm.title}
+                    onChange={handleEventFormChange}
+                    placeholder="Sunrise SUP Session"
+                    className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                  />
+                </label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-white/70">
+                  Summary
+                  <input
+                    type="text"
+                    name="summary"
+                    value={eventForm.summary}
+                    onChange={handleEventFormChange}
+                    placeholder="Calm-water morning group paddle with instructor briefing."
+                    className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                  />
+                </label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-white/70">
+                  Details
+                  <textarea
+                    name="details"
+                    value={eventForm.details}
+                    onChange={handleEventFormChange}
+                    rows={2}
+                    className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                  />
+                </label>
+                <label className="block text-xs font-bold text-slate-600 dark:text-white/70">
+                  Service Stops (comma separated)
+                  <input
+                    type="text"
+                    name="serviceStops"
+                    value={eventForm.serviceStops}
+                    onChange={handleEventFormChange}
+                    className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  disabled={isCreatingEvent}
+                  className="rounded-lg px-4 py-2 bg-[#1183d4] text-white text-sm font-bold disabled:opacity-60"
+                >
+                  {isCreatingEvent ? 'Creating...' : 'Create Event'}
+                </button>
+              </form>
+
+              <div className="rounded-xl p-5 border border-slate-200 dark:border-[#3b4954] bg-white dark:bg-[#101a22]/50 shadow-sm">
+                <div className="mb-3">
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">Published Events</p>
+                </div>
+                {eventsLoadError && (
+                  <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                    {eventsLoadError}
+                  </p>
+                )}
+                <div className="space-y-2 max-h-[440px] overflow-y-auto pr-1">
+                  {eventsLoading && (
+                    <p className="text-sm text-[#9dadb9]">Loading events...</p>
+                  )}
+                  {!eventsLoading && events.length === 0 && (
+                    <p className="text-sm text-[#9dadb9]">No events published.</p>
+                  )}
+                  {!eventsLoading &&
+                    events.map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-lg border border-slate-200 dark:border-[#33414d] px-3 py-2"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">
+                              [{item.category}] {item.title}
+                            </p>
+                            <p className="text-xs text-[#9dadb9]">
+                              {item.date} {item.time} | EUR {item.price} | Seats {item.booked}/{item.capacity}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteEvent(item.id)}
+                            className="text-xs rounded-md border border-red-300 px-2 py-1 text-red-500"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
             </div>
           </div>
@@ -209,9 +523,11 @@ const AdminDashboard: React.FC = () => {
                 <thead className="bg-slate-50 dark:bg-[#1a262f] text-slate-600 dark:text-[#9dadb9] text-sm uppercase font-bold tracking-wider">
                   <tr>
                     <th className="px-6 py-4">Customer</th>
+                    <th className="px-6 py-4">Type</th>
                     <th className="px-6 py-4">Activity</th>
                     <th className="px-6 py-4">Route</th>
                     <th className="px-6 py-4">Date</th>
+                    <th className="px-6 py-4">Amount</th>
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
@@ -230,9 +546,17 @@ const AdminDashboard: React.FC = () => {
                           </div>
                         </div>
                       </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center rounded-full border border-slate-300 dark:border-[#3b4954] px-2 py-0.5 text-xs">
+                          {res.source === 'special' ? 'Special' : 'Event'}
+                        </span>
+                      </td>
                       <td className="px-6 py-4">{res.activity}</td>
                       <td className="px-6 py-4">{res.route}</td>
                       <td className="px-6 py-4">{res.date}</td>
+                      <td className="px-6 py-4">
+                        {typeof res.amount === 'number' ? `EUR ${res.amount}` : '-'}
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(res.status)}`}>
                           {res.status}
@@ -247,12 +571,12 @@ const AdminDashboard: React.FC = () => {
                   ))}
                   {isLoading && (
                      <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-slate-500">Loading reservations...</td>
+                        <td colSpan={8} className="px-6 py-8 text-center text-slate-500">Loading reservations...</td>
                      </tr>
                   )}
                   {!isLoading && filteredReservations.length === 0 && (
                      <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No reservations found for this filter.</td>
+                        <td colSpan={8} className="px-6 py-8 text-center text-slate-500">No reservations found for this filter.</td>
                      </tr>
                   )}
                 </tbody>
