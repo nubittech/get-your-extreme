@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { jsPDF } from 'jspdf';
+import QRCode from 'qrcode';
 import { useExperience } from '../context/ExperienceContext';
 import {
   getDatesWithEventsForCategory,
@@ -31,26 +33,6 @@ const formatISODateLabel = (isoDate: string) => {
 
 const isValidPhoneNumber = (value: string) => /^[+]?[\d\s()-]{7,20}$/.test(value.trim());
 
-const buildTicketText = (event: EventScheduleItem, form: ReservationFormState, activeDate: string) => {
-  const ref = `GYE-${Date.now().toString().slice(-8)}`;
-  return [
-    'GET YOUR EXTREME - EVENT TICKET',
-    `Ticket Ref: ${ref}`,
-    `Category: ${event.category}`,
-    `Event: ${event.title}`,
-    `Date: ${activeDate}`,
-    `Time: ${event.time}`,
-    `Duration: ${event.durationHours} hours`,
-    `Pickup Stop: ${form.pickupStop}`,
-    `Participant: ${form.fullName}`,
-    `Phone: ${form.phone}`,
-    `Seats: ${form.participants}`,
-    `Amount: EUR ${event.price * Number(form.participants)}`,
-    '',
-    'Please present this ticket at check-in.'
-  ].join('\n');
-};
-
 type EventCalendarPanelProps = {
   embedded?: boolean;
 };
@@ -62,13 +44,159 @@ type ReservationFormState = {
   phone: string;
 };
 
+type GeneratedTicket = {
+  reference: string;
+  category: string;
+  eventTitle: string;
+  date: string;
+  time: string;
+  durationHours: number;
+  pickupStop: string;
+  fullName: string;
+  phone: string;
+  participants: number;
+  amount: number;
+  serviceStops: string[];
+};
+
+const buildTicketPayload = (
+  event: EventScheduleItem,
+  form: ReservationFormState,
+  activeDate: string
+): GeneratedTicket => ({
+  reference: `GYE-${Date.now().toString().slice(-8)}`,
+  category: event.category,
+  eventTitle: event.title,
+  date: activeDate,
+  time: event.time,
+  durationHours: event.durationHours,
+  pickupStop: form.pickupStop,
+  fullName: form.fullName,
+  phone: form.phone,
+  participants: Number(form.participants),
+  amount: event.price * Number(form.participants),
+  serviceStops: event.serviceStops
+});
+
+const toTicketQrText = (ticket: GeneratedTicket) =>
+  [
+    `Ref:${ticket.reference}`,
+    `Category:${ticket.category}`,
+    `Event:${ticket.eventTitle}`,
+    `Date:${ticket.date} ${ticket.time}`,
+    `Pickup:${ticket.pickupStop}`,
+    `Name:${ticket.fullName}`,
+    `Phone:${ticket.phone}`,
+    `Seats:${ticket.participants}`,
+    `Amount:EUR ${ticket.amount}`
+  ].join('|');
+
+const loadImage = (src: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+
+const createTicketCanvas = async (ticket: GeneratedTicket, accent: string) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1200;
+  canvas.height = 1800;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas context unavailable');
+
+  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  gradient.addColorStop(0, '#091320');
+  gradient.addColorStop(1, '#0f2336');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, canvas.width, 22);
+
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = '700 52px sans-serif';
+  ctx.fillText('GET YOUR EXTREME', 72, 120);
+  ctx.font = '600 34px sans-serif';
+  ctx.fillStyle = '#93c5fd';
+  ctx.fillText('EVENT ACCESS TICKET', 72, 176);
+
+  ctx.fillStyle = '#0b1726';
+  ctx.strokeStyle = '#24364a';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(56, 230, 1088, 1500, 28);
+  ctx.fill();
+  ctx.stroke();
+
+  const qrDataUrl = await QRCode.toDataURL(toTicketQrText(ticket), {
+    width: 360,
+    margin: 1,
+    color: {
+      dark: '#0f172a',
+      light: '#ffffff'
+    }
+  });
+  const qrImage = await loadImage(qrDataUrl);
+  ctx.drawImage(qrImage, 760, 300, 320, 320);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 36px sans-serif';
+  ctx.fillText(ticket.eventTitle, 96, 320);
+  ctx.font = '600 22px sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText(`Reference: ${ticket.reference}`, 96, 365);
+  ctx.fillText(`${ticket.date}  ${ticket.time}`, 96, 402);
+  ctx.fillText(`Category: ${ticket.category}`, 96, 439);
+
+  const rows = [
+    ['Passenger', ticket.fullName],
+    ['Phone', ticket.phone],
+    ['Participants', String(ticket.participants)],
+    ['Pickup Stop', ticket.pickupStop],
+    ['Duration', `${ticket.durationHours} hours`],
+    ['Amount', `EUR ${ticket.amount}`]
+  ];
+
+  let y = 535;
+  rows.forEach(([label, value]) => {
+    ctx.fillStyle = '#60a5fa';
+    ctx.font = '700 20px sans-serif';
+    ctx.fillText(label, 96, y);
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '600 24px sans-serif';
+    ctx.fillText(value, 320, y);
+    y += 74;
+  });
+
+  ctx.fillStyle = '#60a5fa';
+  ctx.font = '700 20px sans-serif';
+  ctx.fillText('Service Route', 96, y + 8);
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = '600 21px sans-serif';
+  ctx.fillText(ticket.serviceStops.join('  ->  '), 96, y + 52);
+
+  ctx.strokeStyle = '#334155';
+  ctx.beginPath();
+  ctx.moveTo(96, 1300);
+  ctx.lineTo(1104, 1300);
+  ctx.stroke();
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '500 20px sans-serif';
+  ctx.fillText('Please present this QR ticket at check-in. This ticket is generated for demo flow.', 96, 1360);
+  ctx.fillText('For changes, contact operations before event start time.', 96, 1400);
+
+  return canvas;
+};
+
 const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = false }) => {
   const { activeCategory, activeDate, setActiveDate, theme } = useExperience();
   const [viewYearMonth, setViewYearMonth] = useState(activeDate.slice(0, 7));
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [ticketDownloadUrl, setTicketDownloadUrl] = useState<string | null>(null);
-  const [ticketFileName, setTicketFileName] = useState('event-ticket.txt');
+  const [generatedTicket, setGeneratedTicket] = useState<GeneratedTicket | null>(null);
   const [reservationForm, setReservationForm] = useState<ReservationFormState>({
     pickupStop: '',
     participants: '1',
@@ -111,14 +239,6 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
         : selectedEvent.serviceStops[0]
     }));
   }, [selectedEvent]);
-
-  useEffect(() => {
-    return () => {
-      if (ticketDownloadUrl) {
-        URL.revokeObjectURL(ticketDownloadUrl);
-      }
-    };
-  }, [ticketDownloadUrl]);
 
   const goToPreviousMonth = () => {
     const previous = new Date(viewYear, viewMonth - 2, 1);
@@ -178,27 +298,71 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
         date: activeDate
       });
 
-      const ticketText = buildTicketText(
+      const ticket = buildTicketPayload(
         selectedEvent,
         { ...reservationForm, fullName, phone, participants: String(seatsRequested) },
         activeDate
       );
-      const file = new Blob([ticketText], { type: 'text/plain;charset=utf-8' });
+      setGeneratedTicket(ticket);
 
-      if (ticketDownloadUrl) {
-        URL.revokeObjectURL(ticketDownloadUrl);
-      }
-      const nextUrl = URL.createObjectURL(file);
-      setTicketDownloadUrl(nextUrl);
-      setTicketFileName(
-        `${selectedEvent.category.toLowerCase()}-${activeDate}-${fullName.replace(/\s+/g, '-').toLowerCase()}-ticket.txt`
-      );
-
-      alert('Reservation completed. Ticket is ready to download.');
+      alert('Reservation completed. QR ticket is ready to download.');
     } catch {
       alert('Reservation could not be completed. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const downloadTicketImage = async () => {
+    if (!generatedTicket) return;
+    try {
+      const canvas = await createTicketCanvas(generatedTicket, theme.accent);
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = `${generatedTicket.category.toLowerCase()}-${generatedTicket.date}-${generatedTicket.fullName
+        .replace(/\s+/g, '-')
+        .toLowerCase()}-ticket.png`;
+      link.click();
+    } catch {
+      alert('Ticket image could not be generated. Please try again.');
+    }
+  };
+
+  const downloadTicketPdf = async () => {
+    if (!generatedTicket) return;
+    try {
+      const canvas = await createTicketCanvas(generatedTicket, theme.accent);
+      const imageData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'pt',
+        format: 'a4'
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 24;
+      const availableWidth = pageWidth - margin * 2;
+      const availableHeight = pageHeight - margin * 2;
+      const imageRatio = canvas.height / canvas.width;
+      let imageWidth = availableWidth;
+      let imageHeight = imageWidth * imageRatio;
+
+      if (imageHeight > availableHeight) {
+        imageHeight = availableHeight;
+        imageWidth = imageHeight / imageRatio;
+      }
+
+      const x = (pageWidth - imageWidth) / 2;
+      const y = (pageHeight - imageHeight) / 2;
+      pdf.addImage(imageData, 'PNG', x, y, imageWidth, imageHeight);
+      pdf.save(
+        `${generatedTicket.category.toLowerCase()}-${generatedTicket.date}-${generatedTicket.fullName
+          .replace(/\s+/g, '-')
+          .toLowerCase()}-ticket.pdf`
+      );
+    } catch {
+      alert('Ticket PDF could not be generated. Please try again.');
     }
   };
 
@@ -454,15 +618,25 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                           {isSubmitting ? 'Completing...' : 'Complete Reservation'}
                         </button>
 
-                        {ticketDownloadUrl && (
-                          <a
-                            href={ticketDownloadUrl}
-                            download={ticketFileName}
-                            className="w-full inline-flex items-center justify-center rounded-lg border font-bold py-2.5"
-                            style={{ borderColor: theme.accent, color: theme.accent }}
-                          >
-                            Download Ticket
-                          </a>
+                        {generatedTicket && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={downloadTicketImage}
+                              className="w-full inline-flex items-center justify-center rounded-lg border font-bold py-2.5"
+                              style={{ borderColor: theme.accent, color: theme.accent }}
+                            >
+                              Download QR Image
+                            </button>
+                            <button
+                              type="button"
+                              onClick={downloadTicketPdf}
+                              className="w-full inline-flex items-center justify-center rounded-lg border font-bold py-2.5"
+                              style={{ borderColor: theme.accent, color: theme.accent }}
+                            >
+                              Download PDF
+                            </button>
+                          </div>
                         )}
                       </form>
                     </>
