@@ -23,7 +23,7 @@ export const EXPERIENCE_THEMES: Record<ExperienceCategory, ExperienceTheme> = {
     accentSoft: '#d7ecfb',
     headerGradient: 'linear-gradient(90deg, #0f2230 0%, #0c1b27 100%)',
     heroImage:
-      'https://images.unsplash.com/photo-1543857778-c4a1a3e0b2eb?q=80&w=2010&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2070&auto=format&fit=crop',
     heroTitle: "Experience the Thrill of Antalya's Waters",
     heroSubtitle:
       'Premium stand up paddle sessions for groups, private classes, and coastal route explorers.',
