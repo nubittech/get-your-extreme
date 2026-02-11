@@ -1,16 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { createReservation } from '../services/reservations';
+import React, { useState } from 'react';
 import { useExperience } from '../context/ExperienceContext';
 import EventCalendarPanel from '../components/EventCalendarPanel';
 import { ExperienceCategory } from '../data/experienceThemes';
-
-const getTodayISODate = () => {
-  const today = new Date();
-  const offsetMs = today.getTimezoneOffset() * 60_000;
-  return new Date(today.getTime() - offsetMs).toISOString().split('T')[0];
-};
-
-const isValidPhoneNumber = (value: string) => /^[+]?[\d\s()-]{7,20}$/.test(value.trim());
 
 const heroCategoryItems: Array<{
   key: ExperienceCategory;
@@ -23,86 +14,10 @@ const heroCategoryItems: Array<{
 ];
 
 const Home: React.FC = () => {
-  const { activeCategory, activeDate, setActiveDate, setActiveCategory, theme } = useExperience();
-  const minDate = getTodayISODate();
+  const { activeCategory, setActiveCategory, theme } = useExperience();
   const activeCategoryIndex = heroCategoryItems.findIndex((item) => item.key === activeCategory);
 
-  // Form State
-  const [formData, setFormData] = useState({
-    activity: '',
-    route: '',
-    date: activeDate,
-    name: '',
-    phone: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    if (e.target.name === 'date') {
-      setActiveDate(e.target.value);
-    }
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  useEffect(() => {
-    setFormData((current) => ({
-      ...current,
-      activity: theme.activities.includes(current.activity) ? current.activity : '',
-      route: theme.routes.includes(current.route) ? current.route : '',
-      date: activeDate
-    }));
-  }, [activeCategory, activeDate, theme.activities, theme.routes]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const trimmedName = formData.name.trim();
-    const trimmedPhone = formData.phone.trim();
-
-    if(!formData.activity || !formData.route || !formData.date || !trimmedName || !trimmedPhone) {
-      alert("Please fill in all fields to check availability.");
-      return;
-    }
-
-    if (formData.date < minDate) {
-      alert("Please choose today or a future date.");
-      return;
-    }
-
-    if (!isValidPhoneNumber(trimmedPhone)) {
-      alert("Please enter a valid phone number.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await createReservation({
-        customerName: trimmedName,
-        customerPhone: trimmedPhone,
-        activity: formData.activity,
-        route: formData.route,
-        date: formData.date
-      });
-
-      alert("Request Sent! Check the Admin Panel to see your reservation.");
-
-      setFormData({
-        activity: '',
-        route: '',
-        date: '',
-        name: '',
-        phone: ''
-      });
-    } catch {
-      alert('Something went wrong while sending your request. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,7 +31,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section with Integrated Booking Form */}
+      {/* Hero Section */}
       <div className="relative min-h-[850px] w-full flex flex-col items-center justify-center bg-[#101a22] overflow-hidden">
         {/* Background Image - Using img tag for reliability */}
         <div className="absolute inset-0 z-0">
@@ -169,118 +84,19 @@ const Home: React.FC = () => {
           <p className="text-white text-lg md:text-xl font-medium leading-relaxed max-w-2xl mb-12 drop-shadow-lg text-shadow-sm">
             {theme.heroSubtitle}
           </p>
-          
-          {/* Booking Widget */}
-          <div id="booking-form" className="bg-[#101a22]/80 backdrop-blur-md border border-white/10 w-full max-w-5xl rounded-2xl p-6 md:p-8 shadow-2xl">
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
-              
-              {/* Row 1: Activity */}
-              <div className="flex flex-col text-left">
-                <label className="text-white/70 text-xs font-bold uppercase tracking-wider mb-2 px-1">Activity Type</label>
-                <div className="relative">
-                  <select 
-                    name="activity"
-                    value={formData.activity}
-                    onChange={handleChange}
-                    className="w-full rounded-lg text-white border border-white/10 bg-white/5 focus:border-[#1183d4] focus:ring-0 h-14 px-4 text-base appearance-none"
-                  >
-                    <option disabled value="">Select Activity</option>
-                    {theme.activities.map((activity) => (
-                      <option key={activity} value={activity}>{activity}</option>
-                    ))}
-                  </select>
-                  <span className="material-symbols-outlined absolute right-3 top-4 pointer-events-none text-white/50">keyboard_arrow_down</span>
-                </div>
-              </div>
-
-              {/* Row 1: Route */}
-              <div className="flex flex-col text-left">
-                <label className="text-white/70 text-xs font-bold uppercase tracking-wider mb-2 px-1">Route Selection</label>
-                <div className="relative">
-                  <select 
-                    name="route"
-                    value={formData.route}
-                    onChange={handleChange}
-                    className="w-full rounded-lg text-white border border-white/10 bg-white/5 focus:border-[#1183d4] focus:ring-0 h-14 px-4 text-base appearance-none"
-                  >
-                    <option disabled value="">Choose Route</option>
-                    {theme.routes.map((route) => (
-                      <option key={route} value={route}>{route}</option>
-                    ))}
-                  </select>
-                  <span className="material-symbols-outlined absolute right-3 top-4 pointer-events-none text-white/50">location_on</span>
-                </div>
-              </div>
-
-              {/* Row 1: Date */}
-              <div className="flex flex-col text-left">
-                <label className="text-white/70 text-xs font-bold uppercase tracking-wider mb-2 px-1">Pick a Date</label>
-                <div className="relative">
-                  <input 
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    min={minDate}
-                    className="w-full rounded-lg text-white border border-white/10 bg-white/5 focus:border-[#1183d4] focus:ring-0 h-14 px-4 text-base placeholder-gray-400" 
-                    type="date" 
-                  />
-                </div>
-              </div>
-
-              {/* Row 2: Name */}
-              <div className="flex flex-col text-left">
-                <label className="text-white/70 text-xs font-bold uppercase tracking-wider mb-2 px-1">Full Name</label>
-                <div className="relative">
-                  <input 
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="e.g. John Doe"
-                    className="w-full rounded-lg text-white border border-white/10 bg-white/5 focus:border-[#1183d4] focus:ring-0 h-14 px-4 text-base" 
-                    type="text" 
-                  />
-                  <span className="material-symbols-outlined absolute right-3 top-4 pointer-events-none text-white/50">person</span>
-                </div>
-              </div>
-
-              {/* Row 2: Phone */}
-              <div className="flex flex-col text-left">
-                <label className="text-white/70 text-xs font-bold uppercase tracking-wider mb-2 px-1">Phone Number</label>
-                <div className="relative">
-                  <input 
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="+90 555 000 0000"
-                    className="w-full rounded-lg text-white border border-white/10 bg-white/5 focus:border-[#1183d4] focus:ring-0 h-14 px-4 text-base" 
-                    type="tel" 
-                  />
-                  <span className="material-symbols-outlined absolute right-3 top-4 pointer-events-none text-white/50">call</span>
-                </div>
-              </div>
-
-              {/* Row 2: Button */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full h-14 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 text-white disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ backgroundColor: theme.accent }}
-              >
-                <span className="material-symbols-outlined">bolt</span>
-                {isSubmitting ? 'Sending...' : 'Check Availability'}
-              </button>
-
-            </form>
-            <div className="mt-6 flex flex-wrap gap-4 text-xs text-white/60 justify-center md:justify-start">
-              <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm" style={{ color: theme.accent }}>verified</span> Category: {theme.label}</span>
-              <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm" style={{ color: theme.accent }}>verified</span> Active Day: {activeDate}</span>
-              <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm" style={{ color: theme.accent }}>verified</span> Live request feed to admin</span>
-            </div>
+          <div className="bg-[#101a22]/80 backdrop-blur-md border border-white/10 w-full max-w-5xl rounded-2xl p-6 md:p-8 shadow-2xl text-left">
+            <p className="text-white text-lg md:text-xl font-bold mb-2">Event-based booking is active.</p>
+            <p className="text-white/75 text-sm md:text-base">
+              Use the calendar below to see available events and pick your day.
+              For custom plans, open the right-side <strong>Ozel Rezervasyon</strong> drawer.
+            </p>
           </div>
         </div>
       </div>
 
-      <EventCalendarPanel />
+      <div id="booking-form">
+        <EventCalendarPanel />
+      </div>
 
       {/* Why Choose Us Section */}
       <section className="py-24 bg-[#f6f7f8] dark:bg-[#101a22]">
