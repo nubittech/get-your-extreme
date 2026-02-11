@@ -15,11 +15,15 @@ const PublicLayout: React.FC = () => {
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden font-display">
       {/* Header */}
-      <header className="absolute top-0 z-50 w-full px-6 md:px-10 py-4">
+      <header className="sticky top-0 z-50 w-full px-6 md:px-10 py-3">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center group">
+            <img src={MEDIA_ASSETS.logo} alt="Get Your Extreme logo" className="h-16 w-16 object-contain drop-shadow-2xl group-hover:scale-105 transition-transform" />
+          </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex flex-1 justify-start gap-8 items-center">
+          <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
             <nav className="flex items-center gap-8">
               <Link to="/" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/') ? { color: theme.accent } : undefined}>Home</Link>
               <Link to="/routes" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/routes') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/routes') ? { color: theme.accent } : undefined}>Routes</Link>
@@ -35,11 +39,6 @@ const PublicLayout: React.FC = () => {
               Reservation Form
             </a>
           </div>
-
-          {/* Logo */}
-          <Link to="/" className="ml-auto flex items-center justify-end group">
-            <img src={MEDIA_ASSETS.logo} alt="Get Your Extreme logo" className="h-60 w-60 object-contain drop-shadow-2xl group-hover:scale-105 transition-transform" />
-          </Link>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden ml-4 text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
