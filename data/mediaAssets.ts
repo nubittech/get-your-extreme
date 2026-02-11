@@ -1,7 +1,7 @@
 export const driveImageUrl = (id: string) => `https://lh3.googleusercontent.com/d/${id}`;
 
 export const MEDIA_ASSETS = {
-  logo: driveImageUrl('1GZgomAUzqhStn81S6rQ_qnerZvQfy7Dn'),
+  logo: '/logo.png',
   supHero: driveImageUrl('1ndSIbqTV_Csds50AHhIi7hyw8qz6MCmi'),
   bikeHero: driveImageUrl('1MLRAHTp0s0zxmPj-_Dw3qnCEoEydbl9p'),
   routeKaracagoren: driveImageUrl('1hDCVzLvRIy3PIj02MM3CLgy7FK5iwDp8'),
