@@ -381,11 +381,11 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
         )}
 
         <div
-          className={`grid grid-cols-1 items-start gap-6 ${embedded ? 'lg:grid-cols-[0.92fr_1.08fr] text-white' : 'lg:grid-cols-[1.2fr_1fr]'}`}
+          className={`grid grid-cols-1 gap-6 ${embedded ? 'lg:grid-cols-[0.92fr_1.08fr] lg:items-stretch text-white' : 'lg:grid-cols-[1.2fr_1fr] items-start'}`}
         >
           <div
             className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-4 md:p-5 ${
-              embedded ? 'lg:self-start lg:h-fit' : ''
+              embedded ? 'lg:h-[560px]' : ''
             }`}
           >
             <div className="flex items-center justify-between mb-4">
@@ -457,7 +457,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
 
           <div
             className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-5 ${
-              embedded ? 'lg:max-h-[78vh] lg:overflow-y-auto lg:pr-3' : ''
+              embedded ? 'lg:h-[560px] lg:overflow-y-auto lg:pr-3' : ''
             }`}
           >
             <h3 className="text-xl font-black text-slate-900 dark:text-white">
