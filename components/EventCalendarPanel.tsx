@@ -380,7 +380,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
           </div>
         )}
 
-        <div className={`grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-6 ${embedded ? 'text-white' : ''}`}>
+        <div className={`grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] items-start gap-6 ${embedded ? 'text-white' : ''}`}>
           <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-4 md:p-5">
             <div className="flex items-center justify-between mb-4">
               <button
@@ -449,7 +449,11 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-5">
+          <div
+            className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-5 ${
+              embedded ? 'lg:max-h-[78vh] lg:overflow-y-auto lg:pr-3' : ''
+            }`}
+          >
             <h3 className="text-xl font-black text-slate-900 dark:text-white">
               {formatISODateLabel(activeDate)}
             </h3>
