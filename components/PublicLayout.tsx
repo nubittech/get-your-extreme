@@ -15,46 +15,46 @@ const PublicLayout: React.FC = () => {
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden font-display">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-solid border-slate-200 dark:border-[#283239] bg-white/80 dark:bg-[#101a22]/80 backdrop-blur-md px-6 md:px-10 py-3">
+      <header className="absolute top-0 z-50 w-full px-6 md:px-10 py-4">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <img src={MEDIA_ASSETS.logo} alt="Get Your Extreme logo" className="size-10 rounded-md object-cover ring-1 ring-slate-200 dark:ring-white/10 group-hover:scale-105 transition-transform" />
-            <h2 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">GET YOUR EXTREME</h2>
-          </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
+          <div className="hidden md:flex flex-1 justify-start gap-8 items-center">
             <nav className="flex items-center gap-8">
-              <Link to="/" className={`text-sm font-medium transition-colors ${isActive('/') ? '' : 'text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white'}`} style={isActive('/') ? { color: theme.accent } : undefined}>Home</Link>
-              <Link to="/routes" className={`text-sm font-medium transition-colors ${isActive('/routes') ? '' : 'text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white'}`} style={isActive('/routes') ? { color: theme.accent } : undefined}>Routes</Link>
-              <Link to="/gallery" className={`text-sm font-medium transition-colors ${isActive('/gallery') ? '' : 'text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white'}`} style={isActive('/gallery') ? { color: theme.accent } : undefined}>Gallery</Link>
-              <Link to="/shop" className={`text-sm font-medium transition-colors ${isActive('/shop') ? '' : 'text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white'}`} style={isActive('/shop') ? { color: theme.accent } : undefined}>Shop</Link>
-              <Link to="/admin" className={`text-sm font-medium transition-colors ${isActive('/admin') ? '' : 'text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white'}`} style={isActive('/admin') ? { color: theme.accent } : undefined}>Admin</Link>
+              <Link to="/" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/') ? { color: theme.accent } : undefined}>Home</Link>
+              <Link to="/routes" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/routes') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/routes') ? { color: theme.accent } : undefined}>Routes</Link>
+              <Link to="/gallery" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/gallery') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/gallery') ? { color: theme.accent } : undefined}>Gallery</Link>
+              <Link to="/shop" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/shop') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/shop') ? { color: theme.accent } : undefined}>Shop</Link>
+              <Link to="/admin" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/admin') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/admin') ? { color: theme.accent } : undefined}>Admin</Link>
             </nav>
             <a
               href="/#booking-form"
-              className="flex min-w-[140px] items-center justify-center rounded-lg h-10 px-5 text-white text-sm font-bold shadow-lg hover:brightness-110 transition-all"
+              className="flex min-w-[160px] items-center justify-center rounded-lg h-10 px-5 text-white text-sm font-bold shadow-lg hover:brightness-110 transition-all"
               style={{ backgroundColor: theme.accent }}
             >
               Reservation Form
             </a>
           </div>
 
+          {/* Logo */}
+          <Link to="/" className="ml-auto flex items-center justify-end group">
+            <img src={MEDIA_ASSETS.logo} alt="Get Your Extreme logo" className="h-60 w-60 object-contain drop-shadow-2xl group-hover:scale-105 transition-transform" />
+          </Link>
+
           {/* Mobile Menu Button */}
-          <div className="md:hidden text-slate-900 dark:text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <div className="md:hidden ml-4 text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <span className="material-symbols-outlined cursor-pointer">menu</span>
           </div>
         </div>
 
         {/* Mobile Nav */}
         {isMenuOpen && (
-           <div className="md:hidden absolute top-full left-0 w-full bg-white dark:bg-[#101a22] border-b border-slate-200 dark:border-[#283239] p-4 flex flex-col gap-4 shadow-xl">
-              <Link to="/" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/') ? '' : 'text-slate-600 dark:text-white'}`} style={isActive('/') ? { color: theme.accent } : undefined}>Home</Link>
-              <Link to="/routes" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/routes') ? '' : 'text-slate-600 dark:text-white'}`} style={isActive('/routes') ? { color: theme.accent } : undefined}>Routes</Link>
-              <Link to="/gallery" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/gallery') ? '' : 'text-slate-600 dark:text-white'}`} style={isActive('/gallery') ? { color: theme.accent } : undefined}>Gallery</Link>
-              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/shop') ? '' : 'text-slate-600 dark:text-white'}`} style={isActive('/shop') ? { color: theme.accent } : undefined}>Shop</Link>
-               <Link to="/admin" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/admin') ? '' : 'text-slate-600 dark:text-white'}`} style={isActive('/admin') ? { color: theme.accent } : undefined}>Admin</Link>
+           <div className="md:hidden absolute top-full left-0 w-full bg-[#101a22]/90 backdrop-blur-sm p-4 flex flex-col gap-4 shadow-xl">
+              <Link to="/" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/') ? '' : 'text-white/85'}`} style={isActive('/') ? { color: theme.accent } : undefined}>Home</Link>
+              <Link to="/routes" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/routes') ? '' : 'text-white/85'}`} style={isActive('/routes') ? { color: theme.accent } : undefined}>Routes</Link>
+              <Link to="/gallery" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/gallery') ? '' : 'text-white/85'}`} style={isActive('/gallery') ? { color: theme.accent } : undefined}>Gallery</Link>
+              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/shop') ? '' : 'text-white/85'}`} style={isActive('/shop') ? { color: theme.accent } : undefined}>Shop</Link>
+               <Link to="/admin" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/admin') ? '' : 'text-white/85'}`} style={isActive('/admin') ? { color: theme.accent } : undefined}>Admin</Link>
            </div>
         )}
       </header>
