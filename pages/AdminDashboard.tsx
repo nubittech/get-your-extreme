@@ -1,79 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-
-interface Reservation {
-  id: number;
-  customerName: string;
-  customerPhone: string;
-  activity: string;
-  route: string;
-  date: string;
-  status: string;
-  timestamp: string;
-}
-
-// Default dummy data if localStorage is empty
-const defaultData: Reservation[] = [
-  {
-    id: 101,
-    customerName: "John Doe",
-    customerPhone: "+90 532 123 4567",
-    activity: "Stand Up Paddle (SUP)",
-    route: "Konyaaltı Loop",
-    date: "2023-10-24",
-    status: "Pending",
-    timestamp: "2023-10-23T08:30:00Z"
-  },
-  {
-    id: 102,
-    customerName: "Alice Schmidt",
-    customerPhone: "+49 170 987 6543",
-    activity: "Sea Kayaking",
-    route: "Blue Caves Tour",
-    date: "2023-10-25",
-    status: "Confirmed",
-    timestamp: "2023-10-23T10:00:00Z"
-  },
-  {
-    id: 103,
-    customerName: "Marco Rossi",
-    customerPhone: "+39 333 444 5566",
-    activity: "Scuba Diving",
-    route: "Wreck Site Exploration",
-    date: "2023-10-26",
-    status: "Completed",
-    timestamp: "2023-10-23T20:00:00Z"
-  }
-];
-
-const loadReservations = (): Reservation[] => {
-  const storedData = localStorage.getItem('reservations');
-  if (!storedData) {
-    return defaultData;
-  }
-
-  try {
-    const parsed = JSON.parse(storedData);
-    return Array.isArray(parsed) ? parsed : defaultData;
-  } catch {
-    return defaultData;
-  }
-};
+import { deleteReservation, listReservations } from '../services/reservations';
+import { Reservation } from '../types/reservation';
 
 const AdminDashboard: React.FC = () => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const loadedReservations = loadReservations();
-    setReservations(loadedReservations);
-    localStorage.setItem('reservations', JSON.stringify(loadedReservations));
+    let isMounted = true;
+
+    const fetchReservations = async () => {
+      setIsLoading(true);
+      setLoadError(null);
+      try {
+        const loadedReservations = await listReservations();
+        if (isMounted) {
+          setReservations(loadedReservations);
+        }
+      } catch {
+        if (isMounted) {
+          setLoadError('Reservations could not be loaded.');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchReservations();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const handleDelete = (id: number) => {
-    if(confirm('Are you sure you want to delete this reservation?')) {
-      const updated = reservations.filter(r => r.id !== id);
-      setReservations(updated);
-      localStorage.setItem('reservations', JSON.stringify(updated));
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this reservation?')) {
+      return;
+    }
+
+    try {
+      await deleteReservation(id);
+      setReservations((current) => current.filter((item) => item.id !== id));
+    } catch {
+      alert('Reservation could not be deleted. Please try again.');
     }
   };
 
@@ -85,6 +59,18 @@ const AdminDashboard: React.FC = () => {
       default: return 'bg-amber-500/10 text-amber-500 border-amber-500/20'; // Pending
     }
   };
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredReservations = reservations.filter((item) => {
+    if (!normalizedSearch) return true;
+    return (
+      item.customerName.toLowerCase().includes(normalizedSearch) ||
+      item.customerPhone.toLowerCase().includes(normalizedSearch) ||
+      item.activity.toLowerCase().includes(normalizedSearch) ||
+      item.route.toLowerCase().includes(normalizedSearch) ||
+      item.status.toLowerCase().includes(normalizedSearch)
+    );
+  });
 
   return (
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#f6f7f8] dark:bg-[#101a22]">
@@ -105,19 +91,16 @@ const AdminDashboard: React.FC = () => {
               <div className="text-[#9dadb9] flex border-none bg-slate-200 dark:bg-[#283239] items-center justify-center pl-4 rounded-l-lg">
                 <span className="material-symbols-outlined text-[20px]">search</span>
               </div>
-              <input className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-slate-200 dark:bg-[#283239] focus:border-none h-full placeholder:text-[#9dadb9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal" placeholder="Search reservations..." />
+              <input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-slate-200 dark:bg-[#283239] focus:border-none h-full placeholder:text-[#9dadb9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal"
+                placeholder="Search reservations..."
+              />
             </div>
           </label>
         </div>
         <div className="flex flex-1 justify-end gap-6">
-          <div className="flex gap-2">
-            <button className="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-200 dark:bg-[#283239] text-slate-900 dark:text-white hover:bg-[#1183d4]/20 transition-colors">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <button className="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-200 dark:bg-[#283239] text-slate-900 dark:text-white hover:bg-[#1183d4]/20 transition-colors">
-              <span className="material-symbols-outlined">settings</span>
-            </button>
-          </div>
           <div 
             className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#283239]" 
             style={{backgroundImage: 'url("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop")'}}
@@ -134,25 +117,21 @@ const AdminDashboard: React.FC = () => {
               <p className="text-[#9dadb9] text-xs font-normal">Antalya Water Sports</p>
             </div>
             <nav className="flex flex-col gap-2">
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#1183d4] text-white cursor-pointer">
+              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#1183d4] text-white">
                 <span className="material-symbols-outlined text-[22px]">dashboard</span>
                 <p className="text-sm font-semibold">Dashboard</p>
               </div>
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dadb9] hover:bg-slate-200 dark:hover:bg-[#283239] hover:text-white cursor-pointer transition-all">
-                <span className="material-symbols-outlined text-[22px]">route</span>
-                <p className="text-sm font-medium">Routes</p>
+              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dadb9]">
+                <span className="material-symbols-outlined text-[20px]">route</span>
+                <p className="text-sm font-medium">Route requests are listed below</p>
               </div>
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dadb9] hover:bg-slate-200 dark:hover:bg-[#283239] hover:text-white cursor-pointer transition-all">
-                <span className="material-symbols-outlined text-[22px]">image</span>
-                <p className="text-sm font-medium">Gallery</p>
+              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dadb9]">
+                <span className="material-symbols-outlined text-[20px]">group</span>
+                <p className="text-sm font-medium">Use search to filter by name or route</p>
               </div>
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dadb9] hover:bg-slate-200 dark:hover:bg-[#283239] hover:text-white cursor-pointer transition-all">
-                <span className="material-symbols-outlined text-[22px]">storefront</span>
-                <p className="text-sm font-medium">Shop</p>
-              </div>
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dadb9] hover:bg-slate-200 dark:hover:bg-[#283239] hover:text-white cursor-pointer transition-all mt-4 border-t border-[#283239] pt-6">
-                <span className="material-symbols-outlined text-[22px]">group</span>
-                <p className="text-sm font-medium">Customers</p>
+              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dadb9] mt-4 border-t border-[#283239] pt-6">
+                <span className="material-symbols-outlined text-[20px]">event_available</span>
+                <p className="text-sm font-medium">Status updates will be added with backend</p>
               </div>
             </nav>
           </div>
@@ -173,11 +152,14 @@ const AdminDashboard: React.FC = () => {
               <p className="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Reservations Management</p>
               <p className="text-[#9dadb9] text-base font-normal leading-normal">Manage and track all water sports booking requests in Antalya.</p>
             </div>
-            <button className="bg-[#1183d4] hover:bg-[#1183d4]/80 text-white font-bold py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2">
-              <span className="material-symbols-outlined">add</span>
-              New Reservation
-            </button>
           </div>
+          {loadError && (
+            <div className="px-8 pb-2">
+              <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {loadError}
+              </p>
+            </div>
+          )}
 
           {/* Stats Cards */}
           <div className="flex flex-wrap gap-4 px-8 pb-4">
@@ -198,7 +180,7 @@ const AdminDashboard: React.FC = () => {
                 <span className="material-symbols-outlined text-amber-500">pending_actions</span>
               </div>
               <p className="text-slate-900 dark:text-white tracking-light text-3xl font-bold leading-tight">
-                {reservations.filter(r => r.status === 'Pending').length}
+                {filteredReservations.filter(r => r.status === 'Pending').length}
               </p>
               <div className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-amber-500 text-sm">notifications</span>
@@ -211,27 +193,12 @@ const AdminDashboard: React.FC = () => {
                 <span className="material-symbols-outlined text-emerald-500">payments</span>
               </div>
               <p className="text-slate-900 dark:text-white tracking-light text-3xl font-bold leading-tight">
-                €{reservations.length * 50}
+                €{filteredReservations.length * 50}
               </p>
               <div className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[#0bda5b] text-sm">info</span>
                 <p className="text-[#0bda5b] text-sm font-medium">Based on avg. price</p>
               </div>
-            </div>
-          </div>
-
-          {/* Tabs Section */}
-          <div className="px-8 mt-4">
-            <div className="flex border-b border-slate-200 dark:border-[#3b4954] gap-8">
-              <a className="flex flex-col items-center justify-center border-b-[3px] border-b-[#1183d4] text-[#1183d4] pb-[13px] pt-4" href="#">
-                <p className="text-sm font-bold leading-normal tracking-[0.015em]">All Reservations</p>
-              </a>
-              <a className="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[#9dadb9] hover:text-white pb-[13px] pt-4" href="#">
-                <p className="text-sm font-bold leading-normal tracking-[0.015em]">Today</p>
-              </a>
-              <a className="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[#9dadb9] hover:text-white pb-[13px] pt-4" href="#">
-                <p className="text-sm font-bold leading-normal tracking-[0.015em]">Upcoming</p>
-              </a>
             </div>
           </div>
 
@@ -250,7 +217,7 @@ const AdminDashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-[#283239] text-slate-900 dark:text-white text-sm">
-                  {reservations.map((res) => (
+                  {!isLoading && filteredReservations.map((res) => (
                     <tr key={res.id} className="hover:bg-slate-50 dark:hover:bg-[#283239]/30 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -278,19 +245,22 @@ const AdminDashboard: React.FC = () => {
                       </td>
                     </tr>
                   ))}
-                  {reservations.length === 0 && (
+                  {isLoading && (
                      <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No reservations found.</td>
+                        <td colSpan={6} className="px-6 py-8 text-center text-slate-500">Loading reservations...</td>
+                     </tr>
+                  )}
+                  {!isLoading && filteredReservations.length === 0 && (
+                     <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No reservations found for this filter.</td>
                      </tr>
                   )}
                 </tbody>
               </table>
               <div className="px-6 py-4 border-t border-slate-200 dark:border-[#283239] flex items-center justify-between">
-                <p className="text-xs text-[#9dadb9]">Showing {reservations.length} reservations</p>
-                <div className="flex gap-2">
-                  <button className="px-3 py-1 text-xs border border-[#3b4954] rounded bg-transparent text-slate-600 dark:text-white hover:bg-slate-200 dark:hover:bg-[#283239]">Previous</button>
-                  <button className="px-3 py-1 text-xs border border-[#3b4954] rounded bg-transparent text-slate-600 dark:text-white hover:bg-slate-200 dark:hover:bg-[#283239]">Next</button>
-                </div>
+                <p className="text-xs text-[#9dadb9]">
+                  Showing {filteredReservations.length} of {reservations.length} reservations
+                </p>
               </div>
             </div>
           </div>

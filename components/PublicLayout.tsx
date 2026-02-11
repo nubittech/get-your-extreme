@@ -33,9 +33,12 @@ const PublicLayout: React.FC = () => {
               <Link to="/shop" className={`text-sm font-medium transition-colors ${isActive('/shop') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white/80 hover:text-[#1183d4] dark:hover:text-white'}`}>Shop & Gear</Link>
               <Link to="/admin" className={`text-sm font-medium transition-colors ${isActive('/admin') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white/80 hover:text-[#1183d4] dark:hover:text-white'}`}>Admin</Link>
             </nav>
-            <button className="flex min-w-[100px] cursor-pointer items-center justify-center rounded-lg h-10 px-5 bg-[#1183d4] text-white text-sm font-bold shadow-lg shadow-[#1183d4]/20 hover:brightness-110 transition-all">
-              Book Now
-            </button>
+            <a
+              href="/#booking-form"
+              className="flex min-w-[140px] items-center justify-center rounded-lg h-10 px-5 bg-[#1183d4] text-white text-sm font-bold shadow-lg shadow-[#1183d4]/20 hover:brightness-110 transition-all"
+            >
+              Reservation Form
+            </a>
           </div>
 
           {/* Mobile Menu Button */}
@@ -72,9 +75,33 @@ const PublicLayout: React.FC = () => {
               </div>
               <p className="text-white/40 text-sm">Providing premium water sports experiences along the stunning Antalya coastline since 2018.</p>
               <div className="flex gap-4">
-                <a className="text-white/60 hover:text-[#1183d4] transition-colors" href="#"><span className="material-symbols-outlined">social_leaderboard</span></a>
-                <a className="text-white/60 hover:text-[#1183d4] transition-colors" href="#"><span className="material-symbols-outlined">photo_camera</span></a>
-                <a className="text-white/60 hover:text-[#1183d4] transition-colors" href="#"><span className="material-symbols-outlined">play_circle</span></a>
+                <a
+                  className="text-white/60 hover:text-[#1183d4] transition-colors"
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Instagram"
+                >
+                  <span className="material-symbols-outlined">photo_camera</span>
+                </a>
+                <a
+                  className="text-white/60 hover:text-[#1183d4] transition-colors"
+                  href="https://wa.me/905425550000"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="WhatsApp"
+                >
+                  <span className="material-symbols-outlined">chat</span>
+                </a>
+                <a
+                  className="text-white/60 hover:text-[#1183d4] transition-colors"
+                  href="https://youtube.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="YouTube"
+                >
+                  <span className="material-symbols-outlined">play_circle</span>
+                </a>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-12">
@@ -83,17 +110,17 @@ const PublicLayout: React.FC = () => {
                 <ul className="space-y-2 text-white/40 text-sm">
                   <li><Link className="hover:text-[#1183d4] transition-colors" to="/routes">All Activities</Link></li>
                   <li><Link className="hover:text-[#1183d4] transition-colors" to="/routes">Popular Routes</Link></li>
-                  <li><Link className="hover:text-[#1183d4] transition-colors" to="/gallery">Group Bookings</Link></li>
-                  <li><a className="hover:text-[#1183d4] transition-colors" href="#">Gift Cards</a></li>
+                  <li><a className="hover:text-[#1183d4] transition-colors" href="/#booking-form">Reservation Form</a></li>
+                  <li><Link className="hover:text-[#1183d4] transition-colors" to="/gallery">Gallery</Link></li>
                 </ul>
               </div>
               <div className="space-y-4">
                 <h5 className="font-bold text-white">Support</h5>
                 <ul className="space-y-2 text-white/40 text-sm">
-                  <li><a className="hover:text-[#1183d4] transition-colors" href="#">Safety Guide</a></li>
-                  <li><a className="hover:text-[#1183d4] transition-colors" href="#">FAQ</a></li>
-                  <li><a className="hover:text-[#1183d4] transition-colors" href="#">Contact Us</a></li>
-                  <li><a className="hover:text-[#1183d4] transition-colors" href="#">Terms of Service</a></li>
+                  <li><a className="hover:text-[#1183d4] transition-colors" href="tel:+902425550000">Call Us</a></li>
+                  <li><a className="hover:text-[#1183d4] transition-colors" href="mailto:booking@getyourextreme.com">Email Support</a></li>
+                  <li><a className="hover:text-[#1183d4] transition-colors" href="https://wa.me/905425550000" target="_blank" rel="noreferrer">WhatsApp</a></li>
+                  <li><Link className="hover:text-[#1183d4] transition-colors" to="/admin">Admin Panel</Link></li>
                 </ul>
               </div>
             </div>

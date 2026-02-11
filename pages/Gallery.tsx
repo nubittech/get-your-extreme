@@ -7,25 +7,16 @@ const Gallery: React.FC = () => {
       <div className="flex flex-col gap-4 mb-12">
         <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-[-0.033em] text-slate-900 dark:text-white">Gallery & Lifestyle</h1>
         <p className="text-slate-500 dark:text-[#9dadb9] text-lg max-w-2xl leading-relaxed">
-          More than just a sport, it's a lifestyle. From our legendary SUP breakfasts to deep river explorations in the Amazon of Antalya.
+          Moments from group sessions, route tours, and equipment demos. These visuals help incoming guests choose the right experience before sending a reservation request.
         </p>
       </div>
 
-      {/* Tabs Component */}
-      <div className="mb-10 overflow-x-auto no-scrollbar">
-        <div className="flex border-b border-slate-200 dark:border-[#3b4954] gap-10 whitespace-nowrap">
-          <a className="flex flex-col items-center justify-center border-b-[3px] border-[#1183d4] text-[#1183d4] pb-3 font-bold text-sm tracking-wide" href="#">
-            All Moments
-          </a>
-          <a className="flex flex-col items-center justify-center border-b-[3px] border-transparent text-slate-500 dark:text-[#9dadb9] pb-3 hover:text-[#1183d4] transition-colors font-bold text-sm tracking-wide" href="#">
-            Social Events
-          </a>
-          <a className="flex flex-col items-center justify-center border-b-[3px] border-transparent text-slate-500 dark:text-[#9dadb9] pb-3 hover:text-[#1183d4] transition-colors font-bold text-sm tracking-wide" href="#">
-            River & Forest
-          </a>
-          <a className="flex flex-col items-center justify-center border-b-[3px] border-transparent text-slate-500 dark:text-[#9dadb9] pb-3 hover:text-[#1183d4] transition-colors font-bold text-sm tracking-wide" href="#">
-            Client Cams
-          </a>
+      <div className="mb-10 rounded-xl border border-slate-200 dark:border-[#3b4954] bg-white/60 dark:bg-[#1b232a]/40 px-5 py-4">
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-full bg-[#1183d4]/10 text-[#1183d4] px-3 py-1 text-xs font-bold">Social Events</span>
+          <span className="rounded-full bg-[#1183d4]/10 text-[#1183d4] px-3 py-1 text-xs font-bold">River & Forest</span>
+          <span className="rounded-full bg-[#1183d4]/10 text-[#1183d4] px-3 py-1 text-xs font-bold">Client Moments</span>
+          <span className="rounded-full bg-[#1183d4]/10 text-[#1183d4] px-3 py-1 text-xs font-bold">Gear Sessions</span>
         </div>
       </div>
 
@@ -67,6 +58,12 @@ const Gallery: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-10 text-center">
+        <a href="/#booking-form" className="inline-flex items-center justify-center rounded-lg bg-[#1183d4] px-6 py-3 text-sm font-bold text-white">
+          Send Reservation Request
+        </a>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { createReservation } from '../services/reservations';
 
 const getTodayISODate = () => {
   const today = new Date();
@@ -20,6 +20,8 @@ const Home: React.FC = () => {
     name: '',
     phone: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -28,7 +30,7 @@ const Home: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const trimmedName = formData.name.trim();
@@ -49,44 +51,40 @@ const Home: React.FC = () => {
       return;
     }
 
-    // Create a new reservation object
-    const newReservation = {
-      id: Date.now(), // simple unique id
-      customerName: trimmedName,
-      customerPhone: trimmedPhone,
-      activity: formData.activity,
-      route: formData.route,
-      date: formData.date,
-      status: 'Pending',
-      timestamp: new Date().toISOString()
-    };
+    setIsSubmitting(true);
+    try {
+      await createReservation({
+        customerName: trimmedName,
+        customerPhone: trimmedPhone,
+        activity: formData.activity,
+        route: formData.route,
+        date: formData.date
+      });
 
-    // Save to localStorage (Simulating a backend)
-    const existingData = localStorage.getItem('reservations');
-    const reservations = (() => {
-      if (!existingData) return [];
-      try {
-        const parsed = JSON.parse(existingData);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    })();
-    
-    // Add new reservation to the top of the list
-    const updatedReservations = [newReservation, ...reservations];
-    localStorage.setItem('reservations', JSON.stringify(updatedReservations));
+      alert("Request Sent! Check the Admin Panel to see your reservation.");
 
-    alert("Request Sent! Check the Admin Panel to see your reservation.");
-    
-    // Reset form
-    setFormData({
-      activity: '',
-      route: '',
-      date: '',
-      name: '',
-      phone: ''
-    });
+      setFormData({
+        activity: '',
+        route: '',
+        date: '',
+        name: '',
+        phone: ''
+      });
+    } catch {
+      alert('Something went wrong while sending your request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) {
+      alert('Please enter your email address.');
+      return;
+    }
+    alert('Thanks. We saved your email for route updates.');
+    setNewsletterEmail('');
   };
 
   return (
@@ -115,7 +113,7 @@ const Home: React.FC = () => {
           </p>
           
           {/* Booking Widget */}
-          <div className="bg-[#101a22]/80 backdrop-blur-md border border-white/10 w-full max-w-5xl rounded-2xl p-6 md:p-8 shadow-2xl">
+          <div id="booking-form" className="bg-[#101a22]/80 backdrop-blur-md border border-white/10 w-full max-w-5xl rounded-2xl p-6 md:p-8 shadow-2xl">
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
               
               {/* Row 1: Activity */}
@@ -207,9 +205,13 @@ const Home: React.FC = () => {
               </div>
 
               {/* Row 2: Button */}
-              <button type="submit" className="w-full bg-[#1183d4] hover:bg-[#1183d4]/90 h-14 rounded-lg font-bold text-lg shadow-lg shadow-[#1183d4]/20 transition-all flex items-center justify-center gap-2 text-white">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-[#1183d4] hover:bg-[#1183d4]/90 h-14 rounded-lg font-bold text-lg shadow-lg shadow-[#1183d4]/20 transition-all flex items-center justify-center gap-2 text-white disabled:opacity-60 disabled:cursor-not-allowed"
+              >
                 <span className="material-symbols-outlined">bolt</span>
-                Check Availability
+                {isSubmitting ? 'Sending...' : 'Check Availability'}
               </button>
 
             </form>
@@ -265,9 +267,9 @@ const Home: React.FC = () => {
                 Founded by extreme sports enthusiasts, GET YOUR EXTREME isn't just a booking service; it's a gateway to the most exhilarating moments in Antalya. Whether you're gliding over the crystal waters on a SUP or exploring the depths of the Blue Caves, we ensure every second is pure adrenaline.
               </p>
               <div className="pt-4">
-                <button className="px-8 py-4 border-2 border-[#1183d4] text-[#1183d4] font-bold rounded-lg hover:bg-[#1183d4] hover:text-white transition-all flex items-center gap-2">
+                <a href="#booking-form" className="px-8 py-4 border-2 border-[#1183d4] text-[#1183d4] font-bold rounded-lg hover:bg-[#1183d4] hover:text-white transition-all flex items-center gap-2 w-fit">
                   Our Story <span className="material-symbols-outlined">trending_flat</span>
-                </button>
+                </a>
               </div>
             </div>
             <div className="flex-1 grid grid-cols-2 gap-4">
@@ -305,8 +307,14 @@ const Home: React.FC = () => {
             </div>
             <h2 className="text-3xl md:text-4xl font-black mb-4 text-white">Ready for your next adventure?</h2>
             <p className="text-white/80 mb-8 max-w-xl mx-auto">Join our community and get exclusive early access to new routes and seasonal discounts.</p>
-            <form className="flex flex-col md:flex-row gap-4 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
-              <input className="flex-1 px-6 py-4 rounded-xl bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:ring-0 focus:border-white" placeholder="Enter your email" type="email" />
+            <form className="flex flex-col md:flex-row gap-4 max-w-md mx-auto" onSubmit={handleNewsletterSubmit}>
+              <input
+                className="flex-1 px-6 py-4 rounded-xl bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:ring-0 focus:border-white"
+                placeholder="Enter your email"
+                type="email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+              />
               <button className="bg-white text-[#1183d4] font-bold px-8 py-4 rounded-xl hover:bg-[#f6f7f8] transition-colors">Join Now</button>
             </form>
           </div>

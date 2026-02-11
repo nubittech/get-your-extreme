@@ -2,19 +2,37 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# Get Your Extreme
 
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/drive/1jdeMq9EguP6CYneAXsG1FYsVfLg5Xoko
+React + Vite frontend for booking and managing water sports reservations.
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+Prerequisite: Node.js
 
+1. Install dependencies: `npm install`
+2. Run development server: `npm run dev`
+3. Build for production: `npm run build`
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Reservation Data Mode
+
+The app is now backend-ready with a service layer in `/services/reservations.ts`.
+
+- Default mode: `local` (uses browser `localStorage`)
+- Future mode: `remote` (uses your API/Supabase endpoint)
+
+Configure with `.env.local`:
+
+```env
+VITE_RESERVATIONS_API_MODE=local
+VITE_RESERVATIONS_API_URL=http://localhost:3001
+```
+
+When you are ready to connect backend:
+
+1. Set `VITE_RESERVATIONS_API_MODE=remote`
+2. Set `VITE_RESERVATIONS_API_URL` to your backend base URL
+3. Implement these endpoints:
+   - `GET /reservations`
+   - `POST /reservations`
+   - `DELETE /reservations/:id`
