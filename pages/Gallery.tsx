@@ -1,67 +1,81 @@
 import React from 'react';
+import { useExperience } from '../context/ExperienceContext';
+import { ExperienceCategory } from '../data/experienceThemes';
+
+type GalleryItem = {
+  image: string;
+  caption: string;
+};
+
+const galleryByCategory: Record<ExperienceCategory, GalleryItem[]> = {
+  SUP: [
+    { image: 'https://lh3.googleusercontent.com/d/1COxd_ojMEjpyNVJNqyqUzzLebzO2i4Lr', caption: 'SUP Breakfast Club' },
+    { image: 'https://lh3.googleusercontent.com/d/1JKLnxGLuMQ09TzBA4NAcC2d3ymo7ny4l', caption: 'River SUP Session' },
+    { image: 'https://lh3.googleusercontent.com/d/197AkaC7nRTjFXay5NKuW4LfamS7Yno_1', caption: 'Group Coast Paddle' },
+    { image: 'https://lh3.googleusercontent.com/d/1or3oVMFBX2BCPtjDpVc3BlLFySt7yWJV', caption: 'Equipment Day' }
+  ],
+  BIKE: [
+    { image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=2070&auto=format&fit=crop', caption: 'City Ride Briefing' },
+    { image: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?q=80&w=1974&auto=format&fit=crop', caption: 'Coastal Group Ride' },
+    { image: 'https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?q=80&w=1974&auto=format&fit=crop', caption: 'Forest Training Loop' },
+    { image: 'https://images.unsplash.com/photo-1511994298241-608e28f14fde?q=80&w=2070&auto=format&fit=crop', caption: 'Team Ride Session' }
+  ],
+  SKI: [
+    { image: 'https://images.unsplash.com/photo-1478860409698-8707f313ee8b?q=80&w=1974&auto=format&fit=crop', caption: 'Ski Group Warmup' },
+    { image: 'https://images.unsplash.com/photo-1453306458620-5bbef13a5bca?q=80&w=1974&auto=format&fit=crop', caption: 'Slope Coaching' },
+    { image: 'https://images.unsplash.com/photo-1488441770602-aed21fc49bd5?q=80&w=1974&auto=format&fit=crop', caption: 'Winter Program Day' },
+    { image: 'https://images.unsplash.com/photo-1455156218388-5e61b526818b?q=80&w=2070&auto=format&fit=crop', caption: 'Mountain Team Event' }
+  ]
+};
 
 const Gallery: React.FC = () => {
+  const { activeCategory, activeDate, theme } = useExperience();
+  const items = galleryByCategory[activeCategory];
+
   return (
     <div className="mx-auto max-w-[1200px] px-6 py-12 md:py-20">
-      {/* PageHeading Component */}
       <div className="flex flex-col gap-4 mb-12">
-        <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-[-0.033em] text-slate-900 dark:text-white">Gallery & Lifestyle</h1>
+        <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-[-0.033em] text-slate-900 dark:text-white">
+          {theme.label} Gallery
+        </h1>
         <p className="text-slate-500 dark:text-[#9dadb9] text-lg max-w-2xl leading-relaxed">
-          Moments from group sessions, route tours, and equipment demos. These visuals help incoming guests choose the right experience before sending a reservation request.
+          {theme.galleryHeadline} Active date filter: {activeDate}.
         </p>
       </div>
 
       <div className="mb-10 rounded-xl border border-slate-200 dark:border-[#3b4954] bg-white/60 dark:bg-[#1b232a]/40 px-5 py-4">
         <div className="flex flex-wrap gap-2">
-          <span className="rounded-full bg-[#1183d4]/10 text-[#1183d4] px-3 py-1 text-xs font-bold">Social Events</span>
-          <span className="rounded-full bg-[#1183d4]/10 text-[#1183d4] px-3 py-1 text-xs font-bold">River & Forest</span>
-          <span className="rounded-full bg-[#1183d4]/10 text-[#1183d4] px-3 py-1 text-xs font-bold">Client Moments</span>
-          <span className="rounded-full bg-[#1183d4]/10 text-[#1183d4] px-3 py-1 text-xs font-bold">Gear Sessions</span>
+          <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: theme.accentSoft, color: theme.accent }}>
+            {theme.label} Program
+          </span>
+          <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: theme.accentSoft, color: theme.accent }}>
+            Group Sessions
+          </span>
+          <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: theme.accentSoft, color: theme.accent }}>
+            Equipment Moments
+          </span>
         </div>
       </div>
 
-      {/* ImageGrid / Gallery (Masonry Style) */}
       <div className="columns-2 md:columns-3 gap-4 space-y-4">
-        <div className="break-inside-avoid">
-          <div className="group relative overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 shadow-sm transition-transform hover:scale-[1.02]">
-            {/* UPDATED: Google Drive Image 1 */}
-            <img className="w-full object-cover" src="https://lh3.googleusercontent.com/d/1COxd_ojMEjpyNVJNqyqUzzLebzO2i4Lr" alt="Breakfast on SUP" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-              <span className="text-white text-sm font-semibold">SUP Breakfast Club</span>
+        {items.map((item) => (
+          <div key={item.image} className="break-inside-avoid">
+            <div className="group relative overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 shadow-sm transition-transform hover:scale-[1.02]">
+              <img className="w-full object-cover" src={item.image} alt={item.caption} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                <span className="text-white text-sm font-semibold">{item.caption}</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="break-inside-avoid">
-          <div className="group relative overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 shadow-sm transition-transform hover:scale-[1.02]">
-            {/* UPDATED: Google Drive Image 2 */}
-            <img className="w-full object-cover" src="https://lh3.googleusercontent.com/d/1JKLnxGLuMQ09TzBA4NAcC2d3ymo7ny4l" alt="River SUP" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-              <span className="text-white text-sm font-semibold">Sığla Forest Expedition</span>
-            </div>
-          </div>
-        </div>
-        <div className="break-inside-avoid">
-          <div className="group relative overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 shadow-sm transition-transform hover:scale-[1.02]">
-            {/* UPDATED: Google Drive Image 3 */}
-            <img className="w-full object-cover" src="https://lh3.googleusercontent.com/d/197AkaC7nRTjFXay5NKuW4LfamS7Yno_1" alt="Group of friends paddleboarding" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-              <span className="text-white text-sm font-semibold">Team Building</span>
-            </div>
-          </div>
-        </div>
-        <div className="break-inside-avoid">
-          <div className="group relative overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 shadow-sm transition-transform hover:scale-[1.02]">
-             {/* UPDATED: Google Drive Image 4 */}
-            <img className="w-full object-cover" src="https://lh3.googleusercontent.com/d/1or3oVMFBX2BCPtjDpVc3BlLFySt7yWJV" alt="Skatinger Board" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-              <span className="text-white text-sm font-semibold">Skatinger Equipment</span>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
       <div className="mt-10 text-center">
-        <a href="/#booking-form" className="inline-flex items-center justify-center rounded-lg bg-[#1183d4] px-6 py-3 text-sm font-bold text-white">
+        <a
+          href="/#booking-form"
+          className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-bold text-white"
+          style={{ backgroundColor: theme.accent }}
+        >
           Send Reservation Request
         </a>
       </div>

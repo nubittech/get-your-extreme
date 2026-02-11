@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createReservation } from '../services/reservations';
+import { useExperience } from '../context/ExperienceContext';
 
 const getTodayISODate = () => {
   const today = new Date();
@@ -10,11 +11,12 @@ const getTodayISODate = () => {
 const isValidPhoneNumber = (value: string) => /^[+]?[\d\s()-]{7,20}$/.test(value.trim());
 
 const SpecialRequestDrawer: React.FC = () => {
+  const { activeCategory, activeDate, setActiveDate } = useExperience();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     category: 'SUP',
-    preferredDate: '',
+    preferredDate: activeDate,
     name: '',
     phone: '',
     participants: '1',
@@ -23,6 +25,14 @@ const SpecialRequestDrawer: React.FC = () => {
 
   const minDate = getTodayISODate();
 
+  useEffect(() => {
+    setFormData((current) => ({
+      ...current,
+      category: activeCategory === 'BIKE' ? 'Bisiklet' : activeCategory === 'SKI' ? 'Kayak' : 'SUP',
+      preferredDate: activeDate
+    }));
+  }, [activeCategory, activeDate]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -30,6 +40,9 @@ const SpecialRequestDrawer: React.FC = () => {
       ...current,
       [e.target.name]: e.target.value
     }));
+    if (e.target.name === 'preferredDate') {
+      setActiveDate(e.target.value);
+    }
   };
 
   const resetForm = () => {

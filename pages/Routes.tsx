@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useExperience } from '../context/ExperienceContext';
+import { ExperienceCategory } from '../data/experienceThemes';
 
 type RouteItem = {
   id: string;
@@ -17,90 +19,102 @@ type RouteItem = {
   image: string;
 };
 
-const routesData: RouteItem[] = [
-  {
-    id: 'konyaalti',
-    title: 'Konyaalti Loop & Social',
-    tag: 'Beginner Friendly',
-    tagColor: 'bg-emerald-500',
-    description:
-      'A relaxing circular route starting and finishing at Beach Park. Great for first-time groups, social paddles and calm-day sessions.',
-    stats: {
-      distance: '3 KM',
-      time: '2 Hours',
-      level: 'Easy',
-      type: 'Loop'
+const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
+  SUP: [
+    {
+      id: 'sup-konyaalti',
+      title: 'Konyaalti Loop and Social',
+      tag: 'Beginner Friendly',
+      tagColor: '#16a34a',
+      description:
+        'A relaxed loop route ideal for first-time paddlers and mixed groups.',
+      stats: { distance: '3 KM', time: '2 Hours', level: 'Easy', type: 'Loop' },
+      meetingPoint: 'Beach Park Main Gate',
+      bestFor: 'Families and social sessions',
+      image: 'https://lh3.googleusercontent.com/d/1-k_VFt1TA_lg1Nku979YKOldNObLOz_R'
     },
-    meetingPoint: 'Beach Park Main Gate',
-    bestFor: 'Families, teams, and first-time paddlers',
-    image: 'https://lh3.googleusercontent.com/d/1-k_VFt1TA_lg1Nku979YKOldNObLOz_R'
-  },
-  {
-    id: 'cliffs',
-    title: 'Antalya Cliffs (Falez)',
-    tag: 'Most Popular',
-    tagColor: 'bg-[#1183d4]',
-    description:
-      'A one-way coastal route with cliff views and open-water sections. This is our most requested premium trip.',
-    stats: {
-      distance: '7 KM',
-      time: '3-4 Hours',
-      level: 'Moderate',
-      type: 'One Way'
+    {
+      id: 'sup-cliffs',
+      title: 'Antalya Cliffs (Falez)',
+      tag: 'Most Popular',
+      tagColor: '#1183d4',
+      description:
+        'One-way route with open-water views and premium coastal scenery.',
+      stats: { distance: '7 KM', time: '3-4 Hours', level: 'Moderate', type: 'One Way' },
+      meetingPoint: 'Beach Park Start Zone',
+      bestFor: 'Active groups with prior paddling',
+      image: 'https://lh3.googleusercontent.com/d/1RELZVyCj6EeQBjyMn7l_Mq1NsmRRpSQu'
+    }
+  ],
+  BIKE: [
+    {
+      id: 'bike-old-town',
+      title: 'Old Town Loop',
+      tag: 'City Ride',
+      tagColor: '#d97706',
+      description:
+        'Historical city loop with controlled speed and frequent photo stops.',
+      stats: { distance: '12 KM', time: '2 Hours', level: 'Easy', type: 'City Loop' },
+      meetingPoint: 'Kaleici Start Hub',
+      bestFor: 'Visitors and mixed fitness groups',
+      image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=2070&auto=format&fit=crop'
     },
-    meetingPoint: 'Beach Park Start Zone',
-    bestFor: 'Active groups with prior paddling experience',
-    image: 'https://lh3.googleusercontent.com/d/1RELZVyCj6EeQBjyMn7l_Mq1NsmRRpSQu'
-  },
-  {
-    id: 'lara',
-    title: 'Lara Beach - Duden Falls',
-    tag: 'Expert Choice',
-    tagColor: 'bg-amber-500',
-    description:
-      'A route focused on scenery and rhythm, ending near the waterfall line. Best with stable weather and guided support.',
-    stats: {
-      distance: '3 KM',
-      time: '2:30 Hours',
-      level: 'Challenging',
-      type: 'Coastal'
+    {
+      id: 'bike-forest',
+      title: 'Forest Trail Session',
+      tag: 'MTB Route',
+      tagColor: '#b45309',
+      description:
+        'Forest terrain for MTB-oriented programs with guide checkpoints.',
+      stats: { distance: '18 KM', time: '3 Hours', level: 'Moderate', type: 'Trail' },
+      meetingPoint: 'Forest Access Gate',
+      bestFor: 'Nature-focused active teams',
+      image: 'https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?q=80&w=1974&auto=format&fit=crop'
+    }
+  ],
+  SKI: [
+    {
+      id: 'ski-easy-line',
+      title: 'Saklikent Easy Line',
+      tag: 'Starter Program',
+      tagColor: '#0ea5a4',
+      description:
+        'Low-slope area designed for first lessons and family sessions.',
+      stats: { distance: '5 KM', time: '2 Hours', level: 'Easy', type: 'Slope Line' },
+      meetingPoint: 'Saklikent Base Point',
+      bestFor: 'First-time ski participants',
+      image: 'https://images.unsplash.com/photo-1453306458620-5bbef13a5bca?q=80&w=1974&auto=format&fit=crop'
     },
-    meetingPoint: 'Lara Beach Operations Point',
-    bestFor: 'Experienced paddlers and adventure groups',
-    image: 'https://lh3.googleusercontent.com/d/1wBEPK2pXm5J9v47Tb91lnFWbvWCzEWoo'
-  },
-  {
-    id: 'river',
-    title: 'Sigla Forest (Kargi Koyu)',
-    tag: 'Nature Escape',
-    tagColor: 'bg-cyan-600',
-    description:
-      'A peaceful river-flow route inside forest scenery. Flat-water profile with long, smooth paddling segments.',
-    stats: {
-      distance: '9 KM',
-      time: '1 Hour (River)',
-      level: 'All Levels',
-      type: 'River Flow'
-    },
-    meetingPoint: 'Kargi Village Riverside',
-    bestFor: 'Nature-focused groups and company outings',
-    image: 'https://lh3.googleusercontent.com/d/1hDCVzLvRIy3PIj02MM3CLgy7FK5iwDp8'
-  }
-];
+    {
+      id: 'ski-advanced',
+      title: 'Alpine Advanced Zone',
+      tag: 'Advanced',
+      tagColor: '#0f766e',
+      description:
+        'Steeper profile with instructor-led pace and safety staging.',
+      stats: { distance: '9 KM', time: '3 Hours', level: 'Hard', type: 'Mountain Run' },
+      meetingPoint: 'Upper Lift Exit',
+      bestFor: 'Experienced ski groups',
+      image: 'https://images.unsplash.com/photo-1478860409698-8707f313ee8b?q=80&w=1974&auto=format&fit=crop'
+    }
+  ]
+};
 
 const RoutesPage: React.FC = () => {
+  const { activeCategory, activeDate, theme } = useExperience();
   const [selectedRoute, setSelectedRoute] = useState<RouteItem | null>(null);
+  const routesData = routesByCategory[activeCategory];
 
   return (
     <div className="mx-auto max-w-[1200px] w-full px-6 py-10">
       <div className="mb-12">
         <div className="flex flex-col gap-4">
           <h1 className="text-slate-900 dark:text-white text-5xl font-black leading-tight tracking-tight">
-            Routes and Maps
+            {theme.label} Routes and Maps
           </h1>
           <p className="text-slate-500 dark:text-[#9dadb9] text-lg max-w-2xl leading-relaxed">
-            Groups can review every route before submitting a reservation request.
-            Click a route card to open full details without leaving this page.
+            Active day: {activeDate}. Review route details and open expanded briefing
+            in-page before sending a reservation request.
           </p>
         </div>
       </div>
@@ -123,7 +137,8 @@ const RoutesPage: React.FC = () => {
                 ></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent lg:hidden"></div>
                 <div
-                  className={`absolute top-6 left-6 ${route.tagColor} px-4 py-1.5 rounded-full text-xs font-bold text-white uppercase tracking-widest shadow-lg`}
+                  className="absolute top-6 left-6 px-4 py-1.5 rounded-full text-xs font-bold text-white uppercase tracking-widest shadow-lg"
+                  style={{ backgroundColor: route.tagColor }}
                 >
                   {route.tag}
                 </div>
@@ -134,11 +149,9 @@ const RoutesPage: React.FC = () => {
               </button>
 
               <div className="w-full lg:w-[45%] p-8 md:p-12 flex flex-col justify-center">
-                <div className="flex items-center gap-2 mb-4 text-[#1183d4]">
+                <div className="flex items-center gap-2 mb-4" style={{ color: theme.accent }}>
                   <span className="material-symbols-outlined">explore</span>
-                  <span className="text-xs font-bold uppercase tracking-widest">
-                    Route {index + 1}
-                  </span>
+                  <span className="text-xs font-bold uppercase tracking-widest">Route {index + 1}</span>
                 </div>
                 <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-4 leading-tight">
                   {route.title}
@@ -151,28 +164,28 @@ const RoutesPage: React.FC = () => {
                   <div className="flex flex-col">
                     <span className="text-slate-400 text-xs font-bold uppercase">Distance</span>
                     <div className="flex items-center gap-1 text-slate-900 dark:text-white font-bold text-lg">
-                      <span className="material-symbols-outlined text-[#1183d4] text-base">straighten</span>
+                      <span className="material-symbols-outlined text-base" style={{ color: theme.accent }}>straighten</span>
                       {route.stats.distance}
                     </div>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-slate-400 text-xs font-bold uppercase">Duration</span>
                     <div className="flex items-center gap-1 text-slate-900 dark:text-white font-bold text-lg">
-                      <span className="material-symbols-outlined text-[#1183d4] text-base">schedule</span>
+                      <span className="material-symbols-outlined text-base" style={{ color: theme.accent }}>schedule</span>
                       {route.stats.time}
                     </div>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-slate-400 text-xs font-bold uppercase">Level</span>
                     <div className="flex items-center gap-1 text-slate-900 dark:text-white font-bold text-lg">
-                      <span className="material-symbols-outlined text-[#1183d4] text-base">signal_cellular_alt</span>
+                      <span className="material-symbols-outlined text-base" style={{ color: theme.accent }}>signal_cellular_alt</span>
                       {route.stats.level}
                     </div>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-slate-400 text-xs font-bold uppercase">Type</span>
                     <div className="flex items-center gap-1 text-slate-900 dark:text-white font-bold text-lg">
-                      <span className="material-symbols-outlined text-[#1183d4] text-base">alt_route</span>
+                      <span className="material-symbols-outlined text-base" style={{ color: theme.accent }}>alt_route</span>
                       {route.stats.type}
                     </div>
                   </div>
@@ -181,7 +194,8 @@ const RoutesPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setSelectedRoute(route)}
-                  className="w-full bg-[#1183d4] hover:bg-[#0d6db3] text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-[#1183d4]/20 flex items-center justify-center gap-2"
+                  className="w-full text-white font-bold py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+                  style={{ backgroundColor: theme.accent }}
                 >
                   View Detailed Brief
                 </button>
@@ -189,40 +203,6 @@ const RoutesPage: React.FC = () => {
             </div>
           </article>
         ))}
-      </div>
-
-      <div className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-[#1183d4] rounded-2xl p-10 text-white relative overflow-hidden">
-          <div className="absolute -right-10 -bottom-10 opacity-10">
-            <span className="material-symbols-outlined text-[200px]">medical_services</span>
-          </div>
-          <h3 className="text-2xl font-bold mb-4">Safety First</h3>
-          <p className="opacity-90 leading-relaxed mb-6">
-            All routes include briefing, life vest check, and weather confirmation.
-            For high wind days, our team proposes route changes before check-in.
-          </p>
-          <a href="/#booking-form" className="bg-white text-[#1183d4] px-6 py-3 rounded-lg font-bold text-sm inline-block">
-            Open Reservation Form
-          </a>
-        </div>
-        <div className="bg-slate-100 dark:bg-[#1c2227] rounded-2xl p-10 border border-slate-200 dark:border-white/5 relative overflow-hidden">
-          <div className="absolute -right-10 -bottom-10 opacity-5">
-            <span className="material-symbols-outlined text-[200px] text-slate-900 dark:text-white">groups</span>
-          </div>
-          <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Group and Corporate</h3>
-          <p className="text-slate-600 dark:text-[#9dadb9] leading-relaxed mb-6">
-            For groups above 8 participants, we prepare custom timing, safety ratio,
-            and equipment planning.
-          </p>
-          <a
-            href="https://wa.me/905425550000?text=Hello%2C%20we%20want%20a%20group%20route%20quotation."
-            target="_blank"
-            rel="noreferrer"
-            className="border-2 border-[#1183d4] text-[#1183d4] px-6 py-3 rounded-lg font-bold text-sm hover:bg-[#1183d4] hover:text-white transition-all inline-block"
-          >
-            Request Group Quote
-          </a>
-        </div>
       </div>
 
       {selectedRoute && (
@@ -247,7 +227,6 @@ const RoutesPage: React.FC = () => {
                 alt={selectedRoute.title}
                 className="w-full h-[240px] md:h-[360px] object-cover rounded-xl"
               />
-
               <p className="text-slate-700 dark:text-slate-200 leading-relaxed">
                 {selectedRoute.description}
               </p>
@@ -273,11 +252,11 @@ const RoutesPage: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="rounded-xl bg-slate-50 dark:bg-[#11181e] p-4 border border-slate-200 dark:border-white/10">
-                  <p className="text-xs uppercase font-bold text-[#1183d4]">Meeting Point</p>
+                  <p className="text-xs uppercase font-bold" style={{ color: theme.accent }}>Meeting Point</p>
                   <p className="mt-2 text-slate-700 dark:text-slate-200">{selectedRoute.meetingPoint}</p>
                 </div>
                 <div className="rounded-xl bg-slate-50 dark:bg-[#11181e] p-4 border border-slate-200 dark:border-white/10">
-                  <p className="text-xs uppercase font-bold text-[#1183d4]">Best For</p>
+                  <p className="text-xs uppercase font-bold" style={{ color: theme.accent }}>Best For</p>
                   <p className="mt-2 text-slate-700 dark:text-slate-200">{selectedRoute.bestFor}</p>
                 </div>
               </div>
@@ -285,7 +264,8 @@ const RoutesPage: React.FC = () => {
               <div className="flex flex-wrap gap-3">
                 <a
                   href="/#booking-form"
-                  className="inline-flex items-center justify-center rounded-lg bg-[#1183d4] px-5 py-3 text-sm font-bold text-white"
+                  className="inline-flex items-center justify-center rounded-lg px-5 py-3 text-sm font-bold text-white"
+                  style={{ backgroundColor: theme.accent }}
                 >
                   Request This Route
                 </a>
@@ -293,7 +273,8 @@ const RoutesPage: React.FC = () => {
                   href="https://wa.me/905425550000?text=Hello%2C%20we%20want%20details%20about%20this%20route."
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-lg border border-[#1183d4] px-5 py-3 text-sm font-bold text-[#1183d4]"
+                  className="inline-flex items-center justify-center rounded-lg border px-5 py-3 text-sm font-bold"
+                  style={{ borderColor: theme.accent, color: theme.accent }}
                 >
                   Ask on WhatsApp
                 </a>

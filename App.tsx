@@ -6,6 +6,7 @@ import Gallery from './pages/Gallery';
 import Shop from './pages/Shop';
 import AdminDashboard from './pages/AdminDashboard';
 import PublicLayout from './components/PublicLayout';
+import { ExperienceProvider } from './context/ExperienceContext';
 
 // Failsafe component to handle legacy hash URLs if the index.html script fails
 const HashRedirectHandler = () => {
@@ -21,24 +22,26 @@ const HashRedirectHandler = () => {
 
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <HashRedirectHandler />
-      <Routes>
-        {/* Public Routes wrapped in PublicLayout */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/routes" element={<RoutesPage />} />
-          <Route path="/gallery" element={<Gallery />} />
-          <Route path="/shop" element={<Shop />} />
-        </Route>
+    <ExperienceProvider>
+      <BrowserRouter>
+        <HashRedirectHandler />
+        <Routes>
+          {/* Public Routes wrapped in PublicLayout */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/routes" element={<RoutesPage />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/shop" element={<Shop />} />
+          </Route>
 
-        {/* Admin Route - Standalone layout */}
-        <Route path="/admin" element={<AdminDashboard />} />
+          {/* Admin Route - Standalone layout */}
+          <Route path="/admin" element={<AdminDashboard />} />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ExperienceProvider>
   );
 };
 

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createReservation } from '../services/reservations';
+import { useExperience } from '../context/ExperienceContext';
 
 const getTodayISODate = () => {
   const today = new Date();
@@ -10,13 +11,14 @@ const getTodayISODate = () => {
 const isValidPhoneNumber = (value: string) => /^[+]?[\d\s()-]{7,20}$/.test(value.trim());
 
 const Home: React.FC = () => {
+  const { activeCategory, activeDate, setActiveDate, theme } = useExperience();
   const minDate = getTodayISODate();
 
   // Form State
   const [formData, setFormData] = useState({
     activity: '',
     route: '',
-    date: '',
+    date: activeDate,
     name: '',
     phone: ''
   });
@@ -24,11 +26,23 @@ const Home: React.FC = () => {
   const [newsletterEmail, setNewsletterEmail] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.target.name === 'date') {
+      setActiveDate(e.target.value);
+    }
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
+
+  useEffect(() => {
+    setFormData((current) => ({
+      ...current,
+      activity: theme.activities.includes(current.activity) ? current.activity : '',
+      route: theme.routes.includes(current.route) ? current.route : '',
+      date: activeDate
+    }));
+  }, [activeCategory, activeDate, theme.activities, theme.routes]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,8 +108,8 @@ const Home: React.FC = () => {
         {/* Background Image - Using img tag for reliability */}
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1543857778-c4a1a3e0b2eb?q=80&w=2010&auto=format&fit=crop" 
-            alt="Crystal clear turquoise waters of Antalya" 
+            src={theme.heroImage}
+            alt={`${theme.label} hero cover`}
             className="w-full h-full object-cover"
             loading="eager"
           />
@@ -106,10 +120,13 @@ const Home: React.FC = () => {
         {/* Hero Content */}
         <div className="relative z-10 w-full max-w-[1200px] px-6 py-12 flex flex-col items-center text-center">
           <h1 className="text-white text-5xl md:text-7xl font-black leading-tight tracking-[-0.033em] mb-6 drop-shadow-2xl">
-            Experience the Thrill of <br/><span className="text-[#1183d4] drop-shadow-md">Antalya's Waters</span>
+            {theme.heroTitle.split(' ').slice(0, 4).join(' ')} <br/>
+            <span className="drop-shadow-md" style={{ color: theme.accent }}>
+              {theme.heroTitle.split(' ').slice(4).join(' ')}
+            </span>
           </h1>
           <p className="text-white text-lg md:text-xl font-medium leading-relaxed max-w-2xl mb-12 drop-shadow-lg text-shadow-sm">
-            Premium SUP, Scuba Diving, and sea adventures tailored for the ultimate water sports enthusiast.
+            {theme.heroSubtitle}
           </p>
           
           {/* Booking Widget */}
@@ -127,10 +144,9 @@ const Home: React.FC = () => {
                     className="w-full rounded-lg text-white border border-white/10 bg-white/5 focus:border-[#1183d4] focus:ring-0 h-14 px-4 text-base appearance-none"
                   >
                     <option disabled value="">Select Activity</option>
-                    <option value="Stand Up Paddle (SUP)">Stand Up Paddle (SUP)</option>
-                    <option value="Scuba Diving">Scuba Diving</option>
-                    <option value="Sea Kayaking">Sea Kayaking</option>
-                    <option value="Boat Safari">Boat Safari</option>
+                    {theme.activities.map((activity) => (
+                      <option key={activity} value={activity}>{activity}</option>
+                    ))}
                   </select>
                   <span className="material-symbols-outlined absolute right-3 top-4 pointer-events-none text-white/50">keyboard_arrow_down</span>
                 </div>
@@ -147,11 +163,9 @@ const Home: React.FC = () => {
                     className="w-full rounded-lg text-white border border-white/10 bg-white/5 focus:border-[#1183d4] focus:ring-0 h-14 px-4 text-base appearance-none"
                   >
                     <option disabled value="">Choose Route</option>
-                    <option value="Antalya Cliffs">Antalya Cliffs</option>
-                    <option value="Blue Caves Tour">Blue Caves Tour</option>
-                    <option value="Suluada Island">Suluada Island</option>
-                    <option value="Wreck Site Exploration">Wreck Site Exploration</option>
-                    <option value="River Expedition">River Expedition</option>
+                    {theme.routes.map((route) => (
+                      <option key={route} value={route}>{route}</option>
+                    ))}
                   </select>
                   <span className="material-symbols-outlined absolute right-3 top-4 pointer-events-none text-white/50">location_on</span>
                 </div>
@@ -208,7 +222,8 @@ const Home: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#1183d4] hover:bg-[#1183d4]/90 h-14 rounded-lg font-bold text-lg shadow-lg shadow-[#1183d4]/20 transition-all flex items-center justify-center gap-2 text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full h-14 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ backgroundColor: theme.accent }}
               >
                 <span className="material-symbols-outlined">bolt</span>
                 {isSubmitting ? 'Sending...' : 'Check Availability'}
@@ -216,9 +231,9 @@ const Home: React.FC = () => {
 
             </form>
             <div className="mt-6 flex flex-wrap gap-4 text-xs text-white/60 justify-center md:justify-start">
-              <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[#1183d4] text-sm">verified</span> Equipment Included</span>
-              <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[#1183d4] text-sm">verified</span> Certified Instructors</span>
-              <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[#1183d4] text-sm">verified</span> Insurance Coverage</span>
+              <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm" style={{ color: theme.accent }}>verified</span> Category: {theme.label}</span>
+              <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm" style={{ color: theme.accent }}>verified</span> Active Day: {activeDate}</span>
+              <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm" style={{ color: theme.accent }}>verified</span> Live request feed to admin</span>
             </div>
           </div>
         </div>
@@ -228,7 +243,7 @@ const Home: React.FC = () => {
       <section className="py-24 bg-[#f6f7f8] dark:bg-[#101a22]">
         <div className="max-w-[1200px] mx-auto px-10">
           <div className="text-center mb-16">
-            <h2 className="text-[#1183d4] font-bold tracking-widest text-sm uppercase mb-3">Premium Excellence</h2>
+            <h2 className="font-bold tracking-widest text-sm uppercase mb-3" style={{ color: theme.accent }}>{theme.label} Program</h2>
             <h3 className="text-4xl font-extrabold text-slate-900 dark:text-white">Why Choose Our Adventures</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
