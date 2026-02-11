@@ -32,6 +32,7 @@ const formatISODateLabel = (isoDate: string) => {
 };
 
 const isValidPhoneNumber = (value: string) => /^[+]?[\d\s()-]{7,20}$/.test(value.trim());
+const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
 type EventCalendarPanelProps = {
   embedded?: boolean;
@@ -41,6 +42,7 @@ type ReservationFormState = {
   pickupStop: string;
   participants: string;
   fullName: string;
+  email: string;
   phone: string;
 };
 
@@ -53,6 +55,7 @@ type GeneratedTicket = {
   durationHours: number;
   pickupStop: string;
   fullName: string;
+  email: string;
   phone: string;
   participants: number;
   amount: number;
@@ -72,6 +75,7 @@ const buildTicketPayload = (
   durationHours: event.durationHours,
   pickupStop: form.pickupStop,
   fullName: form.fullName,
+  email: form.email,
   phone: form.phone,
   participants: Number(form.participants),
   amount: event.price * Number(form.participants),
@@ -86,6 +90,7 @@ const toTicketQrText = (ticket: GeneratedTicket) =>
     `Date:${ticket.date} ${ticket.time}`,
     `Pickup:${ticket.pickupStop}`,
     `Name:${ticket.fullName}`,
+    `Email:${ticket.email}`,
     `Phone:${ticket.phone}`,
     `Seats:${ticket.participants}`,
     `Amount:EUR ${ticket.amount}`
@@ -152,6 +157,7 @@ const createTicketCanvas = async (ticket: GeneratedTicket, accent: string) => {
 
   const rows = [
     ['Passenger', ticket.fullName],
+    ['Email', ticket.email],
     ['Phone', ticket.phone],
     ['Participants', String(ticket.participants)],
     ['Pickup Stop', ticket.pickupStop],
@@ -201,6 +207,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
     pickupStop: '',
     participants: '1',
     fullName: '',
+    email: '',
     phone: ''
   });
 
@@ -266,10 +273,11 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
     const seatsRequested = Number(reservationForm.participants);
     const seatsLeft = selectedEvent.capacity - selectedEvent.booked;
     const fullName = reservationForm.fullName.trim();
+    const email = reservationForm.email.trim();
     const phone = reservationForm.phone.trim();
 
-    if (!reservationForm.pickupStop || !fullName || !phone || !seatsRequested) {
-      alert('Please complete pickup, participant count, name and phone.');
+    if (!reservationForm.pickupStop || !fullName || !email || !phone || !seatsRequested) {
+      alert('Please complete pickup, participant count, name, email and phone.');
       return;
     }
 
@@ -280,6 +288,11 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
 
     if (seatsRequested > seatsLeft) {
       alert(`Only ${seatsLeft} seats available for this event.`);
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      alert('Please enter a valid email address.');
       return;
     }
 
@@ -300,7 +313,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
 
       const ticket = buildTicketPayload(
         selectedEvent,
-        { ...reservationForm, fullName, phone, participants: String(seatsRequested) },
+        { ...reservationForm, fullName, email, phone, participants: String(seatsRequested) },
         activeDate
       );
       setGeneratedTicket(ticket);
@@ -385,7 +398,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
         >
           <div
             className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-4 md:p-5 ${
-              embedded ? 'lg:h-[560px]' : ''
+              embedded ? 'lg:h-[520px]' : ''
             }`}
           >
             <div className="flex items-center justify-between mb-4">
@@ -457,7 +470,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
 
           <div
             className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-5 ${
-              embedded ? 'lg:h-[560px] lg:overflow-y-auto lg:pr-3' : ''
+              embedded ? 'lg:h-[520px] lg:overflow-y-auto lg:pr-3' : ''
             }`}
           >
             <h3 className="text-xl font-black text-slate-900 dark:text-white">
@@ -606,6 +619,20 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
 
                           <div className="space-y-1">
                             <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
+                              Email
+                            </label>
+                            <input
+                              type="email"
+                              name="email"
+                              value={reservationForm.email}
+                              onChange={handleFormChange}
+                              placeholder="name@example.com"
+                              className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
                               Phone Number
                             </label>
                             <input
@@ -629,23 +656,28 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                         </button>
 
                         {generatedTicket && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={downloadTicketImage}
-                              className="w-full inline-flex items-center justify-center rounded-lg border font-bold py-2.5"
-                              style={{ borderColor: theme.accent, color: theme.accent }}
-                            >
-                              Download QR Image
-                            </button>
-                            <button
-                              type="button"
-                              onClick={downloadTicketPdf}
-                              className="w-full inline-flex items-center justify-center rounded-lg border font-bold py-2.5"
-                              style={{ borderColor: theme.accent, color: theme.accent }}
-                            >
-                              Download PDF
-                            </button>
+                          <div className="space-y-2">
+                            <p className="rounded-lg border border-sky-300/35 bg-sky-400/10 px-3 py-2 text-xs font-medium text-sky-200">
+                              Odeme bilgileri mail olarak tarafiniza iletilecektir ve rezervasyon isleminiz tamamlanacaktir.
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <button
+                                type="button"
+                                onClick={downloadTicketImage}
+                                className="w-full inline-flex items-center justify-center rounded-lg border font-bold py-2.5"
+                                style={{ borderColor: theme.accent, color: theme.accent }}
+                              >
+                                Download QR Image
+                              </button>
+                              <button
+                                type="button"
+                                onClick={downloadTicketPdf}
+                                className="w-full inline-flex items-center justify-center rounded-lg border font-bold py-2.5"
+                                style={{ borderColor: theme.accent, color: theme.accent }}
+                              >
+                                Download PDF
+                              </button>
+                            </div>
                           </div>
                         )}
                       </form>
