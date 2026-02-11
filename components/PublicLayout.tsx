@@ -1,0 +1,121 @@
+import React, { useState } from 'react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+
+const PublicLayout: React.FC = () => {
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Helper to highlight active link
+  const isActive = (path: string) => location.pathname === path;
+
+  return (
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden font-display">
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b border-solid border-slate-200 dark:border-[#283239] bg-white/80 dark:bg-[#101a22]/80 backdrop-blur-md px-6 md:px-10 py-3">
+        <div className="mx-auto flex max-w-[1200px] items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="text-[#1183d4] size-8 group-hover:scale-110 transition-transform">
+              <svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path clipRule="evenodd" d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z" fillRule="evenodd"></path>
+                <path clipRule="evenodd" d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z" fillRule="evenodd"></path>
+              </svg>
+            </div>
+            <h2 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">GET YOUR EXTREME</h2>
+          </Link>
+
+          {/* Desktop Nav */}
+          <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
+            <nav className="flex items-center gap-8">
+              <Link to="/" className={`text-sm font-medium transition-colors ${isActive('/') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white/80 hover:text-[#1183d4] dark:hover:text-white'}`}>Home</Link>
+              <Link to="/routes" className={`text-sm font-medium transition-colors ${isActive('/routes') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white/80 hover:text-[#1183d4] dark:hover:text-white'}`}>Routes</Link>
+              <Link to="/gallery" className={`text-sm font-medium transition-colors ${isActive('/gallery') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white/80 hover:text-[#1183d4] dark:hover:text-white'}`}>Gallery</Link>
+              <Link to="/shop" className={`text-sm font-medium transition-colors ${isActive('/shop') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white/80 hover:text-[#1183d4] dark:hover:text-white'}`}>Shop & Gear</Link>
+              <Link to="/admin" className={`text-sm font-medium transition-colors ${isActive('/admin') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white/80 hover:text-[#1183d4] dark:hover:text-white'}`}>Admin</Link>
+            </nav>
+            <button className="flex min-w-[100px] cursor-pointer items-center justify-center rounded-lg h-10 px-5 bg-[#1183d4] text-white text-sm font-bold shadow-lg shadow-[#1183d4]/20 hover:brightness-110 transition-all">
+              Book Now
+            </button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden text-slate-900 dark:text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <span className="material-symbols-outlined cursor-pointer">menu</span>
+          </div>
+        </div>
+
+        {/* Mobile Nav */}
+        {isMenuOpen && (
+           <div className="md:hidden absolute top-full left-0 w-full bg-white dark:bg-[#101a22] border-b border-slate-200 dark:border-[#283239] p-4 flex flex-col gap-4 shadow-xl">
+              <Link to="/" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white'}`}>Home</Link>
+              <Link to="/routes" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/routes') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white'}`}>Routes</Link>
+              <Link to="/gallery" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/gallery') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white'}`}>Gallery</Link>
+              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/shop') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white'}`}>Shop & Gear</Link>
+               <Link to="/admin" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/admin') ? 'text-[#1183d4]' : 'text-slate-600 dark:text-white'}`}>Admin</Link>
+           </div>
+        )}
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 w-full bg-[#f6f7f8] dark:bg-[#101a22]">
+        <Outlet />
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-[#101a22] border-t border-white/5 py-12 text-white w-full">
+        <div className="max-w-[1200px] mx-auto px-10">
+          <div className="flex flex-col md:flex-row justify-between gap-12">
+            <div className="space-y-6 max-w-xs">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#1183d4]">scuba_diving</span>
+                <span className="text-xl font-extrabold tracking-tight">GET YOUR EXTREME</span>
+              </div>
+              <p className="text-white/40 text-sm">Providing premium water sports experiences along the stunning Antalya coastline since 2018.</p>
+              <div className="flex gap-4">
+                <a className="text-white/60 hover:text-[#1183d4] transition-colors" href="#"><span className="material-symbols-outlined">social_leaderboard</span></a>
+                <a className="text-white/60 hover:text-[#1183d4] transition-colors" href="#"><span className="material-symbols-outlined">photo_camera</span></a>
+                <a className="text-white/60 hover:text-[#1183d4] transition-colors" href="#"><span className="material-symbols-outlined">play_circle</span></a>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-12">
+              <div className="space-y-4">
+                <h5 className="font-bold text-white">Explore</h5>
+                <ul className="space-y-2 text-white/40 text-sm">
+                  <li><Link className="hover:text-[#1183d4] transition-colors" to="/routes">All Activities</Link></li>
+                  <li><Link className="hover:text-[#1183d4] transition-colors" to="/routes">Popular Routes</Link></li>
+                  <li><Link className="hover:text-[#1183d4] transition-colors" to="/gallery">Group Bookings</Link></li>
+                  <li><a className="hover:text-[#1183d4] transition-colors" href="#">Gift Cards</a></li>
+                </ul>
+              </div>
+              <div className="space-y-4">
+                <h5 className="font-bold text-white">Support</h5>
+                <ul className="space-y-2 text-white/40 text-sm">
+                  <li><a className="hover:text-[#1183d4] transition-colors" href="#">Safety Guide</a></li>
+                  <li><a className="hover:text-[#1183d4] transition-colors" href="#">FAQ</a></li>
+                  <li><a className="hover:text-[#1183d4] transition-colors" href="#">Contact Us</a></li>
+                  <li><a className="hover:text-[#1183d4] transition-colors" href="#">Terms of Service</a></li>
+                </ul>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <h5 className="font-bold text-white">Visit Us</h5>
+              <p className="text-white/40 text-sm flex items-start gap-2 max-w-[200px]">
+                <span className="material-symbols-outlined text-[#1183d4] text-lg">location_on</span>
+                Lara Plajı, Antalya, Turkey
+              </p>
+              <p className="text-white/40 text-sm flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#1183d4] text-lg">call</span>
+                +90 (242) 555-EXTRM
+              </p>
+            </div>
+          </div>
+          <div className="mt-16 pt-8 border-t border-white/5 text-center text-white/20 text-xs">
+            © 2024 GET YOUR EXTREME. All rights reserved. Professional Watersports Association Member.
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default PublicLayout;
