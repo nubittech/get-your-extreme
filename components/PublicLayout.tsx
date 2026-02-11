@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import SpecialRequestDrawer from './SpecialRequestDrawer';
 
 const PublicLayout: React.FC = () => {
   const location = useLocation();
@@ -141,6 +142,7 @@ const PublicLayout: React.FC = () => {
           </div>
         </div>
       </footer>
+      <SpecialRequestDrawer />
     </div>
   );
 };
