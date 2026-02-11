@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createReservation } from '../services/reservations';
 import { useExperience } from '../context/ExperienceContext';
 import EventCalendarPanel from '../components/EventCalendarPanel';
+import { ExperienceCategory } from '../data/experienceThemes';
 
 const getTodayISODate = () => {
   const today = new Date();
@@ -11,9 +12,20 @@ const getTodayISODate = () => {
 
 const isValidPhoneNumber = (value: string) => /^[+]?[\d\s()-]{7,20}$/.test(value.trim());
 
+const heroCategoryItems: Array<{
+  key: ExperienceCategory;
+  label: string;
+  icon: string;
+}> = [
+  { key: 'SUP', label: 'SURF', icon: 'surfing' },
+  { key: 'BIKE', label: 'BISIKLET', icon: 'directions_bike' },
+  { key: 'SKI', label: 'KAYAK', icon: 'downhill_skiing' }
+];
+
 const Home: React.FC = () => {
-  const { activeCategory, activeDate, setActiveDate, theme } = useExperience();
+  const { activeCategory, activeDate, setActiveDate, setActiveCategory, theme } = useExperience();
   const minDate = getTodayISODate();
+  const activeCategoryIndex = heroCategoryItems.findIndex((item) => item.key === activeCategory);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -120,6 +132,34 @@ const Home: React.FC = () => {
         
         {/* Hero Content */}
         <div className="relative z-10 w-full max-w-[1200px] px-6 py-12 flex flex-col items-center text-center">
+          <div className="w-full max-w-[560px] mb-8">
+            <div
+              className="relative grid grid-cols-3 p-1 rounded-xl border border-white/15 bg-black/25 backdrop-blur-md"
+              aria-label="Category selector"
+            >
+              <span
+                className="absolute top-1 bottom-1 left-1 rounded-lg shadow-lg transition-transform duration-300 ease-out"
+                style={{
+                  width: 'calc((100% - 0.5rem) / 3)',
+                  transform: `translateX(${activeCategoryIndex * 100}%)`,
+                  backgroundColor: theme.accent
+                }}
+              ></span>
+              {heroCategoryItems.map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => setActiveCategory(item.key)}
+                  className={`relative z-10 h-11 md:h-12 rounded-lg flex items-center justify-center gap-2 text-xs md:text-sm font-bold tracking-wide transition-colors ${
+                    activeCategory === item.key ? 'text-white' : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-base">{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           <h1 className="text-white text-5xl md:text-7xl font-black leading-tight tracking-[-0.033em] mb-6 drop-shadow-2xl">
             {theme.heroTitle.split(' ').slice(0, 4).join(' ')} <br/>
             <span className="drop-shadow-md" style={{ color: theme.accent }}>

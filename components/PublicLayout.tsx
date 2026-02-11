@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import SpecialRequestDrawer from './SpecialRequestDrawer';
 import { useExperience } from '../context/ExperienceContext';
-import { EXPERIENCE_ORDER } from '../data/experienceThemes';
 
 const PublicLayout: React.FC = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { activeCategory, setActiveCategory, activeDate, setActiveDate, theme } = useExperience();
+  const { theme } = useExperience();
 
   // Helper to highlight active link
   const isActive = (path: string) => location.pathname === path;
@@ -62,41 +61,6 @@ const PublicLayout: React.FC = () => {
                <Link to="/admin" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/admin') ? '' : 'text-slate-600 dark:text-white'}`} style={isActive('/admin') ? { color: theme.accent } : undefined}>Admin</Link>
            </div>
         )}
-        <div className="mx-auto mt-3 w-full max-w-[1200px]">
-          <div
-            className="rounded-xl border border-white/10 px-3 py-3 md:px-4 md:py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-            style={{ background: theme.headerGradient }}
-          >
-            <div className="flex items-center gap-2 md:gap-3">
-              {EXPERIENCE_ORDER.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setActiveCategory(item)}
-                  className="rounded-md px-3 py-1.5 text-xs md:text-sm font-bold transition"
-                  style={
-                    activeCategory === item
-                      ? { backgroundColor: theme.accent, color: '#fff' }
-                      : { backgroundColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.82)' }
-                  }
-                >
-                  {item === 'BIKE' ? 'BISIKLET' : item === 'SKI' ? 'KAYAK' : 'SUP'}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 md:gap-3">
-              <span className="text-[11px] md:text-xs font-bold uppercase tracking-wider text-white/70">
-                Active Day
-              </span>
-              <input
-                type="date"
-                value={activeDate}
-                onChange={(e) => setActiveDate(e.target.value)}
-                className="rounded-md border border-white/20 bg-white/10 text-white text-sm px-3 py-1.5"
-              />
-            </div>
-          </div>
-        </div>
       </header>
 
       {/* Main Content */}
