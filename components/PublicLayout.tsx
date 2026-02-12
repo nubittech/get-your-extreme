@@ -31,7 +31,9 @@ const PublicLayout: React.FC = () => {
               <Link to="/routes" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/routes') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/routes') ? { color: theme.accent } : undefined}>Routes</Link>
               <Link to="/gallery" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/gallery') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/gallery') ? { color: theme.accent } : undefined}>Gallery</Link>
               <Link to="/shop" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/shop') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/shop') ? { color: theme.accent } : undefined}>Shop</Link>
-              <Link to="/admin" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/admin') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/admin') ? { color: theme.accent } : undefined}>Admin</Link>
+              {profile?.role === 'admin' && (
+                <Link to="/admin" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/admin') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/admin') ? { color: theme.accent } : undefined}>Admin</Link>
+              )}
             </nav>
             {user ? (
               <div className="flex items-center gap-2">
@@ -77,7 +79,9 @@ const PublicLayout: React.FC = () => {
               <Link to="/routes" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/routes') ? '' : 'text-white/85'}`} style={isActive('/routes') ? { color: theme.accent } : undefined}>Routes</Link>
               <Link to="/gallery" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/gallery') ? '' : 'text-white/85'}`} style={isActive('/gallery') ? { color: theme.accent } : undefined}>Gallery</Link>
               <Link to="/shop" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/shop') ? '' : 'text-white/85'}`} style={isActive('/shop') ? { color: theme.accent } : undefined}>Shop</Link>
-               <Link to="/admin" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/admin') ? '' : 'text-white/85'}`} style={isActive('/admin') ? { color: theme.accent } : undefined}>Admin</Link>
+              {profile?.role === 'admin' && (
+                <Link to="/admin" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/admin') ? '' : 'text-white/85'}`} style={isActive('/admin') ? { color: theme.accent } : undefined}>Admin</Link>
+              )}
               {!user ? (
                 <button
                   type="button"
@@ -166,7 +170,9 @@ const PublicLayout: React.FC = () => {
                   <li><a className="hover:text-[#1183d4] transition-colors" href="tel:+902425550000">Call Us</a></li>
                   <li><a className="hover:text-[#1183d4] transition-colors" href="mailto:booking@getyourextreme.com">Email Support</a></li>
                   <li><a className="hover:text-[#1183d4] transition-colors" href="https://wa.me/905425550000" target="_blank" rel="noreferrer">WhatsApp</a></li>
-                  <li><Link className="hover:text-[#1183d4] transition-colors" to="/admin">Admin Panel</Link></li>
+                  {profile?.role === 'admin' && (
+                    <li><Link className="hover:text-[#1183d4] transition-colors" to="/admin">Admin Panel</Link></li>
+                  )}
                 </ul>
               </div>
             </div>

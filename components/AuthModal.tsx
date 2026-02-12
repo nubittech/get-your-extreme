@@ -132,12 +132,6 @@ const AuthModal: React.FC = () => {
             </p>
           )}
 
-          {authModalMode === 'signup' && (
-            <p className="text-xs text-white/60">
-              Hesap olusunca size otomatik benzersiz bir `ref code` atanir.
-            </p>
-          )}
-
           <button
             type="submit"
             disabled={isSubmitting}
