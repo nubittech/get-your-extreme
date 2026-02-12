@@ -160,10 +160,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     restoreSession();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       const sessionUser = session?.user ?? null;
-      setUser(sessionUser);
       if (sessionUser) {
+        setUser(sessionUser);
         try {
           await loadProfile(sessionUser);
         } catch {
@@ -172,7 +172,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setProfile(cached);
           }
         }
+        return;
+      }
+
+      if (event === 'SIGNED_OUT') {
+        clearSupabaseLocalCache();
+        setUser(null);
+        setProfile(null);
+        return;
+      }
+
+      // Guard against transient null-session events during token refresh.
+      const { data: refreshedSession } = await supabase.auth.getSession();
+      const refreshedUser = refreshedSession.session?.user ?? null;
+      if (refreshedUser) {
+        setUser(refreshedUser);
+        try {
+          await loadProfile(refreshedUser);
+        } catch {
+          const cached = readCachedProfile(refreshedUser.id);
+          if (cached) {
+            setProfile(cached);
+          }
+        }
       } else {
+        setUser(null);
         setProfile(null);
       }
     });
@@ -181,8 +205,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data } = await supabase.auth.getSession();
       const focusedUser = data.session?.user ?? null;
       if (!focusedUser) {
-        setUser(null);
-        setProfile(null);
+        // Keep current state unless sign-out is explicit.
         return;
       }
       setUser(focusedUser);
