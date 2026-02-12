@@ -34,6 +34,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<AuthModalMode>('signin');
 
+  const clearSupabaseLocalCache = () => {
+    const keysToDelete: string[] = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('sb-')) {
+        keysToDelete.push(key);
+      }
+    }
+    keysToDelete.forEach((key) => localStorage.removeItem(key));
+  };
+
   const loadProfile = async (authUser: User) => {
     try {
       await ensureProfileRow(authUser.id, {
@@ -43,7 +54,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.warn('Profile ensure warning:', error);
     }
     const nextProfile = await readUserProfile(authUser.id);
-    setProfile(nextProfile);
+    setProfile((current) => ({
+      fullName: nextProfile.fullName ?? current?.fullName ?? null,
+      phone: nextProfile.phone ?? current?.phone ?? null,
+      refCode: nextProfile.refCode ?? current?.refCode ?? null,
+      role: nextProfile.role ?? current?.role ?? null
+    }));
   };
 
   useEffect(() => {
@@ -62,6 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase.auth.getSession();
       if (error) {
         if (isMounted) {
+          clearSupabaseLocalCache();
           setUser(null);
           setProfile(null);
           setAuthLoading(false);
@@ -78,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           await loadProfile(sessionUser);
         } catch {
-          setProfile(null);
+          // Keep previous profile state for transient auth/profile fetch glitches.
         }
       } else {
         setProfile(null);
@@ -95,16 +112,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           await loadProfile(sessionUser);
         } catch {
-          setProfile(null);
+          // Keep previous profile state for transient auth/profile fetch glitches.
         }
       } else {
         setProfile(null);
       }
     });
 
+    const handleWindowFocus = async () => {
+      const { data } = await supabase.auth.getSession();
+      const focusedUser = data.session?.user ?? null;
+      if (!focusedUser) {
+        setUser(null);
+        setProfile(null);
+        return;
+      }
+      setUser(focusedUser);
+      try {
+        await loadProfile(focusedUser);
+      } catch {
+        // Keep previous profile state
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void handleWindowFocus();
+      }
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       isMounted = false;
       listener.subscription.unsubscribe();
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -129,7 +173,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     try {
       await signOutCurrentUser();
+    } catch (error) {
+      console.warn('Sign out warning:', error);
     } finally {
+      clearSupabaseLocalCache();
       setUser(null);
       setProfile(null);
       setAuthModalOpen(false);
