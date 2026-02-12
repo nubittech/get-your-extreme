@@ -120,9 +120,9 @@ const SpecialRequestDrawer: React.FC = () => {
         onClick={() => setIsOpen(true)}
         className="fixed right-3 md:right-5 top-1/2 -translate-y-1/2 z-[70] rounded-l-xl rounded-r-md bg-[#1183d4] text-white shadow-xl px-3 py-4 md:px-4 md:py-5 font-bold text-xs md:text-sm tracking-wide"
       >
-        OZEL
+        SPECIAL
         <br />
-        REZERVASYON
+        REQUEST
       </button>
 
       {isOpen && (
