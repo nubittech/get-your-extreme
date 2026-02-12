@@ -33,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authLoading, setAuthLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<AuthModalMode>('signin');
+  const PROFILE_CACHE_KEY = 'gye_profile_cache_v1';
 
   const clearSupabaseLocalCache = () => {
     const keysToDelete: string[] = [];
@@ -45,7 +46,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     keysToDelete.forEach((key) => localStorage.removeItem(key));
   };
 
+  const readCachedProfile = (userId: string): UserProfile | null => {
+    try {
+      const raw = localStorage.getItem(PROFILE_CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as Record<string, UserProfile>;
+      return parsed[userId] ?? null;
+    } catch {
+      return null;
+    }
+  };
+
+  const writeCachedProfile = (userId: string, value: UserProfile) => {
+    try {
+      const raw = localStorage.getItem(PROFILE_CACHE_KEY);
+      const parsed = raw ? (JSON.parse(raw) as Record<string, UserProfile>) : {};
+      parsed[userId] = value;
+      localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(parsed));
+    } catch {
+      // Ignore cache write failures.
+    }
+  };
+
+  const clearCachedProfile = (userId?: string) => {
+    try {
+      if (!userId) {
+        localStorage.removeItem(PROFILE_CACHE_KEY);
+        return;
+      }
+      const raw = localStorage.getItem(PROFILE_CACHE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Record<string, UserProfile>;
+      delete parsed[userId];
+      localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(parsed));
+    } catch {
+      // Ignore cache clear failures.
+    }
+  };
+
   const loadProfile = async (authUser: User) => {
+    const cached = readCachedProfile(authUser.id);
+    if (cached) {
+      setProfile(cached);
+    }
+
     try {
       await ensureProfileRow(authUser.id, {
         fullName: String(authUser.user_metadata?.full_name ?? '')
@@ -54,12 +98,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.warn('Profile ensure warning:', error);
     }
     const nextProfile = await readUserProfile(authUser.id);
-    setProfile((current) => ({
-      fullName: nextProfile.fullName ?? current?.fullName ?? null,
-      phone: nextProfile.phone ?? current?.phone ?? null,
-      refCode: nextProfile.refCode ?? current?.refCode ?? null,
-      role: nextProfile.role ?? current?.role ?? null
-    }));
+    let finalProfile: UserProfile | null = null;
+    setProfile((current) => {
+      const mergedProfile = {
+        fullName: nextProfile.fullName ?? current?.fullName ?? null,
+        phone: nextProfile.phone ?? current?.phone ?? null,
+        refCode: nextProfile.refCode ?? current?.refCode ?? null,
+        role: nextProfile.role ?? current?.role ?? null
+      };
+      finalProfile = mergedProfile;
+      return mergedProfile;
+    });
+    if (finalProfile) {
+      writeCachedProfile(authUser.id, finalProfile);
+    }
   };
 
   useEffect(() => {
@@ -95,7 +147,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           await loadProfile(sessionUser);
         } catch {
-          // Keep previous profile state for transient auth/profile fetch glitches.
+          const cached = readCachedProfile(sessionUser.id);
+          if (cached) {
+            setProfile(cached);
+          }
         }
       } else {
         setProfile(null);
@@ -112,7 +167,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           await loadProfile(sessionUser);
         } catch {
-          // Keep previous profile state for transient auth/profile fetch glitches.
+          const cached = readCachedProfile(sessionUser.id);
+          if (cached) {
+            setProfile(cached);
+          }
         }
       } else {
         setProfile(null);
@@ -131,7 +189,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         await loadProfile(focusedUser);
       } catch {
-        // Keep previous profile state
+        const cached = readCachedProfile(focusedUser.id);
+        if (cached) {
+          setProfile(cached);
+        }
       }
     };
 
@@ -171,12 +232,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    const activeUserId = user?.id;
     try {
       await signOutCurrentUser();
     } catch (error) {
       console.warn('Sign out warning:', error);
     } finally {
       clearSupabaseLocalCache();
+      clearCachedProfile(activeUserId);
       setUser(null);
       setProfile(null);
       setAuthModalOpen(false);
