@@ -103,19 +103,19 @@ export const readUserProfile = async (userId: string): Promise<UserProfile> => {
     ]);
 
   if (profileError) {
-    console.warn('Profile fetch warning:', profileError.message);
+    throw new Error(`Profile fetch failed: ${profileError.message}`);
   }
   if (roleError) {
-    console.warn('Role fetch warning:', roleError.message);
+    throw new Error(`Role fetch failed: ${roleError.message}`);
   }
 
   const roleValue = roleRow?.role;
   const role = roleValue === 'admin' || roleValue === 'customer' ? roleValue : null;
 
   return {
-    fullName: profileError ? null : profileRow?.full_name ?? null,
-    phone: profileError ? null : profileRow?.phone ?? null,
-    refCode: profileError ? null : profileRow?.ref_code ?? null,
+    fullName: profileRow?.full_name ?? null,
+    phone: profileRow?.phone ?? null,
+    refCode: profileRow?.ref_code ?? null,
     role
   };
 };

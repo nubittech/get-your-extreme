@@ -98,20 +98,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.warn('Profile ensure warning:', error);
     }
     const nextProfile = await readUserProfile(authUser.id);
-    let finalProfile: UserProfile | null = null;
-    setProfile((current) => {
-      const mergedProfile = {
-        fullName: nextProfile.fullName ?? current?.fullName ?? null,
-        phone: nextProfile.phone ?? current?.phone ?? null,
-        refCode: nextProfile.refCode ?? current?.refCode ?? null,
-        role: nextProfile.role ?? current?.role ?? null
-      };
-      finalProfile = mergedProfile;
-      return mergedProfile;
-    });
-    if (finalProfile) {
-      writeCachedProfile(authUser.id, finalProfile);
-    }
+    const mergedProfile: UserProfile = {
+      fullName: nextProfile.fullName ?? cached?.fullName ?? null,
+      phone: nextProfile.phone ?? cached?.phone ?? null,
+      refCode: nextProfile.refCode ?? cached?.refCode ?? null,
+      role: nextProfile.role ?? cached?.role ?? null
+    };
+    setProfile(mergedProfile);
+    writeCachedProfile(authUser.id, mergedProfile);
   };
 
   const resolveSessionUser = async () => {
@@ -315,6 +309,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setProfile(null);
       setAuthModalOpen(false);
+      window.location.replace('/');
     }
   };
 
