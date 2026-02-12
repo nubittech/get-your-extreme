@@ -136,6 +136,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return sessionUser;
   };
 
+  const readStoredAuthUser = (): User | null => {
+    try {
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const key = localStorage.key(i);
+        if (!key || !key.startsWith('sb-') || !key.endsWith('-auth-token')) continue;
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        const parsed = JSON.parse(raw) as Record<string, unknown>;
+        const possibleUser =
+          (parsed.user as User | undefined) ??
+          ((parsed.currentSession as Record<string, unknown> | undefined)?.user as User | undefined);
+        if (possibleUser?.id) {
+          return possibleUser;
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
     if (!isSupabaseConfigured) {
       setUser(null);
@@ -150,6 +171,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const restoreSession = async () => {
       setAuthLoading(true);
       if (!isMounted) return;
+
+      const storedUser = readStoredAuthUser();
+      if (storedUser) {
+        setUser((current) => current ?? storedUser);
+      }
 
       const sessionUser = await resolveSessionUser();
       setUser(sessionUser);
@@ -187,6 +213,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (event === 'SIGNED_OUT') {
+        const confirmedUser = await resolveSessionUser();
+        if (confirmedUser) {
+          setUser(confirmedUser);
+          try {
+            await loadProfile(confirmedUser);
+          } catch {
+            const cached = readCachedProfile(confirmedUser.id);
+            if (cached) {
+              setProfile(cached);
+            }
+          }
+          return;
+        }
         clearSupabaseLocalCache();
         setUser(null);
         setProfile(null);
