@@ -127,7 +127,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    await signOutCurrentUser();
+    try {
+      await signOutCurrentUser();
+    } finally {
+      setUser(null);
+      setProfile(null);
+      setAuthModalOpen(false);
+    }
   };
 
   const value = useMemo<AuthContextValue>(

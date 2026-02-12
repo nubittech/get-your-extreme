@@ -160,7 +160,7 @@ export const signUpWithEmail = async (input: SignUpInput): Promise<User> => {
 
 export const signOutCurrentUser = async () => {
   const supabase = requireSupabase();
-  const { error } = await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut({ scope: 'local' });
   if (error) {
     throw new Error(`Sign out failed: ${error.message}`);
   }
