@@ -114,6 +114,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const resolveSessionUser = async () => {
+    const supabase = requireSupabase();
+
+    let sessionResult = await supabase.auth.getSession();
+    if (sessionResult.error) {
+      console.warn('getSession warning:', sessionResult.error.message);
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      sessionResult = await supabase.auth.getSession();
+    }
+
+    let sessionUser = sessionResult.data.session?.user ?? null;
+
+    if (!sessionUser) {
+      const refreshResult = await supabase.auth.refreshSession();
+      if (!refreshResult.error) {
+        sessionUser = refreshResult.data.session?.user ?? null;
+      }
+    }
+
+    return sessionUser;
+  };
+
   useEffect(() => {
     if (!isSupabaseConfigured) {
       setUser(null);
@@ -127,20 +149,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const restoreSession = async () => {
       setAuthLoading(true);
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        if (isMounted) {
-          clearSupabaseLocalCache();
-          setUser(null);
-          setProfile(null);
-          setAuthLoading(false);
-        }
-        return;
-      }
-
       if (!isMounted) return;
 
-      const sessionUser = data.session?.user ?? null;
+      const sessionUser = await resolveSessionUser();
       setUser(sessionUser);
 
       if (sessionUser) {
@@ -202,8 +213,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     const handleWindowFocus = async () => {
-      const { data } = await supabase.auth.getSession();
-      const focusedUser = data.session?.user ?? null;
+      const focusedUser = await resolveSessionUser();
       if (!focusedUser) {
         // Keep current state unless sign-out is explicit.
         return;
