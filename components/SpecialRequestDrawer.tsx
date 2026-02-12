@@ -19,6 +19,7 @@ const SpecialRequestDrawer: React.FC = () => {
     preferredDate: activeDate,
     name: '',
     phone: '',
+    referralCode: '',
     participants: '1',
     note: ''
   });
@@ -51,6 +52,7 @@ const SpecialRequestDrawer: React.FC = () => {
       preferredDate: '',
       name: '',
       phone: '',
+      referralCode: '',
       participants: '1',
       note: ''
     });
@@ -61,6 +63,7 @@ const SpecialRequestDrawer: React.FC = () => {
 
     const trimmedName = formData.name.trim();
     const trimmedPhone = formData.phone.trim();
+    const referralCode = formData.referralCode.trim().toUpperCase();
     const trimmedNote = formData.note.trim();
 
     if (!formData.preferredDate || !trimmedName || !trimmedPhone) {
@@ -96,7 +99,8 @@ const SpecialRequestDrawer: React.FC = () => {
         activity: `Special Request (${formData.category})`,
         route: requestSummary,
         date: formData.preferredDate,
-        source: 'special'
+        source: 'special',
+        referredByCode: referralCode || undefined
       });
 
       alert('Special reservation request sent.');
@@ -203,6 +207,20 @@ const SpecialRequestDrawer: React.FC = () => {
                   onChange={handleChange}
                   placeholder="+90 5xx xxx xx xx"
                   className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-3 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
+                  Referral Code (Optional)
+                </label>
+                <input
+                  type="text"
+                  name="referralCode"
+                  value={formData.referralCode}
+                  onChange={handleChange}
+                  placeholder="GYE-XXXXXX"
+                  className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-3 text-slate-900 dark:text-white uppercase"
                 />
               </div>
 

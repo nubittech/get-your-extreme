@@ -52,7 +52,8 @@ const isReservation = (value: unknown): value is Reservation => {
     typeof item.timestamp === 'string' &&
     (item.amount === undefined || typeof item.amount === 'number') &&
     (item.source === undefined || item.source === 'event' || item.source === 'special') &&
-    (item.eventId === undefined || typeof item.eventId === 'string')
+    (item.eventId === undefined || typeof item.eventId === 'string') &&
+    (item.referredByCode === undefined || typeof item.referredByCode === 'string')
   );
 };
 
@@ -138,7 +139,11 @@ const mapSupabaseRowToReservation = (row: Record<string, unknown>): Reservation 
   eventId:
     row.event_id === null || row.event_id === undefined
       ? undefined
-      : String(row.event_id)
+      : String(row.event_id),
+  referredByCode:
+    row.referred_by_code === null || row.referred_by_code === undefined
+      ? undefined
+      : String(row.referred_by_code)
 });
 
 const listSupabaseReservations = async (): Promise<Reservation[]> => {
@@ -170,7 +175,8 @@ const createSupabaseReservation = async (
     timestamp: new Date().toISOString(),
     source: input.source ?? 'event',
     amount: input.amount ?? null,
-    event_id: input.eventId ?? null
+    event_id: input.eventId ?? null,
+    referred_by_code: input.referredByCode ?? null
   };
 
   let insertResult = await supabase
@@ -193,7 +199,8 @@ const createSupabaseReservation = async (
         timestamp: new Date().toISOString(),
         source: input.source ?? 'event',
         amount: input.amount ?? null,
-        eventId: input.eventId ?? null
+        eventId: input.eventId ?? null,
+        referredByCode: input.referredByCode ?? null
       })
       .select('*')
       .single();
@@ -255,7 +262,8 @@ export const createReservation = async (
     timestamp: new Date().toISOString(),
     source: input.source,
     amount: input.amount,
-    eventId: input.eventId
+    eventId: input.eventId,
+    referredByCode: input.referredByCode
   };
 
   const currentReservations = readLocalReservations();

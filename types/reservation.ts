@@ -12,6 +12,7 @@ export interface Reservation {
   source?: 'event' | 'special';
   amount?: number;
   eventId?: string;
+  referredByCode?: string;
 }
 
 export interface ReservationCreateInput {
@@ -23,4 +24,5 @@ export interface ReservationCreateInput {
   source?: 'event' | 'special';
   amount?: number;
   eventId?: string;
+  referredByCode?: string;
 }

@@ -6,6 +6,7 @@ import { createEvent, deleteEvent, listEvents } from '../services/events';
 import { EventScheduleItem } from '../types/event';
 import { ExperienceCategory } from '../data/experienceThemes';
 import { useAuth } from '../context/AuthContext';
+import { listRegisteredUsers, RegisteredUser } from '../services/users';
 
 const AdminDashboard: React.FC = () => {
   const { user, profile, openAuthModal, signOut } = useAuth();
@@ -16,6 +17,9 @@ const AdminDashboard: React.FC = () => {
   const [events, setEvents] = useState<EventScheduleItem[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [eventsLoadError, setEventsLoadError] = useState<string | null>(null);
+  const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [usersLoadError, setUsersLoadError] = useState<string | null>(null);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [eventForm, setEventForm] = useState({
     category: 'SUP' as ExperienceCategory,
@@ -54,6 +58,34 @@ const AdminDashboard: React.FC = () => {
 
     fetchReservations();
 
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchUsers = async () => {
+      setUsersLoading(true);
+      setUsersLoadError(null);
+      try {
+        const loadedUsers = await listRegisteredUsers();
+        if (isMounted) {
+          setRegisteredUsers(loadedUsers);
+        }
+      } catch {
+        if (isMounted) {
+          setUsersLoadError('Registered users could not be loaded.');
+        }
+      } finally {
+        if (isMounted) {
+          setUsersLoading(false);
+        }
+      }
+    };
+
+    fetchUsers();
     return () => {
       isMounted = false;
     };
@@ -198,8 +230,16 @@ const AdminDashboard: React.FC = () => {
       item.customerPhone.toLowerCase().includes(normalizedSearch) ||
       item.activity.toLowerCase().includes(normalizedSearch) ||
       item.route.toLowerCase().includes(normalizedSearch) ||
-      item.status.toLowerCase().includes(normalizedSearch)
+      item.status.toLowerCase().includes(normalizedSearch) ||
+      (item.referredByCode ?? '').toLowerCase().includes(normalizedSearch)
     );
+  });
+
+  const refOwnerMap = new Map<string, RegisteredUser>();
+  registeredUsers.forEach((item) => {
+    if (item.refCode) {
+      refOwnerMap.set(item.refCode.toUpperCase(), item);
+    }
   });
 
   const estimatedRevenue = filteredReservations.reduce(
@@ -536,6 +576,48 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
+          {/* Registered Users */}
+          <div className="px-8 pb-4">
+            <div className="rounded-xl p-5 border border-slate-200 dark:border-[#3b4954] bg-white dark:bg-[#101a22]/50 shadow-sm">
+              <div className="mb-3">
+                <p className="text-lg font-bold text-slate-900 dark:text-white">Registered Users</p>
+                <p className="text-xs text-[#9dadb9]">
+                  Sistemde kayitli hesaplar ve ref kodlari.
+                </p>
+              </div>
+              {usersLoadError && (
+                <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  {usersLoadError}
+                </p>
+              )}
+              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                {usersLoading && <p className="text-sm text-[#9dadb9]">Loading users...</p>}
+                {!usersLoading && registeredUsers.length === 0 && (
+                  <p className="text-sm text-[#9dadb9]">No registered users found.</p>
+                )}
+                {!usersLoading &&
+                  registeredUsers.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-lg border border-slate-200 dark:border-[#33414d] px-3 py-2"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white">
+                            {item.fullName || 'Unnamed User'}
+                          </p>
+                          <p className="text-xs text-[#9dadb9]">
+                            Ref: {item.refCode || 'No Ref'} | Role: {item.role || 'unknown'}
+                          </p>
+                        </div>
+                        <p className="text-xs text-[#9dadb9]">{item.phone || '-'}</p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+
           {/* Data Table */}
           <div className="p-8">
             <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-[#3b4954] bg-white dark:bg-[#101a22]/50">
@@ -547,6 +629,7 @@ const AdminDashboard: React.FC = () => {
                     <th className="px-6 py-4">Activity</th>
                     <th className="px-6 py-4">Route</th>
                     <th className="px-6 py-4">Date</th>
+                    <th className="px-6 py-4">Referral</th>
                     <th className="px-6 py-4">Amount</th>
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4 text-right">Actions</th>
@@ -575,6 +658,18 @@ const AdminDashboard: React.FC = () => {
                       <td className="px-6 py-4">{res.route}</td>
                       <td className="px-6 py-4">{res.date}</td>
                       <td className="px-6 py-4">
+                        {res.referredByCode ? (
+                          <div>
+                            <p className="font-semibold">{res.referredByCode}</p>
+                            <p className="text-xs text-[#9dadb9]">
+                              {refOwnerMap.get(res.referredByCode.toUpperCase())?.fullName || 'Unknown owner'}
+                            </p>
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
                         {typeof res.amount === 'number' ? `EUR ${res.amount}` : '-'}
                       </td>
                       <td className="px-6 py-4">
@@ -591,12 +686,12 @@ const AdminDashboard: React.FC = () => {
                   ))}
                   {isLoading && (
                      <tr>
-                        <td colSpan={8} className="px-6 py-8 text-center text-slate-500">Loading reservations...</td>
+                        <td colSpan={9} className="px-6 py-8 text-center text-slate-500">Loading reservations...</td>
                      </tr>
                   )}
                   {!isLoading && filteredReservations.length === 0 && (
                      <tr>
-                        <td colSpan={8} className="px-6 py-8 text-center text-slate-500">No reservations found for this filter.</td>
+                        <td colSpan={9} className="px-6 py-8 text-center text-slate-500">No reservations found for this filter.</td>
                      </tr>
                   )}
                 </tbody>

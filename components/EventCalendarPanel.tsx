@@ -41,6 +41,7 @@ type ReservationFormState = {
   fullName: string;
   email: string;
   phone: string;
+  referralCode: string;
 };
 
 type GeneratedTicket = {
@@ -208,7 +209,8 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
     participants: '1',
     fullName: '',
     email: '',
-    phone: ''
+    phone: '',
+    referralCode: ''
   });
 
   const [viewYear, viewMonth] = viewYearMonth.split('-').map(Number);
@@ -304,6 +306,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
     const fullName = reservationForm.fullName.trim();
     const email = reservationForm.email.trim();
     const phone = reservationForm.phone.trim();
+    const referralCode = reservationForm.referralCode.trim().toUpperCase();
 
     if (!reservationForm.pickupStop || !fullName || !email || !phone || !seatsRequested) {
       alert('Please complete pickup, participant count, name, email and phone.');
@@ -340,7 +343,8 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
         date: activeDate,
         source: 'event',
         amount: selectedEvent.price * seatsRequested,
-        eventId: selectedEvent.id
+        eventId: selectedEvent.id,
+        referredByCode: referralCode || undefined
       });
 
       const ticket = buildTicketPayload(
@@ -686,8 +690,22 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                               name="phone"
                               value={reservationForm.phone}
                               onChange={handleFormChange}
-                              placeholder="+90 5xx xxx xx xx"
-                              className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
+                                placeholder="+90 5xx xxx xx xx"
+                                className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
+                              />
+                            </div>
+
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
+                              Referral Code (Optional)
+                            </label>
+                            <input
+                              type="text"
+                              name="referralCode"
+                              value={reservationForm.referralCode}
+                              onChange={handleFormChange}
+                              placeholder="GYE-XXXXXX"
+                              className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white uppercase"
                             />
                           </div>
                         </div>
