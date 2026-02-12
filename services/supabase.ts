@@ -9,6 +9,7 @@ export const SUPABASE_EVENTS_TABLE =
   (import.meta.env.VITE_SUPABASE_EVENTS_TABLE ?? 'events').trim() || 'events';
 
 const hasSupabaseConfig = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
+export const isSupabaseConfigured = hasSupabaseConfig;
 
 export const supabase = hasSupabaseConfig
   ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {

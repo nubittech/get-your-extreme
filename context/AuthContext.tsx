@@ -8,7 +8,7 @@ import {
   signUpWithEmail,
   UserProfile
 } from '../services/auth';
-import { requireSupabase } from '../services/supabase';
+import { isSupabaseConfigured, requireSupabase } from '../services/supabase';
 
 export type AuthModalMode = 'signin' | 'signup';
 
@@ -43,6 +43,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setUser(null);
+      setProfile(null);
+      setAuthLoading(false);
+      return;
+    }
+
     const supabase = requireSupabase();
     let isMounted = true;
 

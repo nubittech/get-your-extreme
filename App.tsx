@@ -9,6 +9,7 @@ import PublicLayout from './components/PublicLayout';
 import { ExperienceProvider } from './context/ExperienceContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
+import { isSupabaseConfigured } from './services/supabase';
 
 // Failsafe component to handle legacy hash URLs if the index.html script fails
 const HashRedirectHandler = () => {
@@ -24,6 +25,19 @@ const HashRedirectHandler = () => {
 
 const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, profile, authLoading, openAuthModal } = useAuth();
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#101a22] text-white">
+        <div className="rounded-xl border border-white/15 bg-[#16202a] px-6 py-5 text-center">
+          <p className="font-bold">Supabase env eksik.</p>
+          <p className="mt-1 text-sm text-white/70">
+            VITE_SUPABASE_URL ve VITE_SUPABASE_PUBLISHABLE_KEY eklenmeli.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (!authLoading && !user) {
