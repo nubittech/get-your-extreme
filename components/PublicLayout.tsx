@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import SpecialRequestDrawer from './SpecialRequestDrawer';
 import { useExperience } from '../context/ExperienceContext';
+import { useAuth } from '../context/AuthContext';
 import { MEDIA_ASSETS } from '../data/mediaAssets';
 
 const PublicLayout: React.FC = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme } = useExperience();
+  const { user, profile, openAuthModal, signOut } = useAuth();
 
   // Helper to highlight active link
   const isActive = (path: string) => location.pathname === path;
@@ -31,6 +33,28 @@ const PublicLayout: React.FC = () => {
               <Link to="/shop" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/shop') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/shop') ? { color: theme.accent } : undefined}>Shop</Link>
               <Link to="/admin" className={`text-sm font-semibold drop-shadow transition-colors ${isActive('/admin') ? '' : 'text-white/85 hover:text-white'}`} style={isActive('/admin') ? { color: theme.accent } : undefined}>Admin</Link>
             </nav>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="rounded-lg border border-white/20 bg-black/35 px-2.5 py-1 text-xs font-semibold text-white">
+                  {profile?.refCode ?? 'No Ref'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => signOut()}
+                  className="rounded-lg border border-white/20 bg-black/35 px-3 py-2 text-xs font-bold text-white hover:bg-black/45"
+                >
+                  Cikis
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => openAuthModal('signin')}
+                className="rounded-lg border border-white/20 bg-black/35 px-3 py-2 text-xs font-bold text-white hover:bg-black/45"
+              >
+                Giris Yap
+              </button>
+            )}
             <a
               href="/#booking-form"
               className="flex min-w-[160px] items-center justify-center rounded-lg h-10 px-5 text-white text-sm font-bold shadow-lg hover:brightness-110 transition-all"
@@ -54,6 +78,29 @@ const PublicLayout: React.FC = () => {
               <Link to="/gallery" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/gallery') ? '' : 'text-white/85'}`} style={isActive('/gallery') ? { color: theme.accent } : undefined}>Gallery</Link>
               <Link to="/shop" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/shop') ? '' : 'text-white/85'}`} style={isActive('/shop') ? { color: theme.accent } : undefined}>Shop</Link>
                <Link to="/admin" onClick={() => setIsMenuOpen(false)} className={`text-sm font-medium ${isActive('/admin') ? '' : 'text-white/85'}`} style={isActive('/admin') ? { color: theme.accent } : undefined}>Admin</Link>
+              {!user ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    openAuthModal('signin');
+                  }}
+                  className="rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white/90 text-left"
+                >
+                  Giris Yap
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    signOut();
+                  }}
+                  className="rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white/90 text-left"
+                >
+                  Cikis ({profile?.refCode ?? 'No Ref'})
+                </button>
+              )}
            </div>
         )}
       </header>

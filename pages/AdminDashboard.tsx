@@ -5,8 +5,10 @@ import { Reservation } from '../types/reservation';
 import { createEvent, deleteEvent, listEvents } from '../services/events';
 import { EventScheduleItem } from '../types/event';
 import { ExperienceCategory } from '../data/experienceThemes';
+import { useAuth } from '../context/AuthContext';
 
 const AdminDashboard: React.FC = () => {
+  const { user, profile, openAuthModal, signOut } = useAuth();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -234,10 +236,28 @@ const AdminDashboard: React.FC = () => {
           </label>
         </div>
         <div className="flex flex-1 justify-end gap-6">
-          <div 
-            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#283239]" 
-            style={{backgroundImage: 'url("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2080&auto=format&fit=crop")'}}
-          ></div>
+          {!user ? (
+            <button
+              type="button"
+              onClick={() => openAuthModal('signin')}
+              className="rounded-lg border border-[#283239] px-3 py-2 text-sm font-semibold text-slate-700 dark:text-white"
+            >
+              Giris Yap
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="rounded-lg border border-[#283239] px-2 py-1 text-xs text-slate-700 dark:text-white/90">
+                {profile?.refCode ?? 'No Ref'}
+              </span>
+              <button
+                type="button"
+                onClick={() => signOut()}
+                className="rounded-lg border border-[#283239] px-3 py-2 text-sm font-semibold text-slate-700 dark:text-white"
+              >
+                Cikis
+              </button>
+            </div>
+          )}
         </div>
       </header>
       
