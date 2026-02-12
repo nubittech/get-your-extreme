@@ -35,9 +35,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authModalMode, setAuthModalMode] = useState<AuthModalMode>('signin');
 
   const loadProfile = async (authUser: User) => {
-    await ensureProfileRow(authUser.id, {
-      fullName: String(authUser.user_metadata?.full_name ?? '')
-    });
+    try {
+      await ensureProfileRow(authUser.id, {
+        fullName: String(authUser.user_metadata?.full_name ?? '')
+      });
+    } catch (error) {
+      console.warn('Profile ensure warning:', error);
+    }
     const nextProfile = await readUserProfile(authUser.id);
     setProfile(nextProfile);
   };
