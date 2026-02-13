@@ -62,16 +62,21 @@ export const ensureProfileRow = async (
   }
 
   if (existing) {
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({
-        full_name: fullName,
-        phone
-      })
-      .eq('id', userId);
+    // Only update fields that have a non-empty value to avoid
+    // overwriting existing data with null/empty from user_metadata.
+    const updates: Record<string, string> = {};
+    if (fullName) updates.full_name = fullName;
+    if (phone) updates.phone = phone;
 
-    if (updateError) {
-      throw new Error(`Profile update failed: ${updateError.message}`);
+    if (Object.keys(updates).length > 0) {
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId);
+
+      if (updateError) {
+        throw new Error(`Profile update failed: ${updateError.message}`);
+      }
     }
     return;
   }
@@ -96,17 +101,26 @@ export const ensureProfileRow = async (
 export const readUserProfile = async (userId: string): Promise<UserProfile> => {
   const supabase = requireSupabase();
 
-  const [{ data: profileRow, error: profileError }, { data: roleRow, error: roleError }] =
-    await Promise.all([
-      supabase.from('profiles').select('full_name, phone, ref_code').eq('id', userId).maybeSingle(),
-      supabase.from('user_roles').select('role').eq('user_id', userId).maybeSingle()
-    ]);
+  // Run both queries concurrently but handle failures independently so
+  // a single table RLS issue doesn't block the entire profile.
+  const [profileResult, roleResult] = await Promise.all([
+    supabase.from('profiles').select('full_name, phone, ref_code').eq('id', userId).maybeSingle(),
+    supabase.from('user_roles').select('role').eq('user_id', userId).maybeSingle()
+  ]);
 
-  if (profileError) {
-    throw new Error(`Profile fetch failed: ${profileError.message}`);
+  if (profileResult.error) {
+    console.warn('Profile fetch warning:', profileResult.error.message);
   }
-  if (roleError) {
-    throw new Error(`Role fetch failed: ${roleError.message}`);
+  if (roleResult.error) {
+    console.warn('Role fetch warning:', roleResult.error.message);
+  }
+
+  const profileRow = profileResult.data;
+  const roleRow = roleResult.data;
+
+  // If both queries failed, throw so the caller can fall back to cache.
+  if (profileResult.error && roleResult.error) {
+    throw new Error(`Profile and role fetch failed: ${profileResult.error.message}; ${roleResult.error.message}`);
   }
 
   const roleValue = roleRow?.role;

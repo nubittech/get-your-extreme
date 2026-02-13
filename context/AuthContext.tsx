@@ -93,42 +93,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // onAuthStateChange listener can skip the redundant INITIAL_SESSION event.
   const initialRestoreDoneRef = useRef(false);
 
+  // Prevent concurrent loadProfile calls from racing each other.
+  const profileLoadIdRef = useRef(0);
+
   const loadProfile = useCallback(async (authUser: User): Promise<UserProfile | null> => {
+    const loadId = ++profileLoadIdRef.current;
+
     // Immediately apply cached profile so the UI is not blank.
     const cached = readCachedProfile(authUser.id);
     if (cached) {
       setProfile(cached);
     }
 
-    try {
-      await ensureProfileRow(authUser.id, {
-        fullName: String(authUser.user_metadata?.full_name ?? '')
-      });
-    } catch (error) {
-      console.warn('Profile ensure warning:', error);
-      // Non-fatal — continue to read existing profile.
-    }
+    // ensureProfileRow can overwrite existing data with empty values when
+    // full_name comes from user_metadata that may be blank.  Only call it
+    // when there is no existing profile row yet — readUserProfile will
+    // tell us if the row exists.
+    let freshProfile: UserProfile | null = null;
 
     try {
-      const nextProfile = await readUserProfile(authUser.id);
+      freshProfile = await readUserProfile(authUser.id);
+    } catch (error) {
+      console.warn('Profile read warning:', error);
+    }
+
+    // If there is no profile row at all, create one.
+    if (!freshProfile || (!freshProfile.refCode && !freshProfile.fullName)) {
+      try {
+        await ensureProfileRow(authUser.id, {
+          fullName: String(authUser.user_metadata?.full_name ?? '')
+        });
+        // Re-read after creation.
+        try {
+          freshProfile = await readUserProfile(authUser.id);
+        } catch {
+          // keep whatever we had
+        }
+      } catch (error) {
+        console.warn('Profile ensure warning:', error);
+      }
+    }
+
+    // Bail out if a newer loadProfile call has started.
+    if (loadId !== profileLoadIdRef.current) {
+      return cached ?? freshProfile;
+    }
+
+    if (freshProfile) {
       const mergedProfile: UserProfile = {
-        fullName: nextProfile.fullName ?? cached?.fullName ?? null,
-        phone: nextProfile.phone ?? cached?.phone ?? null,
-        refCode: nextProfile.refCode ?? cached?.refCode ?? null,
-        role: nextProfile.role ?? cached?.role ?? null
+        fullName: freshProfile.fullName ?? cached?.fullName ?? null,
+        phone: freshProfile.phone ?? cached?.phone ?? null,
+        refCode: freshProfile.refCode ?? cached?.refCode ?? null,
+        role: freshProfile.role ?? cached?.role ?? null
       };
       setProfile(mergedProfile);
       writeCachedProfile(authUser.id, mergedProfile);
       return mergedProfile;
-    } catch (error) {
-      console.warn('Profile read warning:', error);
-      // Fall back to cached data so the UI stays usable.
-      if (cached) {
-        setProfile(cached);
-        return cached;
-      }
-      return null;
     }
+
+    // Fall back to cached data so the UI stays usable.
+    if (cached) {
+      setProfile(cached);
+      return cached;
+    }
+    return null;
   }, []);
 
   useEffect(() => {
@@ -292,8 +320,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Immediately apply cached profile so there's no "No Ref" flash.
     const cached = readCachedProfile(authUser.id);
     if (cached) setProfile(cached);
-    // Then load full profile in background.
-    void loadProfile(authUser);
+    // Await full profile load so the UI has the real data (role, refCode)
+    // before the modal closes and components re-render.
+    await loadProfile(authUser);
     setAuthModalOpen(false);
   }, [loadProfile]);
 
