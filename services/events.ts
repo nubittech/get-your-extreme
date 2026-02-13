@@ -1,6 +1,6 @@
 import { EVENT_SCHEDULE } from '../data/eventSchedule';
 import { EventCreateInput, EventScheduleItem } from '../types/event';
-import { requireSupabase, SUPABASE_EVENTS_TABLE } from './supabase';
+import { requireSupabase, requireSupabasePublic, SUPABASE_EVENTS_TABLE } from './supabase';
 
 const STORAGE_KEY = 'events_schedule';
 const API_MODE = import.meta.env.VITE_RESERVATIONS_API_MODE ?? 'local';
@@ -76,8 +76,11 @@ const mapSupabaseRow = (row: Record<string, unknown>): EventScheduleItem => ({
 
 export const listEvents = async (): Promise<EventScheduleItem[]> => {
   if (isSupabaseMode()) {
-    const supabase = requireSupabase();
-    const { data, error } = await supabase
+    // Use the session-free public client so that reads always go through
+    // the anon role. This prevents RLS policies tied to a specific user
+    // from hiding events that were inserted by another user (e.g. admin).
+    const client = requireSupabasePublic();
+    const { data, error } = await client
       .from(SUPABASE_EVENTS_TABLE)
       .select('*')
       .order('date', { ascending: true })
