@@ -20,6 +20,7 @@ const AdminDashboard: React.FC = () => {
   const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [usersLoadError, setUsersLoadError] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [eventForm, setEventForm] = useState({
     category: 'SUP' as ExperienceCategory,
@@ -302,37 +303,128 @@ const AdminDashboard: React.FC = () => {
       </header>
       
       <div className="flex flex-1 overflow-hidden">
-        {/* Side Navigation */}
-        <aside className="w-64 flex flex-col justify-between border-r border-[#283239] bg-[#f6f7f8] dark:bg-[#101a22] p-4 hidden lg:flex">
-          <div className="flex flex-col gap-8">
-            <div className="flex flex-col px-3">
-              <h1 className="text-slate-900 dark:text-white text-base font-bold leading-normal">Admin Panel</h1>
-              <p className="text-[#9dadb9] text-xs font-normal">Antalya Water Sports</p>
+        {/* Side Panel — Registered Users */}
+        <aside className="w-72 flex flex-col border-r border-[#283239] bg-[#f6f7f8] dark:bg-[#101a22] hidden lg:flex">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#283239]">
+            <div>
+              <h1 className="text-slate-900 dark:text-white text-sm font-bold">Kayitli Uyeler</h1>
+              <p className="text-[#9dadb9] text-[10px]">Sistemde kayitli hesaplar</p>
             </div>
-            <nav className="flex flex-col gap-2">
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#1183d4] text-white">
-                <span className="material-symbols-outlined text-[22px]">dashboard</span>
-                <p className="text-sm font-semibold">Dashboard</p>
-              </div>
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dadb9]">
-                <span className="material-symbols-outlined text-[20px]">route</span>
-                <p className="text-sm font-medium">Route requests are listed below</p>
-              </div>
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dadb9]">
-                <span className="material-symbols-outlined text-[20px]">group</span>
-                <p className="text-sm font-medium">Use search to filter by name or route</p>
-              </div>
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9dadb9] mt-4 border-t border-[#283239] pt-6">
-                <span className="material-symbols-outlined text-[20px]">event_available</span>
-                <p className="text-sm font-medium">Status updates will be added with backend</p>
-              </div>
-            </nav>
+            <div className="flex items-center gap-1.5 rounded-md bg-[#1183d4]/10 px-2 py-1">
+              <span className="material-symbols-outlined text-[#1183d4] text-[16px]">group</span>
+              <span className="text-sm font-bold text-[#1183d4]">{registeredUsers.length}</span>
+            </div>
           </div>
-          <div className="flex flex-col gap-4 p-3 bg-[#1183d4]/10 rounded-xl">
-            <p className="text-xs text-[#1183d4] font-bold uppercase tracking-wider">System Status</p>
-            <div className="flex items-center gap-2">
-              <div className="size-2 rounded-full bg-emerald-500"></div>
-              <p className="text-slate-900 dark:text-white text-xs">All systems operational</p>
+
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {usersLoadError && (
+              <div className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 mx-1 mb-2">
+                <p className="text-[10px] font-semibold text-red-400">{usersLoadError}</p>
+              </div>
+            )}
+            {usersLoading && <p className="text-xs text-[#9dadb9] px-2 py-4">Yukleniyor...</p>}
+            {!usersLoading && registeredUsers.length === 0 && !usersLoadError && (
+              <p className="text-xs text-[#9dadb9] px-2 py-4">Kayitli kullanici yok.</p>
+            )}
+            {!usersLoading && registeredUsers.map((item) => {
+              const isSelected = selectedUserId === item.id;
+              const userReservations = reservations.filter(
+                (r) => r.referredByCode && item.refCode && r.referredByCode.toUpperCase() === item.refCode.toUpperCase()
+              );
+              return (
+                <div key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedUserId(isSelected ? null : item.id)}
+                    className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors ${
+                      isSelected
+                        ? 'bg-[#1183d4]/10 ring-1 ring-[#1183d4]/30'
+                        : 'hover:bg-slate-100 dark:hover:bg-[#283239]/40'
+                    }`}
+                  >
+                    <div className="size-7 shrink-0 rounded-full bg-[#1183d4]/20 flex items-center justify-center text-[#1183d4] font-bold text-[10px]">
+                      {(item.fullName ?? '?').charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{item.fullName || 'Isimsiz'}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] font-mono text-[#9dadb9]">{item.refCode || '-'}</span>
+                        <span className={`inline-flex rounded px-1 py-px text-[9px] font-bold ${
+                          item.role === 'admin'
+                            ? 'bg-purple-500/15 text-purple-400'
+                            : item.role === 'customer'
+                              ? 'bg-[#1183d4]/15 text-[#1183d4]'
+                              : 'bg-slate-500/15 text-slate-400'
+                        }`}>
+                          {item.role || '?'}
+                        </span>
+                      </div>
+                    </div>
+                    <span className={`material-symbols-outlined text-[14px] text-[#9dadb9] transition-transform ${isSelected ? 'rotate-180' : ''}`}>
+                      expand_more
+                    </span>
+                  </button>
+
+                  {/* Expanded Detail Panel */}
+                  {isSelected && (
+                    <div className="mx-2 mt-1 mb-2 rounded-lg border border-[#283239] bg-[#16202a] p-3 space-y-2.5">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <p className="text-[9px] uppercase tracking-wider text-[#9dadb9]">Telefon</p>
+                          <p className="text-xs text-white font-medium">{item.phone || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] uppercase tracking-wider text-[#9dadb9]">Kayit</p>
+                          <p className="text-xs text-white font-medium">
+                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString('tr-TR') : '-'}
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[9px] uppercase tracking-wider text-[#9dadb9]">Ref Kodu</p>
+                        <p className="text-xs text-white font-mono font-bold">{item.refCode || '-'}</p>
+                      </div>
+                      <div className="border-t border-[#283239] pt-2">
+                        <p className="text-[9px] uppercase tracking-wider text-[#9dadb9] mb-1">
+                          Referans Rezervasyonlari ({userReservations.length})
+                        </p>
+                        {userReservations.length === 0 && (
+                          <p className="text-[10px] text-[#9dadb9]">Bu kullaniciya ait rezervasyon yok.</p>
+                        )}
+                        {userReservations.slice(0, 5).map((r) => (
+                          <div key={r.id} className="flex items-center justify-between py-1">
+                            <div>
+                              <p className="text-[10px] text-white font-medium">{r.customerName}</p>
+                              <p className="text-[9px] text-[#9dadb9]">{r.activity} — {r.date}</p>
+                            </div>
+                            <span className={`rounded px-1.5 py-px text-[8px] font-bold ${
+                              r.status === 'Confirmed' ? 'bg-[#1183d4]/15 text-[#1183d4]'
+                                : r.status === 'Completed' ? 'bg-emerald-500/15 text-emerald-400'
+                                : r.status === 'Cancelled' ? 'bg-red-500/15 text-red-400'
+                                : 'bg-amber-500/15 text-amber-400'
+                            }`}>
+                              {r.status}
+                            </span>
+                          </div>
+                        ))}
+                        {userReservations.length > 5 && (
+                          <p className="text-[9px] text-[#1183d4] mt-1">+{userReservations.length - 5} daha...</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="border-t border-[#283239] p-3">
+            <div className="flex flex-col gap-2 p-2.5 bg-[#1183d4]/10 rounded-lg">
+              <p className="text-[10px] text-[#1183d4] font-bold uppercase tracking-wider">System Status</p>
+              <div className="flex items-center gap-2">
+                <div className="size-1.5 rounded-full bg-emerald-500"></div>
+                <p className="text-slate-900 dark:text-white text-[10px]">All systems operational</p>
+              </div>
             </div>
           </div>
         </aside>
@@ -573,85 +665,6 @@ const AdminDashboard: React.FC = () => {
                     ))}
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Registered Users */}
-          <div className="px-8 pb-4">
-            <div className="rounded-xl p-5 border border-slate-200 dark:border-[#3b4954] bg-white dark:bg-[#101a22]/50 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-lg font-bold text-slate-900 dark:text-white">Kayitli Uyeler</p>
-                  <p className="text-xs text-[#9dadb9]">
-                    Sistemde kayitli hesaplar, ref kodlari ve roller.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#1183d4]">group</span>
-                  <span className="text-2xl font-bold text-slate-900 dark:text-white">{registeredUsers.length}</span>
-                </div>
-              </div>
-              {usersLoadError && (
-                <div className="mb-4 rounded-lg border border-red-400/30 bg-red-500/10 px-4 py-3">
-                  <p className="text-sm font-semibold text-red-400">{usersLoadError}</p>
-                  <p className="text-xs text-red-400/70 mt-1">
-                    Supabase RLS policy kontrol edin: profiles ve user_roles tablolarinda admin icin SELECT izni gerekli.
-                  </p>
-                </div>
-              )}
-              {usersLoading && <p className="text-sm text-[#9dadb9] py-4">Kullanicilar yukleniyor...</p>}
-              {!usersLoading && registeredUsers.length === 0 && !usersLoadError && (
-                <p className="text-sm text-[#9dadb9] py-4">Kayitli kullanici bulunamadi.</p>
-              )}
-              {!usersLoading && registeredUsers.length > 0 && (
-                <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-[#3b4954]">
-                  <table className="w-full text-left">
-                    <thead className="bg-slate-50 dark:bg-[#1a262f] text-slate-600 dark:text-[#9dadb9] text-xs uppercase font-bold tracking-wider">
-                      <tr>
-                        <th className="px-4 py-3">Uye</th>
-                        <th className="px-4 py-3">Ref Kodu</th>
-                        <th className="px-4 py-3">Rol</th>
-                        <th className="px-4 py-3">Telefon</th>
-                        <th className="px-4 py-3">Kayit Tarihi</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-[#283239] text-sm">
-                      {registeredUsers.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-[#283239]/30 transition-colors">
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
-                              <div className="size-8 rounded-full bg-[#1183d4]/20 flex items-center justify-center text-[#1183d4] font-bold text-xs">
-                                {(item.fullName ?? '?').charAt(0).toUpperCase()}
-                              </div>
-                              <p className="font-semibold text-slate-900 dark:text-white">{item.fullName || 'Isimsiz'}</p>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="inline-flex items-center rounded-md border border-slate-300 dark:border-[#3b4954] bg-slate-100 dark:bg-[#1a262f] px-2 py-0.5 text-xs font-mono font-bold text-slate-700 dark:text-white">
-                              {item.refCode || '-'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border ${
-                              item.role === 'admin'
-                                ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                                : item.role === 'customer'
-                                  ? 'bg-[#1183d4]/10 text-[#1183d4] border-[#1183d4]/20'
-                                  : 'bg-slate-500/10 text-slate-400 border-slate-500/20'
-                            }`}>
-                              {item.role || 'belirsiz'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-[#9dadb9]">{item.phone || '-'}</td>
-                          <td className="px-4 py-3 text-[#9dadb9] text-xs">
-                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString('tr-TR') : '-'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
           </div>
 
