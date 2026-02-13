@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Home from './pages/Home';
 import RoutesPage from './pages/Routes';
@@ -25,6 +25,7 @@ const HashRedirectHandler = () => {
 
 const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, profile, authLoading, openAuthModal } = useAuth();
+  const [profileWaitExpired, setProfileWaitExpired] = useState(false);
 
   if (!isSupabaseConfigured) {
     return (
@@ -45,6 +46,20 @@ const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     }
   }, [authLoading, user, openAuthModal]);
 
+  // Give the background profile fetch a short window to complete before
+  // showing the "not admin" rejection.  Without this, the component
+  // would flash the rejection message while profile is still loading.
+  useEffect(() => {
+    if (user && !profile) {
+      setProfileWaitExpired(false);
+      const timer = setTimeout(() => setProfileWaitExpired(true), 3000);
+      return () => clearTimeout(timer);
+    }
+    if (profile) {
+      setProfileWaitExpired(true);
+    }
+  }, [user, profile]);
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#101a22] text-white/80">
@@ -55,6 +70,15 @@ const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   if (!user) {
     return <Navigate to="/" replace />;
+  }
+
+  // User exists but profile hasn't loaded yet — wait for background fetch.
+  if (!profile && !profileWaitExpired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#101a22] text-white/80">
+        Loading profile...
+      </div>
+    );
   }
 
   if (profile?.role !== 'admin') {

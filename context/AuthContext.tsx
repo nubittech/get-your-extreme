@@ -175,7 +175,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       try {
         // 1. Attempt to get the current session.
-        let sessionResult = await supabase.auth.getSession();
+        const sessionResult = await supabase.auth.getSession();
         let sessionUser = sessionResult.data.session?.user ?? null;
 
         // 2. If no session, try refreshing the token.
@@ -190,11 +190,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (sessionUser) {
           setUser(sessionUser);
-          await loadProfile(sessionUser);
+
+          // Apply cached profile immediately so authLoading can clear
+          // even if the network fetch hangs or is slow.
+          const cached = readCachedProfile(sessionUser.id);
+          if (cached) {
+            setProfile(cached);
+          }
+
+          // Mark loading done BEFORE the async profile fetch so the UI
+          // can render with cached data while the fresh fetch proceeds.
+          initialRestoreDoneRef.current = true;
+          setAuthLoading(false);
+
+          // Fetch fresh profile in background — do not block loading.
+          loadProfile(sessionUser).catch(() => {
+            // loadProfile already handles its own errors and sets
+            // profile from cache internally, so nothing extra needed.
+          });
+          return;
         } else {
-          // No valid session — apply cached profile briefly so the UI
-          // doesn't flash "No Ref" before the loading state clears.
-          // But ultimately clear everything since there's no session.
           setUser(null);
           setProfile(null);
         }
@@ -204,11 +219,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
           setProfile(null);
         }
-      } finally {
-        if (isMounted) {
-          initialRestoreDoneRef.current = true;
-          setAuthLoading(false);
-        }
+      }
+
+      if (isMounted) {
+        initialRestoreDoneRef.current = true;
+        setAuthLoading(false);
       }
     };
 
