@@ -579,42 +579,79 @@ const AdminDashboard: React.FC = () => {
           {/* Registered Users */}
           <div className="px-8 pb-4">
             <div className="rounded-xl p-5 border border-slate-200 dark:border-[#3b4954] bg-white dark:bg-[#101a22]/50 shadow-sm">
-              <div className="mb-3">
-                <p className="text-lg font-bold text-slate-900 dark:text-white">Registered Users</p>
-                <p className="text-xs text-[#9dadb9]">
-                  Sistemde kayitli hesaplar ve ref kodlari.
-                </p>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">Kayitli Uyeler</p>
+                  <p className="text-xs text-[#9dadb9]">
+                    Sistemde kayitli hesaplar, ref kodlari ve roller.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#1183d4]">group</span>
+                  <span className="text-2xl font-bold text-slate-900 dark:text-white">{registeredUsers.length}</span>
+                </div>
               </div>
               {usersLoadError && (
-                <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                  {usersLoadError}
-                </p>
+                <div className="mb-4 rounded-lg border border-red-400/30 bg-red-500/10 px-4 py-3">
+                  <p className="text-sm font-semibold text-red-400">{usersLoadError}</p>
+                  <p className="text-xs text-red-400/70 mt-1">
+                    Supabase RLS policy kontrol edin: profiles ve user_roles tablolarinda admin icin SELECT izni gerekli.
+                  </p>
+                </div>
               )}
-              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-                {usersLoading && <p className="text-sm text-[#9dadb9]">Loading users...</p>}
-                {!usersLoading && registeredUsers.length === 0 && (
-                  <p className="text-sm text-[#9dadb9]">No registered users found.</p>
-                )}
-                {!usersLoading &&
-                  registeredUsers.map((item) => (
-                    <div
-                      key={item.id}
-                      className="rounded-lg border border-slate-200 dark:border-[#33414d] px-3 py-2"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white">
-                            {item.fullName || 'Unnamed User'}
-                          </p>
-                          <p className="text-xs text-[#9dadb9]">
-                            Ref: {item.refCode || 'No Ref'} | Role: {item.role || 'unknown'}
-                          </p>
-                        </div>
-                        <p className="text-xs text-[#9dadb9]">{item.phone || '-'}</p>
-                      </div>
-                    </div>
-                  ))}
-              </div>
+              {usersLoading && <p className="text-sm text-[#9dadb9] py-4">Kullanicilar yukleniyor...</p>}
+              {!usersLoading && registeredUsers.length === 0 && !usersLoadError && (
+                <p className="text-sm text-[#9dadb9] py-4">Kayitli kullanici bulunamadi.</p>
+              )}
+              {!usersLoading && registeredUsers.length > 0 && (
+                <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-[#3b4954]">
+                  <table className="w-full text-left">
+                    <thead className="bg-slate-50 dark:bg-[#1a262f] text-slate-600 dark:text-[#9dadb9] text-xs uppercase font-bold tracking-wider">
+                      <tr>
+                        <th className="px-4 py-3">Uye</th>
+                        <th className="px-4 py-3">Ref Kodu</th>
+                        <th className="px-4 py-3">Rol</th>
+                        <th className="px-4 py-3">Telefon</th>
+                        <th className="px-4 py-3">Kayit Tarihi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 dark:divide-[#283239] text-sm">
+                      {registeredUsers.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-[#283239]/30 transition-colors">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <div className="size-8 rounded-full bg-[#1183d4]/20 flex items-center justify-center text-[#1183d4] font-bold text-xs">
+                                {(item.fullName ?? '?').charAt(0).toUpperCase()}
+                              </div>
+                              <p className="font-semibold text-slate-900 dark:text-white">{item.fullName || 'Isimsiz'}</p>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center rounded-md border border-slate-300 dark:border-[#3b4954] bg-slate-100 dark:bg-[#1a262f] px-2 py-0.5 text-xs font-mono font-bold text-slate-700 dark:text-white">
+                              {item.refCode || '-'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border ${
+                              item.role === 'admin'
+                                ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                                : item.role === 'customer'
+                                  ? 'bg-[#1183d4]/10 text-[#1183d4] border-[#1183d4]/20'
+                                  : 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                            }`}>
+                              {item.role || 'belirsiz'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-[#9dadb9]">{item.phone || '-'}</td>
+                          <td className="px-4 py-3 text-[#9dadb9] text-xs">
+                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString('tr-TR') : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
 

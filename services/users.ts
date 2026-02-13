@@ -18,19 +18,21 @@ export const listRegisteredUsers = async (): Promise<RegisteredUser[]> => {
     .order('created_at', { ascending: false });
 
   if (profilesError) {
+    console.warn('Users list warning:', profilesError.message);
     throw new Error(`Users list failed: ${profilesError.message}`);
   }
 
   const userIds = (profiles ?? []).map((item) => String(item.id));
   if (userIds.length === 0) return [];
 
+  // Fetch roles independently — don't let a roles error block the user list.
   const { data: roles, error: rolesError } = await supabase
     .from('user_roles')
     .select('user_id, role')
     .in('user_id', userIds);
 
   if (rolesError) {
-    throw new Error(`User roles fetch failed: ${rolesError.message}`);
+    console.warn('User roles fetch warning:', rolesError.message);
   }
 
   const roleMap = new Map<string, 'admin' | 'customer'>();
