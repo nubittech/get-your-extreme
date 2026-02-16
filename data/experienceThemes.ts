@@ -18,9 +18,9 @@ export type ExperienceTheme = {
 };
 
 export const EXPERIENCE_CATEGORY_LABELS: Record<ExperienceCategory, string> = {
-  SUP: '🌊 WATER ADVENTURES',
-  BIKE: '🏔 SUMMIT DIVISION',
-  SKI: '🌲 OUTDOOR LIFE'
+  SUP: 'WATER ADVENTURES',
+  BIKE: 'OUTDOOR LIFE',
+  SKI: 'SUMMIT DIVISION'
 };
 
 export const EXPERIENCE_THEMES: Record<ExperienceCategory, ExperienceTheme> = {
