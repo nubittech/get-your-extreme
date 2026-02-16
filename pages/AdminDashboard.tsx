@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { deleteReservation, listReservations } from '../services/reservations';
 import { Reservation } from '../types/reservation';
-import { createEvent, deleteEvent, listEvents } from '../services/events';
+import { createEvent, deleteEvent, listEvents, updateEvent } from '../services/events';
 import { EventScheduleItem } from '../types/event';
-import { ExperienceCategory } from '../data/experienceThemes';
+import { ExperienceCategory, EXPERIENCE_CATEGORY_LABELS } from '../data/experienceThemes';
 import { useAuth } from '../context/AuthContext';
 import { listRegisteredUsers, RegisteredUser } from '../services/users';
 
@@ -22,6 +22,7 @@ const AdminDashboard: React.FC = () => {
   const [usersLoadError, setUsersLoadError] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [eventForm, setEventForm] = useState({
     category: 'SUP' as ExperienceCategory,
     date: '',
@@ -176,7 +177,7 @@ const AdminDashboard: React.FC = () => {
 
     setIsCreatingEvent(true);
     try {
-      const created = await createEvent({
+      const payload = {
         category: eventForm.category,
         date: eventForm.date,
         time: eventForm.time,
@@ -187,21 +188,72 @@ const AdminDashboard: React.FC = () => {
         summary,
         details,
         serviceStops
-      });
-      setEvents((current) =>
-        [...current, created].sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
-      );
-      setEventForm((current) => ({
-        ...current,
+      };
+
+      if (editingEventId) {
+        const updated = await updateEvent(editingEventId, payload);
+        setEvents((current) =>
+          current
+            .map((item) => (item.id === editingEventId ? updated : item))
+            .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
+        );
+        setEditingEventId(null);
+      } else {
+        const created = await createEvent(payload);
+        setEvents((current) =>
+          [...current, created].sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
+        );
+      }
+
+      setEventForm({
+        category: 'SUP',
+        date: '',
+        time: '08:00',
+        durationHours: '2',
+        capacity: '12',
+        price: '55',
         title: '',
         summary: '',
-        details: ''
-      }));
+        details: '',
+        serviceStops: 'Kemer Saat Kulesi, Goynuk, Liman'
+      });
     } catch {
-      alert('Event could not be created. Please check backend settings.');
+      alert(editingEventId ? 'Event could not be updated.' : 'Event could not be created. Please check backend settings.');
     } finally {
       setIsCreatingEvent(false);
     }
+  };
+
+  const handleEditEvent = (eventItem: EventScheduleItem) => {
+    setEditingEventId(eventItem.id);
+    setEventForm({
+      category: eventItem.category,
+      date: eventItem.date,
+      time: eventItem.time,
+      durationHours: String(eventItem.durationHours),
+      capacity: String(eventItem.capacity),
+      price: String(eventItem.price),
+      title: eventItem.title,
+      summary: eventItem.summary,
+      details: eventItem.details,
+      serviceStops: eventItem.serviceStops.join(', ')
+    });
+  };
+
+  const cancelEditEvent = () => {
+    setEditingEventId(null);
+    setEventForm({
+      category: 'SUP',
+      date: '',
+      time: '08:00',
+      durationHours: '2',
+      capacity: '12',
+      price: '55',
+      title: '',
+      summary: '',
+      details: '',
+      serviceStops: 'Kemer Saat Kulesi, Goynuk, Liman'
+    });
   };
 
   const handleDeleteEvent = async (eventId: string) => {
@@ -209,6 +261,9 @@ const AdminDashboard: React.FC = () => {
     try {
       await deleteEvent(eventId);
       setEvents((current) => current.filter((item) => item.id !== eventId));
+      if (editingEventId === eventId) {
+        cancelEditEvent();
+      }
     } catch {
       alert('Event could not be deleted.');
     }
@@ -495,9 +550,11 @@ const AdminDashboard: React.FC = () => {
                 className="rounded-xl p-5 border border-slate-200 dark:border-[#3b4954] bg-white dark:bg-[#101a22]/50 shadow-sm space-y-3"
               >
                 <div>
-                  <p className="text-lg font-bold text-slate-900 dark:text-white">Create Event</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">
+                    {editingEventId ? 'Edit Event' : 'Create Event'}
+                  </p>
                   <p className="text-xs text-[#9dadb9]">
-                    SUP / Bisiklet / Kayak etkinligini tarih tablosuna ekler.
+                    {EXPERIENCE_CATEGORY_LABELS.SUP} / {EXPERIENCE_CATEGORY_LABELS.BIKE} / {EXPERIENCE_CATEGORY_LABELS.SKI} etkinligini tarih tablosuna ekler.
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -509,9 +566,9 @@ const AdminDashboard: React.FC = () => {
                       onChange={handleEventFormChange}
                       className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
                     >
-                      <option value="SUP">SUP</option>
-                      <option value="BIKE">Bisiklet</option>
-                      <option value="SKI">Kayak</option>
+                      <option value="SUP">{EXPERIENCE_CATEGORY_LABELS.SUP}</option>
+                      <option value="BIKE">{EXPERIENCE_CATEGORY_LABELS.BIKE}</option>
+                      <option value="SKI">{EXPERIENCE_CATEGORY_LABELS.SKI}</option>
                     </select>
                   </label>
                   <label className="text-xs font-bold text-slate-600 dark:text-white/70">
@@ -613,13 +670,24 @@ const AdminDashboard: React.FC = () => {
                     className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
                   />
                 </label>
-                <button
-                  type="submit"
-                  disabled={isCreatingEvent}
-                  className="rounded-lg px-4 py-2 bg-[#1183d4] text-white text-sm font-bold disabled:opacity-60"
-                >
-                  {isCreatingEvent ? 'Creating...' : 'Create Event'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    disabled={isCreatingEvent}
+                    className="rounded-lg px-4 py-2 bg-[#1183d4] text-white text-sm font-bold disabled:opacity-60"
+                  >
+                    {isCreatingEvent ? (editingEventId ? 'Updating...' : 'Creating...') : editingEventId ? 'Update Event' : 'Create Event'}
+                  </button>
+                  {editingEventId && (
+                    <button
+                      type="button"
+                      onClick={cancelEditEvent}
+                      className="rounded-lg px-4 py-2 border border-slate-300 dark:border-[#3b4954] text-sm font-semibold text-slate-700 dark:text-white"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
               </form>
 
               <div className="rounded-xl p-5 border border-slate-200 dark:border-[#3b4954] bg-white dark:bg-[#101a22]/50 shadow-sm">
@@ -653,13 +721,22 @@ const AdminDashboard: React.FC = () => {
                               {item.date} {item.time} | EUR {item.price} | Seats {item.booked}/{item.capacity}
                             </p>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteEvent(item.id)}
-                            className="text-xs rounded-md border border-red-300 px-2 py-1 text-red-500"
-                          >
-                            Delete
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleEditEvent(item)}
+                              className="text-xs rounded-md border border-[#1183d4]/40 px-2 py-1 text-[#1183d4]"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteEvent(item.id)}
+                              className="text-xs rounded-md border border-red-300 px-2 py-1 text-red-500"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}

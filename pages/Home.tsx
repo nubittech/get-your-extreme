@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { useExperience } from '../context/ExperienceContext';
 import EventCalendarPanel from '../components/EventCalendarPanel';
-import { ExperienceCategory } from '../data/experienceThemes';
+import { ExperienceCategory, EXPERIENCE_CATEGORY_LABELS } from '../data/experienceThemes';
 
 const heroCategoryItems: Array<{
   key: ExperienceCategory;
   label: string;
   icon: string;
 }> = [
-  { key: 'SUP', label: 'SUP', icon: 'surfing' },
-  { key: 'BIKE', label: 'BISIKLET', icon: 'directions_bike' },
-  { key: 'SKI', label: 'KAYAK', icon: 'downhill_skiing' }
+  { key: 'SUP', label: EXPERIENCE_CATEGORY_LABELS.SUP, icon: 'surfing' },
+  { key: 'BIKE', label: EXPERIENCE_CATEGORY_LABELS.BIKE, icon: 'directions_bike' },
+  { key: 'SKI', label: EXPERIENCE_CATEGORY_LABELS.SKI, icon: 'downhill_skiing' }
 ];
 
 const Home: React.FC = () => {
@@ -47,7 +47,7 @@ const Home: React.FC = () => {
         
         {/* Hero Content */}
         <div className="relative z-10 w-full max-w-[1200px] px-6 pt-28 md:pt-48 pb-12 flex flex-col items-center text-center">
-          <div className="w-full max-w-[560px] mb-8">
+          <div className="w-full max-w-[980px] mb-8">
             <div
               className="relative grid grid-cols-3 p-1 rounded-xl border border-white/15 bg-black/25 backdrop-blur-md"
               aria-label="Category selector"
@@ -65,7 +65,7 @@ const Home: React.FC = () => {
                   key={item.key}
                   type="button"
                   onClick={() => setActiveCategory(item.key)}
-                  className={`relative z-10 h-11 md:h-12 rounded-lg flex items-center justify-center gap-2 text-xs md:text-sm font-bold tracking-wide transition-colors ${
+                  className={`relative z-10 min-h-11 md:min-h-12 px-2 py-1 rounded-lg flex items-center justify-center gap-2 text-[10px] md:text-xs font-bold tracking-wide leading-tight text-center transition-colors ${
                     activeCategory === item.key ? 'text-white' : 'text-white/80 hover:text-white'
                   }`}
                 >
@@ -82,7 +82,7 @@ const Home: React.FC = () => {
             </span>
           </h1>
           <p className="text-white text-lg md:text-xl font-medium leading-relaxed max-w-2xl mb-12 drop-shadow-lg text-shadow-sm">
-            {theme.heroSubtitle}
+            {theme.heroSubtitle} We recommend reviewing our routes in the 'ROUTES' section before making a reservation.
           </p>
           <div id="booking-form" className="w-full max-w-6xl mt-2">
             <EventCalendarPanel embedded />
@@ -97,7 +97,7 @@ const Home: React.FC = () => {
             <h2 className="font-bold tracking-widest text-sm uppercase mb-3" style={{ color: theme.accent }}>{theme.label} Program</h2>
             <h3 className="text-4xl font-extrabold text-slate-900 dark:text-white">Why Choose Our Adventures</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12">
             <div className="flex flex-col items-center text-center group">
               <div className="size-16 rounded-2xl bg-[#1183d4]/10 flex items-center justify-center text-[#1183d4] mb-6 group-hover:bg-[#1183d4] group-hover:text-white transition-all">
                 <span className="material-symbols-outlined text-3xl">surfing</span>
@@ -119,6 +119,13 @@ const Home: React.FC = () => {
               <h4 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Safety First</h4>
               <p className="text-slate-600 dark:text-white/60 leading-relaxed">Certified professional instructors and rescue-ready protocols for a worry-free extreme experience.</p>
             </div>
+            <div className="flex flex-col items-center text-center group">
+              <div className="size-16 rounded-2xl bg-[#1183d4]/10 flex items-center justify-center text-[#1183d4] mb-6 group-hover:bg-[#1183d4] group-hover:text-white transition-all">
+                <span className="material-symbols-outlined text-3xl">airport_shuttle</span>
+              </div>
+              <h4 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Transfer Support</h4>
+              <p className="text-slate-600 dark:text-white/60 leading-relaxed">We offer transportation support for our international guests. All of our transfers are carried out with well-maintained vehicles that prioritize our guests&apos; comfort.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -128,10 +135,31 @@ const Home: React.FC = () => {
         <div className="max-w-[1200px] mx-auto px-10">
           <div className="flex flex-col md:flex-row items-center gap-16">
             <div className="flex-1 space-y-6">
-              <h2 className="text-3xl md:text-5xl font-extrabold leading-tight text-slate-900 dark:text-white">Master the Mediterranean <br/><span className="text-[#1183d4]">With Professionals</span></h2>
-              <p className="text-slate-600 dark:text-white/70 text-lg leading-relaxed">
-                Founded by extreme sports enthusiasts, GET YOUR EXTREME isn't just a booking service; it's a gateway to the most exhilarating moments in Antalya. Whether you're gliding over the crystal waters on a SUP or exploring the depths of the Blue Caves, we ensure every second is pure adrenaline.
-              </p>
+              <h2 className="text-3xl md:text-5xl font-extrabold leading-tight text-slate-900 dark:text-white">
+                Explore the Mediterranean Coast
+              </h2>
+              <div className="space-y-4 text-slate-600 dark:text-white/70 text-lg leading-relaxed">
+                <p>
+                  We plan every detail to turn outdoor sports into a smooth and enjoyable experience. Our goal is to make you feel safe, comfortable, and completely free on the water.
+                </p>
+                <p>
+                  With Antalya&apos;s widest range of SUP equipment, we offer boards suitable for every level. With our carefully designed sea routes, you head into nature and discover the hidden beauties of the Mediterranean.
+                </p>
+                <p>
+                  Throughout the activity, you can enjoy free photo or video shoots and get useful tips from our team. As you glide over calm waters, you enjoy being in the moment and build a real connection with nature.
+                </p>
+                <p>
+                  Do yoga on your SUP, grab your coffee and read your book in the middle of the sea, or explore the Antalya coastline on longer routes while having fun and improving your fitness.
+                </p>
+                <p>
+                  Swim in quiet and crystal-clear bays, dance with music, or meet new people along the way.
+                </p>
+                <p className="font-semibold text-slate-800 dark:text-white">
+                  This is not a tour.
+                  <br />
+                  Because wherever you are, freedom is always on your SUP.
+                </p>
+              </div>
               <div className="pt-4">
                 <a href="#booking-form" className="px-8 py-4 border-2 border-[#1183d4] text-[#1183d4] font-bold rounded-lg hover:bg-[#1183d4] hover:text-white transition-all flex items-center gap-2 w-fit">
                   Our Story <span className="material-symbols-outlined">trending_flat</span>

@@ -165,3 +165,62 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
   const current = readLocalEvents();
   writeLocalEvents(current.filter((item) => item.id !== eventId));
 };
+
+export const updateEvent = async (
+  eventId: string,
+  input: EventCreateInput
+): Promise<EventScheduleItem> => {
+  if (isSupabaseMode()) {
+    const supabase = requireSupabase();
+    const numericId = Number(eventId);
+    const isNumeric = Number.isFinite(numericId);
+    const matcher = isNumeric ? { key: 'id', value: numericId } : { key: 'id', value: eventId };
+
+    const { data, error } = await supabase
+      .from(SUPABASE_EVENTS_TABLE)
+      .update({
+        category: input.category,
+        date: input.date,
+        time: input.time,
+        duration_hours: input.durationHours,
+        capacity: input.capacity,
+        price: input.price,
+        title: input.title,
+        summary: input.summary,
+        details: input.details,
+        service_stops: input.serviceStops
+      })
+      .eq(matcher.key, matcher.value)
+      .select('*')
+      .single();
+
+    if (error || !data) {
+      throw new Error(`Supabase event update failed: ${error?.message ?? 'Unknown error'}`);
+    }
+
+    return mapSupabaseRow(data as Record<string, unknown>);
+  }
+
+  const current = readLocalEvents();
+  const existing = current.find((item) => item.id === eventId);
+  if (!existing) {
+    throw new Error('Event not found.');
+  }
+
+  const updated: EventScheduleItem = {
+    ...existing,
+    category: input.category,
+    date: input.date,
+    time: input.time,
+    durationHours: input.durationHours,
+    capacity: input.capacity,
+    price: input.price,
+    title: input.title,
+    summary: input.summary,
+    details: input.details,
+    serviceStops: input.serviceStops
+  };
+
+  writeLocalEvents(current.map((item) => (item.id === eventId ? updated : item)));
+  return updated;
+};

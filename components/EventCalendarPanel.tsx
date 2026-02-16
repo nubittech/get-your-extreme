@@ -31,6 +31,28 @@ const formatISODateLabel = (isoDate: string) => {
 const isValidPhoneNumber = (value: string) => /^[+]?[\d\s()-]{7,20}$/.test(value.trim());
 const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
+const parseEventDetailsLines = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+
+  let normalized = trimmed.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  // If admin entered a single-line payload, split by common bullet markers.
+  if (!normalized.includes('\n')) {
+    normalized = normalized
+      .replace(/\s+(?=(✅|✔|❌|⚠️|⚠|🧳|🥤|\+|•))/g, '\n')
+      .replace(
+        /\s+(?=(Included|Not Included|Important Information|What Should You Bring\?|Additional Info))/gi,
+        '\n'
+      );
+  }
+
+  return normalized
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+};
+
 type EventCalendarPanelProps = {
   embedded?: boolean;
 };
@@ -40,6 +62,7 @@ type ReservationFormState = {
   participants: string;
   fullName: string;
   email: string;
+  hotelName: string;
   phone: string;
   referralCode: string;
 };
@@ -54,6 +77,7 @@ type GeneratedTicket = {
   pickupStop: string;
   fullName: string;
   email: string;
+  hotelName: string;
   phone: string;
   participants: number;
   amount: number;
@@ -74,6 +98,7 @@ const buildTicketPayload = (
   pickupStop: form.pickupStop,
   fullName: form.fullName,
   email: form.email,
+  hotelName: form.hotelName,
   phone: form.phone,
   participants: Number(form.participants),
   amount: event.price * Number(form.participants),
@@ -89,6 +114,7 @@ const toTicketQrText = (ticket: GeneratedTicket) =>
     `Pickup:${ticket.pickupStop}`,
     `Name:${ticket.fullName}`,
     `Email:${ticket.email}`,
+    `Hotel:${ticket.hotelName || '-'}`,
     `Phone:${ticket.phone}`,
     `Seats:${ticket.participants}`,
     `Amount:EUR ${ticket.amount}`
@@ -156,6 +182,7 @@ const createTicketCanvas = async (ticket: GeneratedTicket, accent: string) => {
   const rows = [
     ['Passenger', ticket.fullName],
     ['Email', ticket.email],
+    ...(ticket.hotelName ? [['Hotel', ticket.hotelName]] : []),
     ['Phone', ticket.phone],
     ['Participants', String(ticket.participants)],
     ['Pickup Stop', ticket.pickupStop],
@@ -209,6 +236,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
     participants: '1',
     fullName: '',
     email: '',
+    hotelName: '',
     phone: '',
     referralCode: ''
   });
@@ -339,7 +367,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
         customerName: fullName,
         customerPhone: phone,
         activity: `${theme.label} Event: ${selectedEvent.title}`,
-        route: `Pickup ${reservationForm.pickupStop} | Seats ${seatsRequested} | ${selectedEvent.serviceStops.join(' -> ')}`,
+        route: `Pickup ${reservationForm.pickupStop}${reservationForm.hotelName.trim() ? ` | Hotel ${reservationForm.hotelName.trim()}` : ''} | Seats ${seatsRequested} | ${selectedEvent.serviceStops.join(' -> ')}`,
         date: activeDate,
         source: 'event',
         amount: selectedEvent.price * seatsRequested,
@@ -495,7 +523,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                     {hasEvent && (
                       <span
                         className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full"
-                        style={{ backgroundColor: theme.accent }}
+                        style={{ backgroundColor: '#facc15' }}
                       ></span>
                     )}
                   </button>
@@ -567,6 +595,9 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
 
                   {selectedEvent && (
                     <>
+                      {(() => {
+                        const detailLines = parseEventDetailsLines(selectedEvent.details);
+                        return (
                       <article className="rounded-xl border border-slate-200 dark:border-white/10 p-4 bg-slate-50 dark:bg-[#0f1922]">
                         <div className="flex items-start justify-between gap-3">
                           <h4 className="font-bold text-slate-900 dark:text-white">{selectedEvent.title}</h4>
@@ -578,7 +609,15 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                           </span>
                         </div>
                         <p className="mt-2 text-sm text-slate-600 dark:text-white/70">{selectedEvent.summary}</p>
-                        <p className="mt-2 text-sm text-slate-600 dark:text-white/80">{selectedEvent.details}</p>
+                        {detailLines.length > 0 && (
+                          <div className="mt-2 space-y-1.5 text-sm text-slate-600 dark:text-white/80">
+                            {detailLines.map((line) => (
+                              <p key={`${selectedEvent.id}-${line}`} className="leading-relaxed">
+                                {line}
+                              </p>
+                            ))}
+                          </div>
+                        )}
                         <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
                           <span className="text-slate-700 dark:text-white/80">Duration: {selectedEvent.durationHours}h</span>
                           <span className="text-slate-700 dark:text-white/80">
@@ -589,6 +628,8 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                           </span>
                         </div>
                       </article>
+                        );
+                      })()}
 
                       <div className="rounded-xl border border-slate-200 dark:border-white/10 p-4">
                         <p className="text-xs font-bold uppercase tracking-wide mb-2 text-slate-500 dark:text-white/60">
@@ -677,6 +718,20 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                               value={reservationForm.email}
                               onChange={handleFormChange}
                               placeholder="name@example.com"
+                              className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
+                              Hotel Name (Optional)
+                            </label>
+                            <input
+                              type="text"
+                              name="hotelName"
+                              value={reservationForm.hotelName}
+                              onChange={handleFormChange}
+                              placeholder="e.g. Rixos Sungate"
                               className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
                             />
                           </div>

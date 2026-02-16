@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createReservation } from '../services/reservations';
 import { useExperience } from '../context/ExperienceContext';
+import { EXPERIENCE_CATEGORY_LABELS } from '../data/experienceThemes';
 
 const getTodayISODate = () => {
   const today = new Date();
@@ -15,9 +16,10 @@ const SpecialRequestDrawer: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    category: 'SUP',
+    category: EXPERIENCE_CATEGORY_LABELS.SUP,
     preferredDate: activeDate,
     name: '',
+    hotelName: '',
     phone: '',
     referralCode: '',
     participants: '1',
@@ -29,7 +31,12 @@ const SpecialRequestDrawer: React.FC = () => {
   useEffect(() => {
     setFormData((current) => ({
       ...current,
-      category: activeCategory === 'BIKE' ? 'Bisiklet' : activeCategory === 'SKI' ? 'Kayak' : 'SUP',
+      category:
+        activeCategory === 'BIKE'
+          ? EXPERIENCE_CATEGORY_LABELS.BIKE
+          : activeCategory === 'SKI'
+            ? EXPERIENCE_CATEGORY_LABELS.SKI
+            : EXPERIENCE_CATEGORY_LABELS.SUP,
       preferredDate: activeDate
     }));
   }, [activeCategory, activeDate]);
@@ -48,9 +55,10 @@ const SpecialRequestDrawer: React.FC = () => {
 
   const resetForm = () => {
     setFormData({
-      category: 'SUP',
+      category: EXPERIENCE_CATEGORY_LABELS.SUP,
       preferredDate: '',
       name: '',
+      hotelName: '',
       phone: '',
       referralCode: '',
       participants: '1',
@@ -62,6 +70,7 @@ const SpecialRequestDrawer: React.FC = () => {
     e.preventDefault();
 
     const trimmedName = formData.name.trim();
+    const trimmedHotelName = formData.hotelName.trim();
     const trimmedPhone = formData.phone.trim();
     const referralCode = formData.referralCode.trim().toUpperCase();
     const trimmedNote = formData.note.trim();
@@ -87,6 +96,7 @@ const SpecialRequestDrawer: React.FC = () => {
       const requestSummary = [
         `Special Request`,
         `Category: ${formData.category}`,
+        trimmedHotelName ? `Hotel: ${trimmedHotelName}` : null,
         `Participants: ${participants}`,
         trimmedNote ? `Note: ${trimmedNote}` : null
       ]
@@ -162,9 +172,9 @@ const SpecialRequestDrawer: React.FC = () => {
                   onChange={handleChange}
                   className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-3 text-slate-900 dark:text-white"
                 >
-                  <option value="SUP">SUP</option>
-                  <option value="Bisiklet">Bisiklet</option>
-                  <option value="Kayak">Kayak</option>
+                  <option value={EXPERIENCE_CATEGORY_LABELS.SUP}>{EXPERIENCE_CATEGORY_LABELS.SUP}</option>
+                  <option value={EXPERIENCE_CATEGORY_LABELS.BIKE}>{EXPERIENCE_CATEGORY_LABELS.BIKE}</option>
+                  <option value={EXPERIENCE_CATEGORY_LABELS.SKI}>{EXPERIENCE_CATEGORY_LABELS.SKI}</option>
                 </select>
               </div>
 
@@ -206,6 +216,20 @@ const SpecialRequestDrawer: React.FC = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="+90 5xx xxx xx xx"
+                  className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-3 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
+                  Hotel Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  name="hotelName"
+                  value={formData.hotelName}
+                  onChange={handleChange}
+                  placeholder="e.g. Rixos Sungate"
                   className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-3 text-slate-900 dark:text-white"
                 />
               </div>

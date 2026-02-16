@@ -17,10 +17,16 @@ export type ExperienceTheme = {
   shopHeadline: string;
 };
 
+export const EXPERIENCE_CATEGORY_LABELS: Record<ExperienceCategory, string> = {
+  SUP: '🌊 WATER ADVENTURES',
+  BIKE: '🏔 SUMMIT DIVISION',
+  SKI: '🌲 OUTDOOR LIFE'
+};
+
 export const EXPERIENCE_THEMES: Record<ExperienceCategory, ExperienceTheme> = {
   SUP: {
     key: 'SUP',
-    label: 'SUP',
+    label: EXPERIENCE_CATEGORY_LABELS.SUP,
     accent: '#1183d4',
     accentSoft: '#d7ecfb',
     headerGradient: 'linear-gradient(90deg, #0f2230 0%, #0c1b27 100%)',
@@ -35,7 +41,7 @@ export const EXPERIENCE_THEMES: Record<ExperienceCategory, ExperienceTheme> = {
   },
   BIKE: {
     key: 'BIKE',
-    label: 'Bisiklet',
+    label: EXPERIENCE_CATEGORY_LABELS.BIKE,
     accent: '#d97706',
     accentSoft: '#fff0d9',
     headerGradient: 'linear-gradient(90deg, #2c1c06 0%, #1f1404 100%)',
@@ -50,7 +56,7 @@ export const EXPERIENCE_THEMES: Record<ExperienceCategory, ExperienceTheme> = {
   },
   SKI: {
     key: 'SKI',
-    label: 'Kayak',
+    label: EXPERIENCE_CATEGORY_LABELS.SKI,
     accent: '#0ea5a4',
     accentSoft: '#daf6f4',
     headerGradient: 'linear-gradient(90deg, #052628 0%, #041d1f 100%)',

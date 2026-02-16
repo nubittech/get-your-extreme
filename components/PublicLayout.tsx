@@ -123,7 +123,12 @@ const PublicLayout: React.FC = () => {
                 <img src={MEDIA_ASSETS.logo} alt="Get Your Extreme logo" className="size-7 rounded object-cover ring-1 ring-white/15" />
                 <span className="text-xl font-extrabold tracking-tight">GET YOUR EXTREME</span>
               </div>
-              <p className="text-white/40 text-sm">Providing premium water sports experiences along the stunning Antalya coastline since 2018.</p>
+              <p className="text-white/40 text-sm">
+                Get Your Extreme is an outdoor equipment and training brand that brings people together with sports such as SUP, Wing Foil, Cycling, Rock and Mountain Climbing, Skiing, and Snowboarding in the unique nature of the Mediterranean.
+                <br />
+                <br />
+                Through equipment rental and custom experiences, it aims to offer everyone an enjoyable and unforgettable sports experience in their own way.
+              </p>
               <div className="flex gap-4">
                 <a
                   className="text-white/60 hover:text-[#1183d4] transition-colors"
@@ -167,7 +172,7 @@ const PublicLayout: React.FC = () => {
               <div className="space-y-4">
                 <h5 className="font-bold text-white">Support</h5>
                 <ul className="space-y-2 text-white/40 text-sm">
-                  <li><a className="hover:text-[#1183d4] transition-colors" href="tel:+902425550000">Call Us</a></li>
+                  <li><a className="hover:text-[#1183d4] transition-colors" href="tel:+905461363407">Call Us</a></li>
                   <li><a className="hover:text-[#1183d4] transition-colors" href="mailto:booking@getyourextreme.com">Email Support</a></li>
                   <li><a className="hover:text-[#1183d4] transition-colors" href="https://wa.me/905425550000" target="_blank" rel="noreferrer">WhatsApp</a></li>
                   {profile?.role === 'admin' && (
@@ -180,16 +185,34 @@ const PublicLayout: React.FC = () => {
               <h5 className="font-bold text-white">Visit Us</h5>
               <p className="text-white/40 text-sm flex items-start gap-2 max-w-[200px]">
                 <span className="material-symbols-outlined text-[#1183d4] text-lg">location_on</span>
-                Lara Plajı, Antalya, Turkey
+                Kışla, 53/1 Sk., 07040 Muratpaşa/Antalya
               </p>
               <p className="text-white/40 text-sm flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#1183d4] text-lg">call</span>
-                +90 (242) 555-EXTRM
+                +90 546 136 3407
               </p>
             </div>
           </div>
           <div className="mt-16 pt-8 border-t border-white/5 text-center text-white/20 text-xs">
             © 2024 GET YOUR EXTREME. All rights reserved. Professional Watersports Association Member.
+          </div>
+          <div className="mt-6 flex items-center justify-center gap-8 md:gap-12 pb-2">
+            <img
+              src="/sup-club-antalya.png"
+              alt="SUP Club Antalya"
+              className="h-12 w-auto object-contain opacity-90"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <img
+              src="/skatinger.png"
+              alt="Skatinger"
+              className="h-10 w-auto object-contain opacity-90"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
           </div>
         </div>
       </footer>
