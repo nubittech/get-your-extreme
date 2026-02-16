@@ -6,10 +6,11 @@ import { ExperienceCategory, EXPERIENCE_CATEGORY_LABELS } from '../data/experien
 const heroCategoryItems: Array<{
   key: ExperienceCategory;
   label: string;
+  icon: string;
 }> = [
-  { key: 'SUP', label: EXPERIENCE_CATEGORY_LABELS.SUP },
-  { key: 'BIKE', label: EXPERIENCE_CATEGORY_LABELS.BIKE },
-  { key: 'SKI', label: EXPERIENCE_CATEGORY_LABELS.SKI }
+  { key: 'SUP', label: EXPERIENCE_CATEGORY_LABELS.SUP, icon: 'surfing' },
+  { key: 'BIKE', label: EXPERIENCE_CATEGORY_LABELS.BIKE, icon: 'directions_bike' },
+  { key: 'SKI', label: EXPERIENCE_CATEGORY_LABELS.SKI, icon: 'downhill_skiing' }
 ];
 
 const Home: React.FC = () => {
@@ -64,10 +65,11 @@ const Home: React.FC = () => {
                   key={item.key}
                   type="button"
                   onClick={() => setActiveCategory(item.key)}
-                  className={`relative z-10 min-h-11 md:min-h-12 px-2 py-1 rounded-lg flex items-center justify-center text-[10px] md:text-xs font-bold tracking-wide leading-tight text-center transition-colors ${
+                  className={`relative z-10 min-h-11 md:min-h-12 px-2 py-1 rounded-lg flex items-center justify-center gap-2 text-[10px] md:text-xs font-bold tracking-wide leading-tight text-center transition-colors ${
                     activeCategory === item.key ? 'text-white' : 'text-white/80 hover:text-white'
                   }`}
                 >
+                  <span className="material-symbols-outlined text-base">{item.icon}</span>
                   <span>{item.label}</span>
                 </button>
               ))}
