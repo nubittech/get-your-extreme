@@ -13,7 +13,11 @@ const galleryByCategory: Record<ExperienceCategory, GalleryItem[]> = {
     { image: MEDIA_ASSETS.supGalleryB, caption: 'SUP Breakfast Club' },
     { image: MEDIA_ASSETS.supGalleryA, caption: 'River SUP Session' },
     { image: MEDIA_ASSETS.routeBeachparkLara, caption: 'Group Coast Paddle' },
-    { image: MEDIA_ASSETS.routeDuden, caption: 'Duden Scenic Session' }
+    { image: MEDIA_ASSETS.routeDuden, caption: 'Duden Scenic Session' },
+    { image: '/sub1.jpeg', caption: 'Waterfall SUP Experience' },
+    { image: '/sub2.jpeg', caption: 'SUP Equipment Showcase' },
+    { image: '/sub3.jpeg', caption: 'Antalya Coast Group Paddle' },
+    { image: '/SUP-tour.jpg', caption: 'Sunset SUP Social' }
   ],
   BIKE: [
     { image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=2070&auto=format&fit=crop', caption: 'City Ride Briefing' },
