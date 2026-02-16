@@ -82,7 +82,7 @@ const Home: React.FC = () => {
             </span>
           </h1>
           <p className="text-white text-lg md:text-xl font-medium leading-relaxed max-w-2xl mb-12 drop-shadow-lg text-shadow-sm">
-            {theme.heroSubtitle} We recommend reviewing our routes in the 'ROUTES' section before making a reservation.
+            {theme.heroSubtitle}
           </p>
           <div id="booking-form" className="w-full max-w-6xl mt-2">
             <EventCalendarPanel embedded />

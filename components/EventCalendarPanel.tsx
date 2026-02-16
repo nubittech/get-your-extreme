@@ -242,6 +242,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
   });
 
   const [viewYear, viewMonth] = viewYearMonth.split('-').map(Number);
+  const todayIsoDate = toISODate(new Date());
   const firstDayOfMonth = new Date(viewYear, viewMonth - 1, 1);
   const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
   const leadingEmptyCells = firstDayOfMonth.getDay();
@@ -503,20 +504,33 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                 const isoDate = toISODate(new Date(viewYear, viewMonth - 1, day));
                 const hasEvent = datesWithEvents.has(isoDate);
                 const isActive = isoDate === activeDate;
+                const isPastDate = isoDate < todayIsoDate;
 
                 return (
                   <button
                     key={isoDate}
                     type="button"
-                    onClick={() => setActiveDate(isoDate)}
-                    className={`${embedded ? 'h-10 md:h-11' : 'h-12 md:h-14'} rounded-md border text-sm font-bold relative ${embedded ? 'text-white' : ''}`}
+                    onClick={() => {
+                      if (!isPastDate) {
+                        setActiveDate(isoDate);
+                      }
+                    }}
+                    disabled={isPastDate}
+                    className={`${embedded ? 'h-10 md:h-11' : 'h-12 md:h-14'} rounded-md border text-sm font-bold relative ${
+                      embedded ? 'text-white' : ''
+                    } ${isPastDate ? 'opacity-45 cursor-not-allowed' : ''}`}
                     style={
-                      isActive
-                        ? { borderColor: theme.accent, backgroundColor: theme.accentSoft, color: theme.accent }
-                        : {
-                            borderColor: 'rgba(148,163,184,0.35)',
-                            color: embedded ? 'rgba(226,232,240,0.9)' : '#334155'
+                      isPastDate
+                        ? {
+                            borderColor: 'rgba(148,163,184,0.22)',
+                            color: embedded ? 'rgba(226,232,240,0.5)' : 'rgba(51,65,85,0.55)'
                           }
+                        : isActive
+                          ? { borderColor: theme.accent, backgroundColor: theme.accentSoft, color: theme.accent }
+                          : {
+                              borderColor: 'rgba(148,163,184,0.35)',
+                              color: embedded ? 'rgba(226,232,240,0.9)' : '#334155'
+                            }
                     }
                   >
                     {day}
