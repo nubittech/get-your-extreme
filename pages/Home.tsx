@@ -97,7 +97,7 @@ const Home: React.FC = () => {
             <h2 className="font-bold tracking-widest text-sm uppercase mb-3" style={{ color: theme.accent }}>{theme.label} Program</h2>
             <h3 className="text-4xl font-extrabold text-slate-900 dark:text-white">Why Choose Our Adventures</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
             <div className="flex flex-col items-center text-center group">
               <div className="size-16 rounded-2xl bg-[#1183d4]/10 flex items-center justify-center text-[#1183d4] mb-6 group-hover:bg-[#1183d4] group-hover:text-white transition-all">
                 <span className="material-symbols-outlined text-3xl">surfing</span>
@@ -111,13 +111,6 @@ const Home: React.FC = () => {
               </div>
               <h4 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Secret Routes</h4>
               <p className="text-slate-600 dark:text-white/60 leading-relaxed">Our guides know the hidden gems of the Antalya coast that aren't on any standard tourist map.</p>
-            </div>
-            <div className="flex flex-col items-center text-center group">
-              <div className="size-16 rounded-2xl bg-[#1183d4]/10 flex items-center justify-center text-[#1183d4] mb-6 group-hover:bg-[#1183d4] group-hover:text-white transition-all">
-                <span className="material-symbols-outlined text-3xl">security</span>
-              </div>
-              <h4 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Safety First</h4>
-              <p className="text-slate-600 dark:text-white/60 leading-relaxed">Certified professional instructors and rescue-ready protocols for a worry-free extreme experience.</p>
             </div>
             <div className="flex flex-col items-center text-center group">
               <div className="size-16 rounded-2xl bg-[#1183d4]/10 flex items-center justify-center text-[#1183d4] mb-6 group-hover:bg-[#1183d4] group-hover:text-white transition-all">

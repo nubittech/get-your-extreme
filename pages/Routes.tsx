@@ -28,8 +28,8 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
       tag: 'Beginner Friendly',
       tagColor: '#16a34a',
       description:
-        'A relaxed loop route ideal for first-time paddlers and mixed groups with smooth shoreline waters.',
-      stats: { distance: '3 KM', time: '2 Hours', level: 'Easy', type: 'Loop' },
+        'A relaxed cycle route is ideal for first-time paddlers and mixed groups with smooth coastal waters. It is a busy route as the most preferred population.',
+      stats: { distance: '2.5 KM', time: '2 Hours', level: 'Easy', type: 'Loop' },
       meetingPoint: 'Beach Park Main Gate',
       bestFor: 'Families and social sessions',
       image: MEDIA_ASSETS.routeBeachpark
@@ -40,8 +40,8 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
       tag: 'Most Popular',
       tagColor: '#1183d4',
       description:
-        'One-way coastal line with open-sea views and long glide sections.',
-      stats: { distance: '7 KM', time: '3-4 Hours', level: 'Moderate', type: 'One Way' },
+        "It's a long one-way conditioning route. A little more of a sports and professional oriented route. A unique sports experience with great views.",
+      stats: { distance: '4.5 KM', time: '3-4 Hours', level: 'Moderate', type: 'One Way' },
       meetingPoint: 'Beach Park Start Zone',
       bestFor: 'Active groups with prior paddling',
       image: MEDIA_ASSETS.routeBeachparkLara
@@ -52,10 +52,10 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
       tag: 'Scenic',
       tagColor: '#0ea5e9',
       description:
-        'Scenic paddling route around Duden coastal views with guide support and timing checkpoints.',
-      stats: { distance: '5 KM', time: '2.5 Hours', level: 'Moderate', type: 'Scenic Line' },
+        'Reaching Duden Waterfall requires paddling through open sea, which makes this route suitable for advanced-level participants. Currents and wind may be present in open water; therefore, as long as participants have sufficient paddling experience and strictly follow all instructions given by the instructor, the route does not pose any issues. Along this route, you will witness the breathtaking moment when the world-famous Duden Waterfall meets the Mediterranean Sea and enjoy a truly unique experience, feeling the flow of the water up close.',
+      stats: { distance: '3 KM', time: '2 - 2.5 Hours', level: 'Advanced', type: 'Loop' },
       meetingPoint: 'Duden Pickup Point',
-      bestFor: 'Photo-focused and mixed-skill groups',
+      bestFor: 'Advanced paddlers with open-sea experience',
       image: MEDIA_ASSETS.routeDuden
     },
     {

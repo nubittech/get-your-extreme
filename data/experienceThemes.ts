@@ -62,9 +62,9 @@ export const EXPERIENCE_THEMES: Record<ExperienceCategory, ExperienceTheme> = {
     headerGradient: 'linear-gradient(90deg, #052628 0%, #041d1f 100%)',
     heroImage:
       'https://images.unsplash.com/photo-1488441770602-aed21fc49bd5?q=80&w=1974&auto=format&fit=crop',
-    heroTitle: 'Ski Programs and Winter Group Planning',
+    heroTitle: 'High Altitude Climbing and Winter Skiing Sports Planning',
     heroSubtitle:
-      'Curated outdoor experiences for exploration, movement, and connection with nature. Cycling, hiking, camping, and discovery routes designed to enjoy the outdoors your way.',
+      'High-altitude adventures built on discipline, endurance, and respect for the mountains. Rock and mountain climbing, skiing, and snowboarding experiences designed to challenge both body and mind.',
     activities: ['Beginner Ski Session', 'Family Ski Day', 'Advanced Slope Program', 'Snowboard Starter'],
     routes: ['Saklikent Easy Line', 'Summit Mid Route', 'Alpine Advanced Zone', 'Private Ski Track'],
     galleryHeadline: 'Ski days, slope coaching and winter team events.',
