@@ -87,18 +87,6 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
   ],
   SKI: [
     {
-      id: 'ski-easy-line',
-      title: 'Saklikent Easy Line',
-      tag: 'Starter Program',
-      tagColor: '#0ea5a4',
-      description:
-        'Low-slope area designed for first lessons and family sessions.',
-      stats: { distance: '5 KM', time: '2 Hours', level: 'Easy', type: 'Slope Line' },
-      meetingPoint: 'Saklikent Base Point',
-      bestFor: 'First-time ski participants',
-      image: 'https://images.unsplash.com/photo-1453306458620-5bbef13a5bca?q=80&w=1974&auto=format&fit=crop'
-    },
-    {
       id: 'ski-advanced',
       title: 'Summit Division Route',
       tag: 'Summit Division',

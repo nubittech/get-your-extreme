@@ -8,6 +8,20 @@ type GalleryItem = {
   caption: string;
 };
 
+const outdoorGalleryImages: GalleryItem[] = [
+  { image: '/outdoor.jpeg', caption: 'Outdoor Session 1' },
+  { image: '/outdoor2.jpeg', caption: 'Outdoor Session 2' },
+  { image: '/outdoor3.jpeg', caption: 'Outdoor Session 3' },
+  { image: '/outdoor4.jpeg', caption: 'Outdoor Session 4' },
+  { image: '/outdoor5.jpeg', caption: 'Outdoor Session 5' },
+  { image: '/outdoor6.jpeg', caption: 'Outdoor Session 6' },
+  { image: '/outdoor7.jpeg', caption: 'Outdoor Session 7' },
+  { image: '/outdoor8.jpeg', caption: 'Outdoor Session 8' },
+  { image: '/outdoor9.jpeg', caption: 'Outdoor Session 9' },
+  { image: '/outdoor10.jpeg', caption: 'Outdoor Session 10' },
+  { image: '/outdoor11.jpeg', caption: 'Outdoor Session 11' }
+];
+
 const galleryByCategory: Record<ExperienceCategory, GalleryItem[]> = {
   SUP: [
     { image: MEDIA_ASSETS.supGalleryB, caption: 'SUP Breakfast Club' },
@@ -19,12 +33,7 @@ const galleryByCategory: Record<ExperienceCategory, GalleryItem[]> = {
     { image: '/sub3.jpeg', caption: 'Antalya Coast Group Paddle' },
     { image: '/SUP-tour.jpg', caption: 'Sunset SUP Social' }
   ],
-  BIKE: [
-    { image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=2070&auto=format&fit=crop', caption: 'City Ride Briefing' },
-    { image: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?q=80&w=1974&auto=format&fit=crop', caption: 'Coastal Group Ride' },
-    { image: 'https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?q=80&w=1974&auto=format&fit=crop', caption: 'Forest Training Loop' },
-    { image: 'https://images.unsplash.com/photo-1511994298241-608e28f14fde?q=80&w=2070&auto=format&fit=crop', caption: 'Team Ride Session' }
-  ],
+  BIKE: outdoorGalleryImages,
   SKI: [
     { image: 'https://images.unsplash.com/photo-1478860409698-8707f313ee8b?q=80&w=1974&auto=format&fit=crop', caption: 'Ski Group Warmup' },
     { image: 'https://images.unsplash.com/photo-1453306458620-5bbef13a5bca?q=80&w=1974&auto=format&fit=crop', caption: 'Slope Coaching' },
