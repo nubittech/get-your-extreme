@@ -35,16 +35,16 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
       image: MEDIA_ASSETS.routeBeachpark
     },
     {
-      id: 'sup-beachpark-lara',
-      title: 'Beach Park to Lara Coast',
-      tag: 'Most Popular',
-      tagColor: '#1183d4',
+      id: 'sup-karacagoren',
+      title: 'SupClupAntalyaRoute - Lara Balık',
+      tag: 'Beginner Friendly',
+      tagColor: '#0284c7',
       description:
-        "It's a long one-way conditioning route. A little more of a sports and professional oriented route. A unique sports experience with great views.",
-      stats: { distance: '4.5 KM', time: '3-4 Hours', level: 'Moderate', type: 'One Way' },
-      meetingPoint: 'Beach Park Start Zone',
-      bestFor: 'Active groups with prior paddling',
-      image: MEDIA_ASSETS.routeBeachparkLara
+        'Experience a unique exploration on our exclusive route, located close to Antalya city center. Witness fresh water flowing from a small waterfall into the sea, and paddle freely alongside historic coastal landmarks. Thanks to SupClubAntalya\'s private access area, the route remains calm and peaceful, making it one of the best spots for photo and video shoots.',
+      stats: { distance: 'Free', time: '2 Hours', level: 'Beginner', type: 'Loop' },
+      meetingPoint: 'Lara Balık - SupClubAntalya Private Access Area',
+      bestFor: 'Photo and video focused calm-water sessions',
+      image: MEDIA_ASSETS.routeKaracagoren
     },
     {
       id: 'sup-duden',
@@ -59,16 +59,16 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
       image: MEDIA_ASSETS.routeDuden
     },
     {
-      id: 'sup-karacagoren',
-      title: 'SupClupAntalyaRoute - Lara Balık',
-      tag: 'Beginner Friendly',
-      tagColor: '#0284c7',
+      id: 'sup-beachpark-lara',
+      title: 'Beach Park to Lara Coast',
+      tag: 'Most Popular',
+      tagColor: '#1183d4',
       description:
-        'Experience a unique exploration on our exclusive route, located close to Antalya city center. Witness fresh water flowing from a small waterfall into the sea, and paddle freely alongside historic coastal landmarks. Thanks to SupClubAntalya\'s private access area, the route remains calm and peaceful, making it one of the best spots for photo and video shoots.',
-      stats: { distance: 'Free', time: '2 Hours', level: 'Beginner', type: 'Loop' },
-      meetingPoint: 'Lara Balık - SupClubAntalya Private Access Area',
-      bestFor: 'Photo and video focused calm-water sessions',
-      image: MEDIA_ASSETS.routeKaracagoren
+        "It's a long one-way conditioning route. A little more of a sports and professional oriented route. A unique sports experience with great views.",
+      stats: { distance: '4.5 KM', time: '3-4 Hours', level: 'Moderate', type: 'One Way' },
+      meetingPoint: 'Beach Park Start Zone',
+      bestFor: 'Active groups with prior paddling',
+      image: MEDIA_ASSETS.routeBeachparkLara
     }
   ],
   BIKE: [
