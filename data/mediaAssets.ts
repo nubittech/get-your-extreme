@@ -5,7 +5,7 @@ export const MEDIA_ASSETS = {
   supHero: '/SUP-tour.jpg',
   bikeHero:
     'https://images.unsplash.com/photo-1541625602330-2277a4c46182?q=80&w=2400&auto=format&fit=crop',
-  routeKaracagoren: encodeURI('/supcluprotası.jpg'),
+  routeKaracagoren: encodeURI('/PHOTO-2026-02-25-03-47-25.jpg'),
   routeBeachparkLara: encodeURI('/Kondisyon Rotası K-Lara Balık (1).png'),
   routeBeachpark: encodeURI('/Konyaaltı Rotası (1).jpg'),
   routeDuden: encodeURI('/Lara Düden Rota.jpg'),

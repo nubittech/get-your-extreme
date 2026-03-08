@@ -60,41 +60,29 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
     },
     {
       id: 'sup-karacagoren',
-      title: 'Karacagoren Expedition',
-      tag: 'Long Tour',
+      title: 'SupClupAntalyaRoute - Lara Balık',
+      tag: 'Beginner Friendly',
       tagColor: '#0284c7',
       description:
-        'Long-form SUP tour with transfer support, rest point briefing and return coordination.',
-      stats: { distance: '9 KM', time: '4 Hours', level: 'Advanced', type: 'Expedition' },
-      meetingPoint: 'Karacagoren Transfer Hub',
-      bestFor: 'Full-day adventure programs',
+        'Experience a unique exploration on our exclusive route, located close to Antalya city center. Witness fresh water flowing from a small waterfall into the sea, and paddle freely alongside historic coastal landmarks. Thanks to SupClubAntalya\'s private access area, the route remains calm and peaceful, making it one of the best spots for photo and video shoots.',
+      stats: { distance: 'Free', time: '2 Hours', level: 'Beginner', type: 'Loop' },
+      meetingPoint: 'Lara Balık - SupClubAntalya Private Access Area',
+      bestFor: 'Photo and video focused calm-water sessions',
       image: MEDIA_ASSETS.routeKaracagoren
     }
   ],
   BIKE: [
     {
-      id: 'bike-old-town',
-      title: 'Old Town Loop',
-      tag: 'City Ride',
+      id: 'bike-guver-canyon',
+      title: 'Cycling - Güver Cliff / Canyon Route',
+      tag: 'Beginner',
       tagColor: '#d97706',
       description:
-        'Historical city loop with controlled speed and frequent photo stops.',
-      stats: { distance: '12 KM', time: '2 Hours', level: 'Easy', type: 'City Loop' },
-      meetingPoint: 'Kaleici Start Hub',
-      bestFor: 'Visitors and mixed fitness groups',
-      image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=2070&auto=format&fit=crop'
-    },
-    {
-      id: 'bike-forest',
-      title: 'Forest Trail Session',
-      tag: 'MTB Route',
-      tagColor: '#b45309',
-      description:
-        'Forest terrain for MTB-oriented programs with guide checkpoints.',
-      stats: { distance: '18 KM', time: '3 Hours', level: 'Moderate', type: 'Trail' },
-      meetingPoint: 'Forest Access Gate',
-      bestFor: 'Nature-focused active teams',
-      image: 'https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?q=80&w=1974&auto=format&fit=crop'
+        'The Dover Cliff is an impressive canyon just 15 km from Antalya, formed by water carving rocks over about 1 million years. With a depth of 115 meters, lush vegetation and a waterway extending to the Mediterranean Sea, it is a hidden nature scene that cannot be returned without taking photos, watched from above.',
+      stats: { distance: '10 KM', time: '3 Hours', level: 'Beginner', type: 'Loop' },
+      meetingPoint: 'Guver Cliff Canyon Entrance',
+      bestFor: 'Scenic rides and photo-focused cycling groups',
+      image: '/PHOTO-2026-02-26-18-04-17.jpg'
     }
   ],
   SKI: [
@@ -112,15 +100,20 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
     },
     {
       id: 'ski-advanced',
-      title: 'Alpine Advanced Zone',
-      tag: 'Advanced',
+      title: 'Summit Division Route',
+      tag: 'Summit Division',
       tagColor: '#0f766e',
       description:
-        'Steeper profile with instructor-led pace and safety staging.',
-      stats: { distance: '9 KM', time: '3 Hours', level: 'Hard', type: 'Mountain Run' },
+        'Ranked among the world\'s top three rock climbing destinations, Geyikbayiri awaits you in the Taurus Mountains with over 1,000 routes designed to push your limits. If you want to reach the summit with us in this extreme experience, reserve your spot.',
+      stats: {
+        distance: 'Free',
+        time: '6 Hours',
+        level: 'Beginner - Intermediate - Advanced',
+        type: 'Loop'
+      },
       meetingPoint: 'Upper Lift Exit',
       bestFor: 'Experienced ski groups',
-      image: 'https://images.unsplash.com/photo-1478860409698-8707f313ee8b?q=80&w=1974&auto=format&fit=crop'
+      image: '/PHOTO-2026-02-25-16-16-24.jpg'
     }
   ]
 };
@@ -128,7 +121,18 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
 const RoutesPage: React.FC = () => {
   const { activeCategory, activeDate, theme } = useExperience();
   const [selectedRoute, setSelectedRoute] = useState<RouteItem | null>(null);
+  const [imageRatios, setImageRatios] = useState<Record<string, number>>({});
   const routesData = routesByCategory[activeCategory];
+
+  const handleImageLoad = (key: string, event: React.SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = event.currentTarget;
+    if (!naturalWidth || !naturalHeight) return;
+    const ratio = naturalWidth / naturalHeight;
+    setImageRatios((current) => {
+      if (current[key] && Math.abs(current[key] - ratio) < 0.01) return current;
+      return { ...current, [key]: ratio };
+    });
+  };
 
   return (
     <div className="mx-auto max-w-[1200px] w-full px-6 py-10">
@@ -156,10 +160,18 @@ const RoutesPage: React.FC = () => {
                 onClick={() => setSelectedRoute(route)}
                 className="w-full lg:w-[55%] relative min-h-[300px] lg:min-h-[450px] bg-slate-100 dark:bg-[#151e24] overflow-hidden text-left"
               >
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                  style={{ backgroundImage: `url("${route.image}")` }}
-                ></div>
+                <img
+                  src={route.image}
+                  alt={route.title}
+                  onLoad={(event) => handleImageLoad(route.id, event)}
+                  className="absolute inset-0 h-full w-full object-cover opacity-20 blur-[1px] scale-105 transition-transform duration-700 group-hover:scale-110"
+                />
+                <img
+                  src={route.image}
+                  alt={route.title}
+                  onLoad={(event) => handleImageLoad(route.id, event)}
+                  className="absolute inset-0 h-full w-full object-contain transition-transform duration-700 group-hover:scale-[1.02]"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent lg:hidden"></div>
                 <div
                   className="absolute top-6 left-6 px-4 py-1.5 rounded-full text-xs font-bold text-white uppercase tracking-widest shadow-lg"
@@ -247,11 +259,22 @@ const RoutesPage: React.FC = () => {
             </div>
 
             <div className="p-4 md:p-6 space-y-6">
-              <img
-                src={selectedRoute.image}
-                alt={selectedRoute.title}
-                className="w-full h-[240px] md:h-[360px] object-cover rounded-xl"
-              />
+              <figure className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#101820] overflow-hidden">
+                <div
+                  className="w-full"
+                  style={{ aspectRatio: imageRatios[selectedRoute.id] ?? 16 / 9 }}
+                >
+                  <img
+                    src={selectedRoute.image}
+                    alt={selectedRoute.title}
+                    onLoad={(event) => handleImageLoad(selectedRoute.id, event)}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <figcaption className="border-t border-slate-200 dark:border-white/10 px-4 py-3 text-xs md:text-sm text-slate-600 dark:text-slate-300">
+                  {selectedRoute.title} | {selectedRoute.stats.distance} | {selectedRoute.stats.time}
+                </figcaption>
+              </figure>
               <p className="text-slate-700 dark:text-slate-200 leading-relaxed">
                 {selectedRoute.description}
               </p>

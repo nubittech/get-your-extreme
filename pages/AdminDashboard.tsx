@@ -714,9 +714,7 @@ const AdminDashboard: React.FC = () => {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-sm font-bold text-slate-900 dark:text-white">
-                              [{item.category}] {item.title}
-                            </p>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">{item.title}</p>
                             <p className="text-xs text-[#9dadb9]">
                               {item.date} {item.time} | EUR {item.price} | Seats {item.booked}/{item.capacity}
                             </p>
