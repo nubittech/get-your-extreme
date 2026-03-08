@@ -163,21 +163,21 @@ const Home: React.FC = () => {
               <div className="space-y-4 pt-12">
                 <div className="rounded-2xl overflow-hidden h-64 shadow-xl">
                   {/* Social Breakfast/Picnic Vibe */}
-                  <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1626075678304-629272368560?q=80&w=2070&auto=format&fit=crop" alt="Group paddling" />
+                  <img className="w-full h-full object-cover" src="/Ds1.jpg" alt="Group paddling" />
                 </div>
                 <div className="rounded-2xl overflow-hidden h-48 shadow-xl">
                   {/* Diver */}
-                  <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1682687982185-531d09ec56fc?q=80&w=2070&auto=format&fit=crop" alt="Diver underwater" />
+                  <img className="w-full h-full object-cover" src="/Ds2.jpg" alt="Diver underwater" />
                 </div>
               </div>
               <div className="space-y-4">
                 <div className="rounded-2xl overflow-hidden h-48 shadow-xl">
                   {/* Couple by Car Vibe */}
-                  <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1615870216519-2f9fa575fa5c?q=80&w=1887&auto=format&fit=crop" alt="Relaxing on SUP" />
+                  <img className="w-full h-full object-cover" src="/Ds3.jpg" alt="Relaxing on SUP" />
                 </div>
                 <div className="rounded-2xl overflow-hidden h-64 shadow-xl">
                   {/* Cliffs */}
-                  <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1622639145656-749e79294902?q=80&w=1974&auto=format&fit=crop" alt="Antalya Cliffs" />
+                  <img className="w-full h-full object-cover" src="/Ds4.jpg" alt="Antalya Cliffs" />
                 </div>
               </div>
             </div>

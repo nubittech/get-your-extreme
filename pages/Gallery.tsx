@@ -22,16 +22,63 @@ const outdoorGalleryImages: GalleryItem[] = [
   { image: '/outdoor11.jpeg', caption: 'Outdoor Session 11' }
 ];
 
+const waterWhatsappImages: GalleryItem[] = [
+  'WhatsApp Image 2026-03-08 at 15.26.34 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.34.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.35 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.35.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.36 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.36 (2).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.36.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.37 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.37 (2).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.37.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.38 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.38 (2).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.38.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.39 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.39 (2).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.39.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.40 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.40 (2).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.40.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.41 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.41 (2).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.41 (3).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.41.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.42 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.42 (2).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.42.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.43 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.43 (2).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.43 (3).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.43.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.44 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.44 (2).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.44 (3).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.44.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.45 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.45 (2).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.45.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.46 (1).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.46 (2).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.46 (3).jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.46.jpeg',
+  'WhatsApp Image 2026-03-08 at 15.26.47.jpeg'
+].map((fileName, index) => ({
+  image: encodeURI(`/${fileName}`),
+  caption: `Water Gallery ${index + 1}`
+}));
+
 const galleryByCategory: Record<ExperienceCategory, GalleryItem[]> = {
   SUP: [
-    { image: MEDIA_ASSETS.supGalleryB, caption: 'SUP Breakfast Club' },
-    { image: MEDIA_ASSETS.supGalleryA, caption: 'River SUP Session' },
     { image: MEDIA_ASSETS.routeBeachparkLara, caption: 'Group Coast Paddle' },
     { image: MEDIA_ASSETS.routeDuden, caption: 'Duden Scenic Session' },
     { image: '/sub1.jpeg', caption: 'Waterfall SUP Experience' },
     { image: '/sub2.jpeg', caption: 'SUP Equipment Showcase' },
     { image: '/sub3.jpeg', caption: 'Antalya Coast Group Paddle' },
-    { image: '/SUP-tour.jpg', caption: 'Sunset SUP Social' }
+    { image: '/SUP-tour.jpg', caption: 'Sunset SUP Social' },
+    ...waterWhatsappImages
   ],
   BIKE: outdoorGalleryImages,
   SKI: [
