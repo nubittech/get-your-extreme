@@ -164,21 +164,21 @@ const Home: React.FC = () => {
               <div className="space-y-4 pt-12">
                 <div className="rounded-2xl overflow-hidden h-64 shadow-xl">
                   {/* Social Breakfast/Picnic Vibe */}
-                  <img className="w-full h-full object-cover" src="/Ds1.jpg" alt="Group paddling" />
+                  <img className="w-full h-full object-cover" src="/yenianasayfa.jpg" alt="Group paddling" />
                 </div>
                 <div className="rounded-2xl overflow-hidden h-48 shadow-xl">
                   {/* Diver */}
-                  <img className="w-full h-full object-cover" src="/Ds2.jpg" alt="Diver underwater" />
+                  <img className="w-full h-full object-cover" src="/yenianasayfa2.jpg" alt="Diver underwater" />
                 </div>
               </div>
               <div className="space-y-4">
                 <div className="rounded-2xl overflow-hidden h-48 shadow-xl">
                   {/* Couple by Car Vibe */}
-                  <img className="w-full h-full object-cover" src="/Ds3.jpg" alt="Relaxing on SUP" />
+                  <img className="w-full h-full object-cover" src="/yenianasayfa3.png" alt="Relaxing on SUP" />
                 </div>
                 <div className="rounded-2xl overflow-hidden h-64 shadow-xl">
                   {/* Cliffs */}
-                  <img className="w-full h-full object-cover" src="/Ds4.jpg" alt="Antalya Cliffs" />
+                  <img className="w-full h-full object-cover" src="/yenianasayfa4.jpg" alt="Antalya Cliffs" />
                 </div>
               </div>
             </div>
