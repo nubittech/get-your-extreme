@@ -31,7 +31,29 @@ VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 VITE_SUPABASE_RESERVATIONS_TABLE=reservations
 VITE_SUPABASE_EVENTS_TABLE=events
+VITE_SUPABASE_QR_TABLE=qr_codes
+VITE_PAYMENTS_API_URL=
 ```
+
+## Iyzico Checkout (Payment)
+
+Checkout form integration uses Vercel serverless functions under `api/iyzico`.
+
+Set the following environment variables in your hosting provider (or `.env.local` for local dev):
+
+```env
+# IyziPay credentials
+IYZICO_API_KEY=
+IYZICO_SECRET_KEY=
+IYZICO_BASE_URL=https://api.iyzipay.com
+
+# Optional: force callback base URL (recommended in production)
+IYZICO_CALLBACK_BASE_URL=https://your-domain.com
+```
+
+Notes:
+- `VITE_PAYMENTS_API_URL` is optional. Leave empty to call `/api/iyzico/checkout-form` on the same origin.
+- For local dev, you need a serverless runtime (e.g. `vercel dev`) to serve `/api/*`.
 
 When you are ready to connect backend with your own API:
 
@@ -72,3 +94,10 @@ When you are ready to connect Supabase:
    - `summary` text
    - `details` text
    - `service_stops` text[] (or jsonb)
+
+6. Create `qr_codes` table (or set `VITE_SUPABASE_QR_TABLE`) with fields:
+   - `id` uuid default gen_random_uuid() primary key
+   - `key` text unique
+   - `url` text
+   - `data_url` text
+   - `updated_at` timestamptz default now()

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.95.3",
+    "iyzipay": "^2.0.92",
     "jspdf": "^4.1.0",
     "qrcode": "^1.5.4",
     "react": "^18.2.0",

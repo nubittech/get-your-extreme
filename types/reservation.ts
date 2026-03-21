@@ -21,6 +21,7 @@ export interface ReservationCreateInput {
   activity: string;
   route: string;
   date: string;
+  status?: ReservationStatus;
   source?: 'event' | 'special';
   amount?: number;
   eventId?: string;

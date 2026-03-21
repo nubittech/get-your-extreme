@@ -129,28 +129,29 @@ const Home: React.FC = () => {
           <div className="flex flex-col md:flex-row items-center gap-16">
             <div className="flex-1 space-y-6">
               <h2 className="text-3xl md:text-5xl font-extrabold leading-tight text-slate-900 dark:text-white">
-                Explore the Mediterranean Coast
+                Explore the Mediterranean
               </h2>
               <div className="space-y-4 text-slate-600 dark:text-white/70 text-lg leading-relaxed">
                 <p>
-                  We plan every detail to turn outdoor sports into a smooth and enjoyable experience. Our goal is to make you feel safe, comfortable, and completely free on the water.
+                  We turn outdoor sports into a smooth, enjoyable, and unforgettable experience. Our goal is to make you feel safe, comfortable, and completely present in the moment.
                 </p>
                 <p>
-                  With Antalya&apos;s widest range of SUP equipment, we offer boards suitable for every level. With our carefully designed sea routes, you head into nature and discover the hidden beauties of the Mediterranean.
+                  In some of Antalya&apos;s most unique locations, we offer experiences for every level including SUP, climbing, cycling, and outdoor adventures. With carefully designed routes, you don&apos;t just do sports — you truly experience nature.
                 </p>
                 <p>
-                  Throughout the activity, you can enjoy free photo or video shoots and get useful tips from our team. As you glide over calm waters, you enjoy being in the moment and build a real connection with nature.
+                  Throughout the activity, we capture your moments with photo and video, while our team supports you to make your experience the best it can be.
                 </p>
                 <p>
-                  Do yoga on your SUP, grab your coffee and read your book in the middle of the sea, or explore the Antalya coastline on longer routes while having fun and improving your fitness.
+                  Whether you find peace in the middle of the sea, reach the top of the rocks, or ride through nature...
+                  Every experience is designed to give you a sense of freedom.
                 </p>
                 <p>
-                  Swim in quiet and crystal-clear bays, dance with music, or meet new people along the way.
+                  Swim, explore, have fun, meet new people, and connect with nature.
                 </p>
                 <p className="font-semibold text-slate-800 dark:text-white">
-                  This is not a tour.
+                  This is not just an activity.
                   <br />
-                  Because wherever you are, freedom is always on your SUP.
+                  Wherever you are, freedom is with you.
                 </p>
               </div>
               <div className="pt-4">

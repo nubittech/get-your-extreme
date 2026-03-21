@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import QRCode from 'qrcode';
 import { deleteReservation, listReservations } from '../services/reservations';
 import { Reservation } from '../types/reservation';
 import { createEvent, deleteEvent, listEvents, updateEvent } from '../services/events';
@@ -7,6 +8,7 @@ import { EventScheduleItem } from '../types/event';
 import { ExperienceCategory, EXPERIENCE_CATEGORY_LABELS } from '../data/experienceThemes';
 import { useAuth } from '../context/AuthContext';
 import { listRegisteredUsers, RegisteredUser } from '../services/users';
+import { fetchQrCode, upsertQrCode } from '../services/qr';
 
 const AdminDashboard: React.FC = () => {
   const { user, profile, openAuthModal, signOut } = useAuth();
@@ -35,6 +37,13 @@ const AdminDashboard: React.FC = () => {
     details: '',
     serviceStops: 'Kemer Saat Kulesi, Goynuk, Liman'
   });
+  const [qrUrl, setQrUrl] = useState('https://www.getyourextreme.com/');
+  const [qrImage, setQrImage] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(true);
+  const [qrSaving, setQrSaving] = useState(false);
+  const [qrError, setQrError] = useState<string | null>(null);
+
+  const QR_KEY = 'main_site';
 
   useEffect(() => {
     let isMounted = true;
@@ -116,6 +125,35 @@ const AdminDashboard: React.FC = () => {
     };
 
     fetchEvents();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchQr = async () => {
+      setQrLoading(true);
+      setQrError(null);
+      try {
+        const record = await fetchQrCode(QR_KEY);
+        if (record && isMounted) {
+          setQrUrl(record.url);
+          setQrImage(record.dataUrl);
+        }
+      } catch {
+        if (isMounted) {
+          setQrError('QR could not be loaded.');
+        }
+      } finally {
+        if (isMounted) {
+          setQrLoading(false);
+        }
+      }
+    };
+
+    fetchQr();
     return () => {
       isMounted = false;
     };
@@ -267,6 +305,44 @@ const AdminDashboard: React.FC = () => {
     } catch {
       alert('Event could not be deleted.');
     }
+  };
+
+  const handleGenerateQr = async () => {
+    const targetUrl = qrUrl.trim();
+    if (!targetUrl) {
+      alert('Please enter a valid URL.');
+      return;
+    }
+
+    setQrSaving(true);
+    setQrError(null);
+    try {
+      const dataUrl = await QRCode.toDataURL(targetUrl, {
+        width: 512,
+        margin: 2,
+        errorCorrectionLevel: 'H'
+      });
+      const saved = await upsertQrCode({
+        key: QR_KEY,
+        url: targetUrl,
+        dataUrl
+      });
+      setQrUrl(saved.url);
+      setQrImage(saved.dataUrl);
+      alert('QR saved.');
+    } catch {
+      setQrError('QR could not be generated.');
+    } finally {
+      setQrSaving(false);
+    }
+  };
+
+  const handleDownloadQr = () => {
+    if (!qrImage) return;
+    const link = document.createElement('a');
+    link.href = qrImage;
+    link.download = 'getyourextreme-qr.png';
+    link.click();
   };
 
   const getStatusColor = (status: string) => {
@@ -538,6 +614,69 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[#0bda5b] text-sm">info</span>
                 <p className="text-[#0bda5b] text-sm font-medium">From reservation totals</p>
+              </div>
+            </div>
+          </div>
+
+          {/* QR Management */}
+          <div className="px-8 pb-6">
+            <div className="rounded-xl p-5 border border-slate-200 dark:border-[#3b4954] bg-white dark:bg-[#101a22]/50 shadow-sm">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">Website QR</p>
+                  <p className="text-xs text-[#9dadb9]">
+                    Fixed QR that routes to the main website. Stored in Supabase for persistence.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleGenerateQr}
+                    disabled={qrSaving}
+                    className="rounded-lg bg-[#1183d4] text-white text-sm font-semibold px-4 py-2 disabled:opacity-60"
+                  >
+                    {qrSaving ? 'Saving...' : 'Generate & Save'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDownloadQr}
+                    disabled={!qrImage}
+                    className="rounded-lg border border-[#1183d4] text-[#1183d4] text-sm font-semibold px-4 py-2 disabled:opacity-60"
+                  >
+                    Download PNG
+                  </button>
+                </div>
+              </div>
+
+              {qrError && (
+                <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {qrError}
+                </div>
+              )}
+
+              <div className="mt-4 flex flex-wrap items-center gap-6">
+                <div className="w-40 h-40 rounded-lg border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-[#16202a] flex items-center justify-center">
+                  {qrLoading ? (
+                    <p className="text-xs text-[#9dadb9]">Loading...</p>
+                  ) : qrImage ? (
+                    <img src={qrImage} alt="Website QR" className="w-full h-full object-contain p-2" />
+                  ) : (
+                    <p className="text-xs text-[#9dadb9]">No QR saved</p>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-[220px] space-y-2">
+                  <label className="text-xs font-bold text-slate-600 dark:text-white/70">Destination URL</label>
+                  <input
+                    type="url"
+                    value={qrUrl}
+                    onChange={(e) => setQrUrl(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                  />
+                  <p className="text-[10px] text-[#9dadb9]">
+                    Current target: {qrUrl || 'Not set'}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

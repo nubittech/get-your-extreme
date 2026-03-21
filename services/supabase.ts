@@ -7,6 +7,8 @@ export const SUPABASE_RESERVATIONS_TABLE =
   (import.meta.env.VITE_SUPABASE_RESERVATIONS_TABLE ?? 'reservations').trim() || 'reservations';
 export const SUPABASE_EVENTS_TABLE =
   (import.meta.env.VITE_SUPABASE_EVENTS_TABLE ?? 'events').trim() || 'events';
+export const SUPABASE_QR_TABLE =
+  (import.meta.env.VITE_SUPABASE_QR_TABLE ?? 'qr_codes').trim() || 'qr_codes';
 
 const hasSupabaseConfig = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
 export const isSupabaseConfigured = hasSupabaseConfig;

@@ -3,6 +3,7 @@ import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { useExperience } from '../context/ExperienceContext';
 import { listEvents } from '../services/events';
+import { createCheckoutForm } from '../services/payments';
 import { createReservation } from '../services/reservations';
 import { EventScheduleItem } from '../types/event';
 
@@ -18,6 +19,7 @@ const getMonthLabel = (year: number, monthIndex: number) =>
   });
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const PENDING_RESERVATION_KEY = 'gye_pending_reservation';
 
 const formatISODateLabel = (isoDate: string) => {
   const [year, month, day] = isoDate.split('-').map(Number);
@@ -117,7 +119,7 @@ const toTicketQrText = (ticket: GeneratedTicket) =>
     `Hotel:${ticket.hotelName || '-'}`,
     `Phone:${ticket.phone}`,
     `Seats:${ticket.participants}`,
-    `Amount:EUR ${ticket.amount}`
+    `Amount:TRY ${ticket.amount}`
   ].join('|');
 
 const loadImage = (src: string) =>
@@ -240,6 +242,52 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
     phone: '',
     referralCode: ''
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+    if (!paymentStatus) return;
+
+    const rawPending = localStorage.getItem(PENDING_RESERVATION_KEY);
+    const cleanupUrl = () => {
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.delete('payment');
+      nextUrl.searchParams.delete('conversationId');
+      nextUrl.searchParams.delete('paymentId');
+      window.history.replaceState({}, document.title, nextUrl.pathname + nextUrl.search);
+    };
+
+    if (!rawPending) {
+      cleanupUrl();
+      return;
+    }
+
+    const finalizeReservation = async () => {
+      setIsSubmitting(true);
+      try {
+        const pending = JSON.parse(rawPending) as {
+          reservation: Parameters<typeof createReservation>[0];
+          ticket: GeneratedTicket;
+        };
+
+        if (paymentStatus === 'success') {
+          await createReservation({ ...pending.reservation, status: 'Confirmed' });
+          setGeneratedTicket(pending.ticket);
+          localStorage.removeItem(PENDING_RESERVATION_KEY);
+          alert('Payment successful. Your ticket is ready to download.');
+        } else {
+          alert('Payment failed. Please try again.');
+        }
+      } catch {
+        alert('Payment confirmation failed. Please contact support.');
+      } finally {
+        cleanupUrl();
+        setIsSubmitting(false);
+      }
+    };
+
+    void finalizeReservation();
+  }, []);
 
   const [viewYear, viewMonth] = viewYearMonth.split('-').map(Number);
   const todayIsoDate = toISODate(new Date());
@@ -364,29 +412,59 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
 
     setIsSubmitting(true);
     try {
-      await createReservation({
-        customerName: fullName,
-        customerPhone: phone,
-        activity: `${theme.label} Event: ${selectedEvent.title}`,
-        route: `Pickup ${reservationForm.pickupStop}${reservationForm.hotelName.trim() ? ` | Hotel ${reservationForm.hotelName.trim()}` : ''} | Seats ${seatsRequested} | ${selectedEvent.serviceStops.join(' -> ')}`,
-        date: activeDate,
-        source: 'event',
-        amount: selectedEvent.price * seatsRequested,
-        eventId: selectedEvent.id,
-        referredByCode: referralCode || undefined
-      });
-
       const ticket = buildTicketPayload(
         selectedEvent,
         { ...reservationForm, fullName, email, phone, participants: String(seatsRequested) },
         activeDate
       );
-      setGeneratedTicket(ticket);
 
-      alert('Reservation completed. QR ticket is ready to download.');
+      const reservationDraft = {
+        customerName: fullName,
+        customerPhone: phone,
+        activity: `${theme.label} Event: ${selectedEvent.title}`,
+        route: `Pickup ${reservationForm.pickupStop}${reservationForm.hotelName.trim() ? ` | Hotel ${reservationForm.hotelName.trim()}` : ''} | Seats ${seatsRequested} | ${selectedEvent.serviceStops.join(' -> ')}`,
+        date: activeDate,
+        source: 'event' as const,
+        amount: selectedEvent.price * seatsRequested,
+        eventId: selectedEvent.id,
+        referredByCode: referralCode || undefined
+      };
+
+      localStorage.setItem(
+        PENDING_RESERVATION_KEY,
+        JSON.stringify({
+          reservation: reservationDraft,
+          ticket
+        })
+      );
+
+      const checkout = await createCheckoutForm({
+        amount: reservationDraft.amount ?? 0,
+        currency: 'TRY',
+        buyer: {
+          fullName,
+          email,
+          phone,
+          address: reservationDraft.route,
+          city: 'Antalya',
+          country: 'Turkey'
+        },
+        item: {
+          id: String(selectedEvent.id),
+          name: selectedEvent.title,
+          category: selectedEvent.category,
+          price: reservationDraft.amount ?? 0
+        }
+      });
+
+      if (checkout.paymentPageUrl) {
+        window.location.href = checkout.paymentPageUrl;
+        return;
+      }
+
+      throw new Error(checkout.errorMessage || 'Checkout initialization failed.');
     } catch {
-      alert('Reservation could not be completed. Please try again.');
-    } finally {
+      alert('Payment could not be started. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -703,7 +781,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                                 Total
                               </label>
                               <div className="h-[42px] rounded-lg border border-slate-300 dark:border-white/15 px-3 flex items-center font-bold" style={{ color: theme.accent }}>
-                                EUR {selectedEvent.price * (Number(reservationForm.participants) || 0)}
+                                TRY {selectedEvent.price * (Number(reservationForm.participants) || 0)}
                               </div>
                             </div>
                           </div>
@@ -785,7 +863,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                           className="w-full rounded-lg text-white font-bold py-2.5 disabled:opacity-60"
                           style={{ backgroundColor: theme.accent }}
                         >
-                          {isSubmitting ? 'Completing...' : 'Complete Reservation'}
+                          {isSubmitting ? 'Redirecting to Payment...' : 'Pay & Complete Reservation'}
                         </button>
 
                         {generatedTicket && (
