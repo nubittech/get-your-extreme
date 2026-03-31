@@ -4,7 +4,7 @@ import QRCode from 'qrcode';
 import { useExperience } from '../context/ExperienceContext';
 import { listEvents } from '../services/events';
 import { createCheckoutForm } from '../services/payments';
-import { createReservation } from '../services/reservations';
+import { createReservation, updateReservationStatus } from '../services/reservations';
 import { EventScheduleItem } from '../types/event';
 
 const toISODate = (date: Date) => {
@@ -242,6 +242,117 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
     phone: '',
     referralCode: ''
   });
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isAgreementOpen, setIsAgreementOpen] = useState(false);
+
+  const agreementText = `MESAFELİ SATIŞ VE HİZMET SÖZLEŞMESİ
+1. TARAFLAR
+İşbu sözleşme, [AKTİVİTE ANTALYA DOĞA SPORLARI TURİZM OTELCİLİK LTD. ŞTİ.] (“Satıcı”) ile www.getyourextreme.com üzerinden hizmet satın alan kullanıcı (“Kullanıcı”) arasında elektronik ortamda kurulmuştur.
+2. KONU
+İşbu sözleşmenin konusu; Satıcı tarafından sunulan ekstrem spor aktiviteleri (SUP, kaya tırmanışı, dağ bisikleti, foil board vb.), bu aktivitelere ilişkin eğitim hizmetleri ve ekipman kiralama hizmetlerinin satışına ilişkin tarafların hak ve yükümlülüklerinin belirlenmesidir.
+3. HİZMET VE KİRALAMA KAPSAMI
+3.1. Sunulan tüm hizmetler rezervasyon esasına tabidir.
+3.2. Hizmetler belirli tarih, saat ve lokasyonda fiziksel olarak sunulur.
+3.3. Satıcı, gerekli gördüğü hallerde hizmet içeriğinde değişiklik yapma hakkını saklı tutar.
+3.4. Ekipman kiralama hizmetleri kapsamında SUP board, bisiklet, tırmanış ekipmanları ve yan ekipmanlar Kullanıcı’ya geçici olarak tahsis edilir.
+4. REZERVASYON VE ÖDEME
+4.1. Kullanıcı, web sitesi üzerinden rezervasyon oluşturur ve ödeme ile birlikte sözleşme yürürlüğe girer.
+4.2. Ödeme tamamlanmadan rezervasyon kesinleşmez.
+5. CAYMA HAKKI
+Sunulan hizmetler belirli bir tarihte ifa edilen boş zaman değerlendirme hizmetleri kapsamında olup, 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve ilgili Mesafeli Sözleşmeler Yönetmeliği uyarınca cayma hakkı bulunmamaktadır.
+6. İPTAL VE İADE KOŞULLARI
+6.1. Etkinlik tarihinden en az 24 saat önce yapılan iptallerde ücret iadesi yapılır.
+6.2. 24 saatten kısa süre kala yapılan iptallerde iade yapılmaz.
+6.3. Kullanıcının etkinliğe katılmaması halinde ücret iadesi yapılmaz.
+6.4. Hava koşulları, güvenlik veya operasyonel sebeplerle etkinliğin iptal edilmesi halinde:
+• Tam iade yapılabilir veya
+• Kullanıcıya alternatif tarih sunulabilir.
+6.5. Satıcı, gerekli gördüğü durumlarda iade yerine tarih değişikliği teklif etme hakkını saklı tutar.
+7. GECİKME VE KATILMAMA
+Kullanıcının etkinliğe geç kalması veya katılmaması durumunda hizmet verilmemiş olsa dahi ücret iadesi yapılmaz.
+8. EKİPMAN KİRALAMA VE DEPOZİTO
+8.1. Kiralanan ekipmanlar Kullanıcıya sağlam ve kullanıma hazır şekilde teslim edilir.
+8.2. Kullanıcı, ekipmanı özenle kullanmakla yükümlüdür.
+8.3. Ekipmanın hasar görmesi, kaybolması veya eksik iade edilmesi halinde doğan zarar Kullanıcı tarafından karşılanır.
+8.4. Satıcı, ekipman kiralamalarında depozito talep edebilir. Depozito, ekipmanın eksiksiz ve hasarsız iadesi sonrası iade edilir.
+8.5. Hasar tespiti halinde depozitodan mahsup yapılabilir.
+9. KULLANICI YÜKÜMLÜLÜKLERİ
+9.1. Kullanıcı, aktiviteye katılmak için gerekli fiziksel yeterliliğe sahip olduğunu beyan eder.
+9.2. Kullanıcı, sağlık durumunun aktiviteye uygun olduğunu kabul eder.
+9.3. Kullanıcı, eğitmen ve rehberlerin tüm talimatlarına uymakla yükümlüdür.
+9.4. Talimatlara aykırı davranan kullanıcı etkinlikten çıkarılabilir ve bu durumda iade yapılmaz.
+10. RİSK KABULÜ VE SORUMLULUK SINIRLAMASI
+10.1. Kullanıcı, ekstrem spor faaliyetlerinin doğası gereği risk içerdiğini kabul eder.
+10.2. Bu faaliyetler sırasında yaralanma, sakatlanma, düşme, ekipman hasarı gibi riskler bulunduğunu bilerek katılım sağlar.
+10.3. Kullanıcı, kendi kusuru, talimatlara aykırı davranışı veya üçüncü kişilerden kaynaklanan zararlar bakımından Satıcı’nın sorumlu olmadığını kabul eder.
+10.4. Satıcı yalnızca kastı ve ağır ihmali bulunan durumlarda sorumlu tutulabilir.
+11. HAVA KOŞULLARI VE GÜVENLİK
+Etkinliğin güvenli şekilde gerçekleştirilebilmesi için gerekli koşulların oluşup oluşmadığına Satıcı tek taraflı olarak karar verir.
+12. MÜCBİR SEBEP
+Doğal afetler, kötü hava koşulları, salgın hastalıklar, kamu otoritelerinin kararları ve benzeri mücbir sebepler halinde Satıcı sorumlu tutulamaz.
+13. FOTOĞRAF VE VİDEO KULLANIMI
+Kullanıcı, etkinlik sırasında çekilen fotoğraf ve videoların tanıtım amacıyla kullanılmasına izin verdiğini kabul eder.
+14. KİŞİSEL VERİLERİN KORUNMASI
+Kullanıcı’ya ait kişisel veriler, ilgili mevzuata uygun olarak işlenir ve korunur. Detaylı bilgi Gizlilik Politikası’nda yer almaktadır.
+15. UYUŞMAZLIK ÇÖZÜMÜ
+Uyuşmazlıklarda Antalya ve ilçelerindeki Tüketici Hakem Heyetleri ve Antalya Mahkemeleri yetkilidir.
+16. YÜRÜRLÜK
+Kullanıcı, ödeme yaparak işbu sözleşme hükümlerini kabul etmiş sayılır.
+
+KİŞİSEL VERİLERİN KORUNMASI AYDINLATMA METNİ
+1. VERİ SORUMLUSU
+6698 sayılı Kişisel Verilerin Korunması Kanunu (“KVKK”) uyarınca, kişisel verileriniz veri sorumlusu sıfatıyla [Şirket Unvanı] (“Şirket”) tarafından aşağıda açıklanan kapsamda işlenebilecektir.
+2. İŞLENEN KİŞİSEL VERİLER
+Şirket tarafından işlenebilecek kişisel verileriniz şunlardır:
+• Kimlik bilgileri (ad, soyad)
+• İletişim bilgileri (telefon, e-posta)
+• İşlem bilgileri (rezervasyon, ödeme bilgileri)
+• Lokasyon bilgisi (etkinlik alanına ilişkin sınırlı veri)
+• Görsel ve işitsel kayıtlar (fotoğraf, video)
+• Sağlık beyanı (katılım uygunluğu kapsamında sınırlı beyan)
+3. KİŞİSEL VERİLERİN İŞLENME AMAÇLARI
+Toplanan kişisel verileriniz aşağıdaki amaçlarla işlenmektedir:
+• Rezervasyon ve hizmet süreçlerinin yürütülmesi
+• Ekipman kiralama işlemlerinin gerçekleştirilmesi
+• Ödeme işlemlerinin tamamlanması
+• Katılımcı güvenliğinin sağlanması
+• İletişim faaliyetlerinin yürütülmesi
+• Yasal yükümlülüklerin yerine getirilmesi
+• Olası uyuşmazlıklarda delil oluşturulması
+• Tanıtım ve pazarlama faaliyetleri (fotoğraf/video kullanımı dahil)
+4. KİŞİSEL VERİLERİN AKTARILMASI
+Kişisel verileriniz, yukarıda belirtilen amaçların gerçekleştirilmesi doğrultusunda:
+• Yetkili kamu kurum ve kuruluşlarına
+• Ödeme hizmet sağlayıcılarına
+• İş ortaklarına ve hizmet sağlayıcılara
+KVKK’nın 8 ve 9. maddelerine uygun olarak aktarılabilir.
+5. KİŞİSEL VERİ TOPLAMA YÖNTEMİ VE HUKUKİ SEBEP
+Kişisel verileriniz;
+• Web sitesi üzerinden rezervasyon sırasında,
+• Etkinlik kayıt formları aracılığıyla,
+• Sözlü, yazılı veya elektronik ortamda
+KVKK’nın 5. ve 6. maddelerinde belirtilen:
+• Sözleşmenin kurulması ve ifası
+• Hukuki yükümlülüklerin yerine getirilmesi
+• Açık rıza
+hukuki sebeplerine dayanılarak işlenmektedir.
+6. KVKK KAPSAMINDA HAKLARINIZ
+KVKK’nın 11. maddesi uyarınca veri sahibi olarak:
+• Kişisel verilerinizin işlenip işlenmediğini öğrenme
+• İşlenmişse bilgi talep etme
+• İşlenme amacını öğrenme
+• Verilerin düzeltilmesini veya silinmesini isteme
+• İşlemenin hukuka aykırı olması halinde zararın giderilmesini talep etme
+haklarına sahipsiniz.
+7. BAŞVURU YOLLARI
+Yukarıda belirtilen haklarınıza ilişkin taleplerinizi [e-posta adresi] üzerinden Şirket’e iletebilirsiniz.
+8. VERİ SAKLAMA SÜRESİ
+Kişisel verileriniz, işleme amacının gerektirdiği süre boyunca ve ilgili mevzuatta öngörülen süreler kadar saklanır.
+9. GÜVENLİK
+Şirket, kişisel verilerinizin hukuka aykırı olarak işlenmesini ve erişilmesini önlemek amacıyla gerekli teknik ve idari tedbirleri almaktadır.
+10. YÜRÜRLÜK
+İşbu Aydınlatma Metni, web sitesi üzerinden yayımlandığı tarihte yürürlüğe girer.
+`;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -266,16 +377,26 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
       setIsSubmitting(true);
       try {
         const pending = JSON.parse(rawPending) as {
-          reservation: Parameters<typeof createReservation>[0];
+          reservationId: number;
           ticket: GeneratedTicket;
         };
 
         if (paymentStatus === 'success') {
-          await createReservation({ ...pending.reservation, status: 'Confirmed' });
+          try {
+            await updateReservationStatus(pending.reservationId, 'Confirmed');
+          } catch {
+            // Webhook will also update; ignore client update failures.
+          }
           setGeneratedTicket(pending.ticket);
           localStorage.removeItem(PENDING_RESERVATION_KEY);
           alert('Payment successful. Your ticket is ready to download.');
         } else {
+          try {
+            await updateReservationStatus(pending.reservationId, 'Cancelled');
+          } catch {
+            // Webhook will also update; ignore client update failures.
+          }
+          localStorage.removeItem(PENDING_RESERVATION_KEY);
           alert('Payment failed. Please try again.');
         }
       } catch {
@@ -389,6 +510,10 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
       alert('Please complete pickup, participant count, name, email and phone.');
       return;
     }
+    if (!termsAccepted) {
+      alert('Please confirm that you have read and accepted the required terms.');
+      return;
+    }
 
     if (!Number.isInteger(seatsRequested) || seatsRequested < 1) {
       alert('Participant count must be at least 1.');
@@ -430,10 +555,15 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
         referredByCode: referralCode || undefined
       };
 
+      const createdReservation = await createReservation({
+        ...reservationDraft,
+        status: 'Pending'
+      });
+
       localStorage.setItem(
         PENDING_RESERVATION_KEY,
         JSON.stringify({
-          reservation: reservationDraft,
+          reservationId: createdReservation.id,
           ticket
         })
       );
@@ -454,7 +584,8 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
           name: selectedEvent.title,
           category: selectedEvent.category,
           price: reservationDraft.amount ?? 0
-        }
+        },
+        conversationId: String(createdReservation.id)
       });
 
       if (checkout.paymentPageUrl) {
@@ -464,6 +595,16 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
 
       throw new Error(checkout.errorMessage || 'Checkout initialization failed.');
     } catch {
+      const rawPending = localStorage.getItem(PENDING_RESERVATION_KEY);
+      if (rawPending) {
+        try {
+          const pending = JSON.parse(rawPending) as { reservationId: number };
+          await updateReservationStatus(pending.reservationId, 'Cancelled');
+        } catch {
+          // Ignore; reservation might be in Supabase and updated by webhook.
+        }
+        localStorage.removeItem(PENDING_RESERVATION_KEY);
+      }
       alert('Payment could not be started. Please try again.');
       setIsSubmitting(false);
     }
@@ -690,7 +831,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                       {(() => {
                         const detailLines = parseEventDetailsLines(selectedEvent.details);
                         return (
-                      <article className="rounded-xl border border-slate-200 dark:border-white/10 p-4 bg-slate-50 dark:bg-[#0f1922]">
+                      <article className="rounded-xl border border-slate-200 dark:border-white/10 p-4 bg-slate-50 dark:bg-[#0f1922] text-left">
                         <div className="flex items-start justify-between gap-3">
                           <h4 className="font-bold text-slate-900 dark:text-white">{selectedEvent.title}</h4>
                           <span
@@ -700,11 +841,11 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                             {selectedEvent.time}
                           </span>
                         </div>
-                        <p className="mt-2 text-sm text-slate-600 dark:text-white/70">{selectedEvent.summary}</p>
+                        <p className="mt-2 text-left text-sm text-slate-600 dark:text-white/70">{selectedEvent.summary}</p>
                         {detailLines.length > 0 && (
-                          <div className="mt-2 space-y-1.5 text-sm text-slate-600 dark:text-white/80">
+                          <div className="mt-2 space-y-1.5 text-left text-sm text-slate-600 dark:text-white/80">
                             {detailLines.map((line) => (
-                              <p key={`${selectedEvent.id}-${line}`} className="leading-relaxed">
+                              <p key={`${selectedEvent.id}-${line}`} className="leading-relaxed text-left">
                                 {line}
                               </p>
                             ))}
@@ -858,8 +999,28 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
                         </div>
 
                         <button
+                          type="button"
+                          onClick={() => setIsAgreementOpen(true)}
+                          className="w-full rounded-lg border border-slate-200/70 dark:border-white/10 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-white/80 hover:border-slate-300"
+                        >
+                          Mesafeli Satış ve Hizmet Sözleşmesini Oku (KVKK)
+                        </button>
+
+                        <label className="flex items-start gap-3 rounded-lg border border-slate-200/60 dark:border-white/10 bg-slate-50/70 dark:bg-[#0f1922] px-3 py-2 text-xs text-slate-600 dark:text-white/70">
+                          <input
+                            type="checkbox"
+                            checked={termsAccepted}
+                            onChange={(e) => setTermsAccepted(e.target.checked)}
+                            className="mt-0.5 size-4 rounded border-slate-300 text-[#1183d4] focus:ring-[#1183d4]"
+                          />
+                          <span>
+                            Sözleşmeyi okudum, gerekli bilgileri kabul ediyorum.
+                          </span>
+                        </label>
+
+                        <button
                           type="submit"
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || !termsAccepted}
                           className="w-full rounded-lg text-white font-bold py-2.5 disabled:opacity-60"
                           style={{ backgroundColor: theme.accent }}
                         >
@@ -900,6 +1061,37 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
           </div>
         </div>
       </div>
+
+      {isAgreementOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="max-h-[85vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-[#0f1922] shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
+              <h4 className="text-sm font-bold text-white">Mesafeli Satış ve Hizmet Sözleşmesi</h4>
+              <button
+                type="button"
+                onClick={() => setIsAgreementOpen(false)}
+                className="rounded-full border border-white/20 px-2 py-1 text-xs text-white/70 hover:text-white"
+              >
+                Kapat
+              </button>
+            </div>
+            <div className="max-h-[70vh] overflow-y-auto px-5 py-4">
+              <pre className="whitespace-pre-wrap text-xs leading-relaxed text-white/80">
+                {agreementText}
+              </pre>
+            </div>
+            <div className="flex items-center justify-end gap-2 border-t border-white/10 px-5 py-3">
+              <button
+                type="button"
+                onClick={() => setIsAgreementOpen(false)}
+                className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/80 hover:text-white"
+              >
+                Kapat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

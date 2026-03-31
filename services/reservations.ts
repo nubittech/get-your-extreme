@@ -288,3 +288,35 @@ export const deleteReservation = async (reservationId: number): Promise<void> =>
   const nextReservations = currentReservations.filter((item) => item.id !== reservationId);
   writeLocalReservations(nextReservations);
 };
+
+export const updateReservationStatus = async (
+  reservationId: number,
+  status: Reservation['status']
+): Promise<void> => {
+  if (isSupabaseMode()) {
+    const supabase = requireSupabase();
+    const { error } = await supabase
+      .from(SUPABASE_RESERVATIONS_TABLE)
+      .update({ status })
+      .eq('id', reservationId);
+
+    if (error) {
+      throw new Error(`Supabase update failed: ${error.message}`);
+    }
+    return;
+  }
+
+  if (isRemoteMode()) {
+    await requestJson<void>(`/reservations/${reservationId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    });
+    return;
+  }
+
+  const currentReservations = readLocalReservations();
+  const nextReservations = currentReservations.map((item) =>
+    item.id === reservationId ? { ...item, status } : item
+  );
+  writeLocalReservations(nextReservations);
+};

@@ -214,6 +214,27 @@ const PublicLayout: React.FC = () => {
               }}
             />
           </div>
+          <div className="mt-4 flex flex-col items-center gap-3 text-white/60 text-xs">
+            <span className="uppercase tracking-[0.25em]">Payment Methods</span>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <img
+                src="/visa.jpeg"
+                alt="Visa"
+                className="h-8 w-auto rounded bg-white/90 px-2 py-1 object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <img
+                src="/master.jpeg"
+                alt="Mastercard"
+                className="h-8 w-auto rounded bg-white/90 px-2 py-1 object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
         </div>
       </footer>
       <SpecialRequestDrawer />
