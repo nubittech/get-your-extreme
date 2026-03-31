@@ -243,6 +243,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
     referralCode: ''
   });
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [kvkkAccepted, setKvkkAccepted] = useState(false);
   const [isAgreementOpen, setIsAgreementOpen] = useState(false);
   const [agreementLang, setAgreementLang] = useState<'tr' | 'en'>('tr');
 
@@ -617,7 +618,7 @@ This Information Notice enters into force on the date it is published on the web
       alert('Please complete pickup, participant count, name, email and phone.');
       return;
     }
-    if (!termsAccepted) {
+    if (!termsAccepted || !kvkkAccepted) {
       alert('Please confirm that you have read and accepted the required terms.');
       return;
     }
@@ -1121,13 +1122,25 @@ This Information Notice enters into force on the date it is published on the web
                             className="mt-0.5 size-4 rounded border-slate-300 text-[#1183d4] focus:ring-[#1183d4]"
                           />
                           <span>
-                            I have read and accept the agreement and required information.
+                            I have read and accept the Distance Sales and Service Agreement.
+                          </span>
+                        </label>
+
+                        <label className="flex items-start gap-3 rounded-lg border border-slate-200/60 dark:border-white/10 bg-slate-50/70 dark:bg-[#0f1922] px-3 py-2 text-xs text-slate-600 dark:text-white/70">
+                          <input
+                            type="checkbox"
+                            checked={kvkkAccepted}
+                            onChange={(e) => setKvkkAccepted(e.target.checked)}
+                            className="mt-0.5 size-4 rounded border-slate-300 text-[#1183d4] focus:ring-[#1183d4]"
+                          />
+                          <span>
+                            I have read and understood the Personal Data Protection Information Notice.
                           </span>
                         </label>
 
                         <button
                           type="submit"
-                          disabled={isSubmitting || !termsAccepted}
+                          disabled={isSubmitting || !termsAccepted || !kvkkAccepted}
                           className="w-full rounded-lg text-white font-bold py-2.5 disabled:opacity-60"
                           style={{ backgroundColor: theme.accent }}
                         >
