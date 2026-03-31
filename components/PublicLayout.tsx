@@ -233,6 +233,14 @@ const PublicLayout: React.FC = () => {
                   e.currentTarget.style.display = 'none';
                 }}
               />
+              <img
+                src="/iyizico.jpeg"
+                alt="iyzico ile öde"
+                className="h-8 w-auto rounded bg-white/90 px-2 py-1 object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
             </div>
           </div>
         </div>
