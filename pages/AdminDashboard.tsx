@@ -425,7 +425,7 @@ const AdminDashboard: React.FC = () => {
               onClick={() => openAuthModal('signin')}
               className="rounded-lg border border-[#283239] px-3 py-2 text-sm font-semibold text-slate-700 dark:text-white"
             >
-              Giris Yap
+              Sign In
             </button>
           ) : (
             <div className="flex items-center gap-2">

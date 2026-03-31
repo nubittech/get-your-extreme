@@ -45,7 +45,7 @@ const PublicLayout: React.FC = () => {
                   onClick={() => signOut()}
                   className="rounded-lg border border-white/20 bg-black/35 px-3 py-2 text-xs font-bold text-white hover:bg-black/45"
                 >
-                  Cikis
+                  Sign Out
                 </button>
               </div>
             ) : (
@@ -54,7 +54,7 @@ const PublicLayout: React.FC = () => {
                 onClick={() => openAuthModal('signin')}
                 className="rounded-lg border border-white/20 bg-black/35 px-3 py-2 text-xs font-bold text-white hover:bg-black/45"
               >
-                Giris Yap
+                Sign In
               </button>
             )}
             <a
@@ -91,7 +91,7 @@ const PublicLayout: React.FC = () => {
                   }}
                   className="rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white/90 text-left"
                 >
-                  Giris Yap
+                  Sign In
                 </button>
               ) : (
                 <button
@@ -102,7 +102,7 @@ const PublicLayout: React.FC = () => {
                   }}
                   className="rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white/90 text-left"
                 >
-                  Cikis ({profile?.refCode ?? 'No Ref'})
+                  Sign Out ({profile?.refCode ?? 'No Ref'})
                 </button>
               )}
            </div>

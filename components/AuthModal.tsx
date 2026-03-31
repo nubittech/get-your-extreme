@@ -81,7 +81,7 @@ const AuthModal: React.FC = () => {
               authModalMode === 'signin' ? 'bg-[#1183d4] text-white' : 'text-white/75'
             }`}
           >
-            Giris Yap
+            Sign In
           </button>
           <button
             type="button"
@@ -141,7 +141,7 @@ const AuthModal: React.FC = () => {
               ? 'Isleniyor...'
               : authModalMode === 'signup'
                 ? 'Hesap Olustur'
-                : 'Giris Yap'}
+                : 'Sign In'}
           </button>
         </form>
       </div>

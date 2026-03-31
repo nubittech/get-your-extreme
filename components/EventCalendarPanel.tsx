@@ -244,8 +244,9 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
   });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isAgreementOpen, setIsAgreementOpen] = useState(false);
+  const [agreementLang, setAgreementLang] = useState<'tr' | 'en'>('tr');
 
-  const agreementText = `MESAFELİ SATIŞ VE HİZMET SÖZLEŞMESİ
+  const agreementTextTr = `MESAFELİ SATIŞ VE HİZMET SÖZLEŞMESİ
 1. TARAFLAR
 İşbu sözleşme, [AKTİVİTE ANTALYA DOĞA SPORLARI TURİZM OTELCİLİK LTD. ŞTİ.] (“Satıcı”) ile www.getyourextreme.com üzerinden hizmet satın alan kullanıcı (“Kullanıcı”) arasında elektronik ortamda kurulmuştur.
 2. KONU
@@ -352,6 +353,112 @@ Kişisel verileriniz, işleme amacının gerektirdiği süre boyunca ve ilgili m
 Şirket, kişisel verilerinizin hukuka aykırı olarak işlenmesini ve erişilmesini önlemek amacıyla gerekli teknik ve idari tedbirleri almaktadır.
 10. YÜRÜRLÜK
 İşbu Aydınlatma Metni, web sitesi üzerinden yayımlandığı tarihte yürürlüğe girer.
+`;
+
+  const agreementTextEn = `DISTANCE SALES AND SERVICE AGREEMENT
+1. PARTIES
+This Agreement is concluded electronically between [AKTİVİTE ANTALYA DOĞA SPORLARI TURİZM OTELCİLİK LTD. ŞTİ.] ("Seller") and the user ("User") who purchases services via www.getyourextreme.com.
+2. SUBJECT
+The subject of this Agreement is to determine the rights and obligations of the parties regarding the sale of extreme sports activities (such as SUP, rock climbing, mountain biking, foil board, etc.), related training services, and equipment rental services provided by the Seller.
+3. SCOPE OF SERVICES AND RENTALS
+3.1. All services are subject to reservation.
+3.2. Services are provided physically at specific dates, times, and locations.
+3.3. The Seller reserves the right to make changes to the service content when deemed necessary.
+3.4. Within the scope of equipment rental, SUP boards, bicycles, climbing equipment, and related accessories are temporarily allocated to the User.
+4. RESERVATION AND PAYMENT
+4.1. The User creates a reservation via the website, and the Agreement enters into force upon payment.
+4.2. Reservations are not confirmed until payment is completed.
+5. RIGHT OF WITHDRAWAL
+The services provided fall under leisure services performed on a specific date; therefore, pursuant to Law No. 6502 on Consumer Protection and the Distance Contracts Regulation, the right of withdrawal does not apply.
+6. CANCELLATION AND REFUND CONDITIONS
+6.1. Refunds are granted for cancellations made at least 24 hours before the event.
+6.2. No refunds are given for cancellations made less than 24 hours prior to the event.
+6.3. No refunds are provided if the User fails to attend the event.
+6.4. If the event is canceled due to weather conditions, safety, or operational reasons:
+A full refund may be issued, or
+An alternative date may be offered to the User.
+6.5. The Seller reserves the right to offer a date change instead of a refund where deemed appropriate.
+7. DELAY AND NON-ATTENDANCE
+If the User is late or does not attend the event, no refund will be provided even if the service has not been received.
+8. EQUIPMENT RENTAL AND DEPOSIT
+8.1. Rental equipment is delivered in good condition and ready for use.
+8.2. The User is responsible for using the equipment with due care.
+8.3. Any damage, loss, or incomplete return of the equipment shall be compensated by the User.
+8.4. The Seller may require a deposit for equipment rentals. The deposit will be refunded upon the return of the equipment in full and undamaged condition.
+8.5. In case of damage, deductions may be made from the deposit.
+9. USER OBLIGATIONS
+9.1. The User declares that they have the necessary physical capability to participate in the activity.
+9.2. The User accepts that their health condition is suitable for participation.
+9.3. The User agrees to comply with all instructions given by instructors and guides.
+9.4. Users who fail to comply with instructions may be removed from the activity without any refund.
+10. RISK ACCEPTANCE AND LIMITATION OF LIABILITY
+10.1. The User acknowledges that extreme sports inherently involve risks.
+10.2. The User participates with full awareness of risks such as injury, accidents, falls, and equipment damage.
+10.3. The User agrees that the Seller is not liable for damages arising from the User's own fault, non-compliance with instructions, or third parties.
+10.4. The Seller shall only be held liable in cases of intent or gross negligence.
+11. WEATHER CONDITIONS AND SAFETY
+The Seller has the sole discretion to determine whether conditions are suitable for safely conducting the activity.
+12. FORCE MAJEURE
+The Seller shall not be held liable for events such as natural disasters, adverse weather conditions, pandemics, or decisions of public authorities.
+13. PHOTO AND VIDEO USAGE
+The User consents to the use of photos and videos taken during the activity for promotional purposes.
+14. PERSONAL DATA PROTECTION
+The User's personal data shall be processed and protected in accordance with applicable legislation. Detailed information is provided in the Privacy Policy.
+15. DISPUTE RESOLUTION
+In case of disputes, Consumer Arbitration Committees and Courts of Antalya shall have jurisdiction.
+16. ENTRY INTO FORCE
+The User shall be deemed to have accepted the terms of this Agreement upon making payment.
+
+PERSONAL DATA PROTECTION INFORMATION NOTICE
+1. DATA CONTROLLER
+Pursuant to the Personal Data Protection Law No. 6698 ("KVKK"), your personal data may be processed by [Company Name] ("Company") as the data controller within the scope described below.
+2. PROCESSED PERSONAL DATA
+The Company may process the following personal data:
+Identity information (name, surname)
+Contact information (phone, email)
+Transaction information (reservation, payment details)
+Location data (limited to activity area)
+Visual and audio records (photos, videos)
+Health declaration (limited to participation suitability)
+3. PURPOSES OF PROCESSING PERSONAL DATA
+Your personal data are processed for the following purposes:
+Execution of reservation and service processes
+Conducting equipment rental operations
+Completing payment transactions
+Ensuring participant safety
+Managing communication activities
+Fulfilling legal obligations
+Providing evidence in case of disputes
+Conducting marketing and promotional activities (including photo/video use)
+4. TRANSFER OF PERSONAL DATA
+Your personal data may be transferred, in accordance with Articles 8 and 9 of KVKK, to:
+Authorized public institutions and organizations
+Payment service providers
+Business partners and service providers
+5. METHOD AND LEGAL BASIS FOR DATA COLLECTION
+Your personal data are collected:
+During reservation via the website,
+Through event registration forms,
+Via verbal, written, or electronic means
+Based on the legal grounds specified in Articles 5 and 6 of KVKK:
+Establishment and performance of a contract
+Fulfillment of legal obligations
+Explicit consent
+6. YOUR RIGHTS UNDER KVKK
+Pursuant to Article 11 of KVKK, you have the right to:
+Learn whether your personal data are processed
+Request information if processed
+Learn the purpose of processing
+Request correction or deletion of data
+Request compensation in case of unlawful processing
+7. APPLICATION METHODS
+You may submit your requests regarding your rights via [email address].
+8. DATA RETENTION PERIOD
+Your personal data will be stored for the duration required by the processing purpose and in accordance with applicable legislation.
+9. SECURITY
+The Company takes necessary technical and administrative measures to prevent unlawful processing and access to personal data.
+10. ENTRY INTO FORCE
+This Information Notice enters into force on the date it is published on the website.
 `;
 
   useEffect(() => {
@@ -1003,7 +1110,7 @@ Kişisel verileriniz, işleme amacının gerektirdiği süre boyunca ve ilgili m
                           onClick={() => setIsAgreementOpen(true)}
                           className="w-full rounded-lg border border-slate-200/70 dark:border-white/10 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-white/80 hover:border-slate-300"
                         >
-                          Mesafeli Satış ve Hizmet Sözleşmesini Oku (KVKK)
+                          Read Distance Sales & Service Agreement (KVKK)
                         </button>
 
                         <label className="flex items-start gap-3 rounded-lg border border-slate-200/60 dark:border-white/10 bg-slate-50/70 dark:bg-[#0f1922] px-3 py-2 text-xs text-slate-600 dark:text-white/70">
@@ -1014,7 +1121,7 @@ Kişisel verileriniz, işleme amacının gerektirdiği süre boyunca ve ilgili m
                             className="mt-0.5 size-4 rounded border-slate-300 text-[#1183d4] focus:ring-[#1183d4]"
                           />
                           <span>
-                            Sözleşmeyi okudum, gerekli bilgileri kabul ediyorum.
+                            I have read and accept the agreement and required information.
                           </span>
                         </label>
 
@@ -1066,18 +1173,45 @@ Kişisel verileriniz, işleme amacının gerektirdiği süre boyunca ve ilgili m
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
           <div className="max-h-[85vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-[#0f1922] shadow-2xl">
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
-              <h4 className="text-sm font-bold text-white">Mesafeli Satış ve Hizmet Sözleşmesi</h4>
+              <h4 className="text-sm font-bold text-white">
+                {agreementLang === 'tr'
+                  ? 'Mesafeli Satış ve Hizmet Sözleşmesi'
+                  : 'Distance Sales & Service Agreement'}
+              </h4>
               <button
                 type="button"
                 onClick={() => setIsAgreementOpen(false)}
                 className="rounded-full border border-white/20 px-2 py-1 text-xs text-white/70 hover:text-white"
               >
-                Kapat
+                {agreementLang === 'tr' ? 'Kapat' : 'Close'}
               </button>
+            </div>
+            <div className="flex items-center gap-2 border-b border-white/10 px-5 py-3">
+              <div className="inline-flex rounded-full border border-white/15 bg-black/30 p-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setAgreementLang('tr')}
+                  className={`rounded-full px-3 py-1 font-semibold ${
+                    agreementLang === 'tr' ? 'bg-white text-slate-900' : 'text-white/70'
+                  }`}
+                >
+                  Türkçe
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAgreementLang('en')}
+                  className={`rounded-full px-3 py-1 font-semibold ${
+                    agreementLang === 'en' ? 'bg-white text-slate-900' : 'text-white/70'
+                  }`}
+                >
+                  English
+                </button>
+              </div>
+              <span className="text-[11px] text-white/50">Swipe to switch language</span>
             </div>
             <div className="max-h-[70vh] overflow-y-auto px-5 py-4">
               <pre className="whitespace-pre-wrap text-xs leading-relaxed text-white/80">
-                {agreementText}
+                {agreementLang === 'tr' ? agreementTextTr : agreementTextEn}
               </pre>
             </div>
             <div className="flex items-center justify-end gap-2 border-t border-white/10 px-5 py-3">
@@ -1086,7 +1220,7 @@ Kişisel verileriniz, işleme amacının gerektirdiği süre boyunca ve ilgili m
                 onClick={() => setIsAgreementOpen(false)}
                 className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/80 hover:text-white"
               >
-                Kapat
+                {agreementLang === 'tr' ? 'Kapat' : 'Close'}
               </button>
             </div>
           </div>
