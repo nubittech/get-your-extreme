@@ -234,7 +234,7 @@ const PublicLayout: React.FC = () => {
                 }}
               />
               <img
-                src="/iyizico.jpeg"
+                src="/iyizico.png"
                 alt="iyzico ile öde"
                 className="h-8 w-auto rounded bg-white/90 px-2 py-1 object-contain"
                 onError={(e) => {
