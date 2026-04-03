@@ -82,6 +82,7 @@ type GeneratedTicket = {
   hotelName: string;
   phone: string;
   participants: number;
+  participantNames: string[];
   amount: number;
   serviceStops: string[];
 };
@@ -89,7 +90,8 @@ type GeneratedTicket = {
 const buildTicketPayload = (
   event: EventScheduleItem,
   form: ReservationFormState,
-  activeDate: string
+  activeDate: string,
+  participantNames: string[]
 ): GeneratedTicket => ({
   reference: `GYE-${Date.now().toString().slice(-8)}`,
   category: event.category,
@@ -103,6 +105,7 @@ const buildTicketPayload = (
   hotelName: form.hotelName,
   phone: form.phone,
   participants: Number(form.participants),
+  participantNames,
   amount: event.price * Number(form.participants),
   serviceStops: event.serviceStops
 });
@@ -118,9 +121,27 @@ const toTicketQrText = (ticket: GeneratedTicket) =>
     `Email:${ticket.email}`,
     `Hotel:${ticket.hotelName || '-'}`,
     `Phone:${ticket.phone}`,
+    `Names:${ticket.participantNames.join(', ')}`,
     `Seats:${ticket.participants}`,
     `Amount:TRY ${ticket.amount}`
   ].join('|');
+
+const wrapTextLines = (value: string, maxChars: number) => {
+  const words = value.split(' ');
+  const lines: string[] = [];
+  let current = '';
+  words.forEach((word) => {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length > maxChars) {
+      if (current) lines.push(current);
+      current = word;
+    } else {
+      current = next;
+    }
+  });
+  if (current) lines.push(current);
+  return lines;
+};
 
 const loadImage = (src: string) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
@@ -203,6 +224,21 @@ const createTicketCanvas = async (ticket: GeneratedTicket, accent: string) => {
     y += 74;
   });
 
+  if (ticket.participantNames.length > 0) {
+    ctx.fillStyle = '#60a5fa';
+    ctx.font = '700 20px sans-serif';
+    ctx.fillText('Participants', 96, y);
+    const namesLine = ticket.participantNames.join(', ');
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '600 21px sans-serif';
+    const nameLines = wrapTextLines(namesLine, 48);
+    nameLines.forEach((line) => {
+      y += 32;
+      ctx.fillText(line, 96, y);
+    });
+    y += 42;
+  }
+
   ctx.fillStyle = '#60a5fa';
   ctx.font = '700 20px sans-serif';
   ctx.fillText('Service Route', 96, y + 8);
@@ -243,6 +279,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
     phone: '',
     referralCode: ''
   });
+  const [participantNames, setParticipantNames] = useState<string[]>(['']);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [kvkkAccepted, setKvkkAccepted] = useState(false);
   const [isAgreementOpen, setIsAgreementOpen] = useState(false);
@@ -585,6 +622,19 @@ This Information Notice enters into force on the date it is published on the web
     }));
   }, [selectedEvent]);
 
+  useEffect(() => {
+    const count = Math.max(1, Number(reservationForm.participants) || 1);
+    setParticipantNames((current) => {
+      const next = [...current];
+      if (next.length < count) {
+        while (next.length < count) next.push('');
+      } else if (next.length > count) {
+        next.length = count;
+      }
+      return next;
+    });
+  }, [reservationForm.participants]);
+
   const goToPreviousMonth = () => {
     const previous = new Date(viewYear, viewMonth - 2, 1);
     setViewYearMonth(`${previous.getFullYear()}-${String(previous.getMonth() + 1).padStart(2, '0')}`);
@@ -614,9 +664,14 @@ This Information Notice enters into force on the date it is published on the web
     const email = reservationForm.email.trim();
     const phone = reservationForm.phone.trim();
     const referralCode = reservationForm.referralCode.trim().toUpperCase();
+    const normalizedParticipantNames = participantNames.map((name) => name.trim()).filter(Boolean);
 
     if (!reservationForm.pickupStop || !fullName || !email || !phone || !seatsRequested) {
       alert('Please complete pickup, participant count, name, email and phone.');
+      return;
+    }
+    if (normalizedParticipantNames.length !== seatsRequested) {
+      alert('Please enter full names for all participants.');
       return;
     }
     if (!termsAccepted || !kvkkAccepted) {
@@ -649,14 +704,15 @@ This Information Notice enters into force on the date it is published on the web
       const ticket = buildTicketPayload(
         selectedEvent,
         { ...reservationForm, fullName, email, phone, participants: String(seatsRequested) },
-        activeDate
+        activeDate,
+        normalizedParticipantNames
       );
 
       const reservationDraft = {
         customerName: fullName,
         customerPhone: phone,
         activity: `${theme.label} Event: ${selectedEvent.title}`,
-        route: `Pickup ${reservationForm.pickupStop}${reservationForm.hotelName.trim() ? ` | Hotel ${reservationForm.hotelName.trim()}` : ''} | Seats ${seatsRequested} | ${selectedEvent.serviceStops.join(' -> ')}`,
+        route: `Pickup ${reservationForm.pickupStop}${reservationForm.hotelName.trim() ? ` | Hotel ${reservationForm.hotelName.trim()}` : ''} | Seats ${seatsRequested} | Participants ${normalizedParticipantNames.join(', ')} | ${selectedEvent.serviceStops.join(' -> ')}`,
         date: activeDate,
         source: 'event' as const,
         amount: selectedEvent.price * seatsRequested,
@@ -1047,11 +1103,11 @@ This Information Notice enters into force on the date it is published on the web
                             </div>
                           </div>
 
-                          <div className="space-y-1">
-                            <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
-                              Full Name
-                            </label>
-                            <input
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
+                            Full Name
+                          </label>
+                          <input
                               type="text"
                               name="fullName"
                               value={reservationForm.fullName}
@@ -1059,6 +1115,28 @@ This Information Notice enters into force on the date it is published on the web
                               placeholder="Name Surname"
                               className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
                             />
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
+                              Participant Names
+                            </p>
+                            {participantNames.map((name, idx) => (
+                              <input
+                                key={`participant-${idx}`}
+                                type="text"
+                                value={name}
+                                onChange={(e) =>
+                                  setParticipantNames((current) => {
+                                    const next = [...current];
+                                    next[idx] = e.target.value;
+                                    return next;
+                                  })
+                                }
+                                placeholder={`Participant ${idx + 1} Name Surname`}
+                                className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
+                              />
+                            ))}
                           </div>
 
                           <div className="space-y-1">
