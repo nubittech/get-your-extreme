@@ -1223,7 +1223,7 @@ This Information Notice enters into force on the date it is published on the web
               <span className="text-[11px] text-white/50">Swipe to switch language</span>
             </div>
             <div className="max-h-[70vh] overflow-y-auto px-5 py-4">
-              <pre className="whitespace-pre-wrap text-xs leading-relaxed text-white/80">
+              <pre className="whitespace-pre-wrap text-left text-xs leading-relaxed text-white/80">
                 {agreementLang === 'tr' ? agreementTextTr : agreementTextEn}
               </pre>
             </div>
