@@ -226,6 +226,7 @@ const createTicketCanvas = async (ticket: GeneratedTicket, accent: string) => {
 
 const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = false }) => {
   const { activeCategory, activeDate, setActiveDate, theme } = useExperience();
+  const isPaymentEnabled = false;
   const [viewYearMonth, setViewYearMonth] = useState(activeDate.slice(0, 7));
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -465,7 +466,7 @@ This Information Notice enters into force on the date it is published on the web
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const paymentStatus = params.get('payment');
-    if (!paymentStatus) return;
+    if (!paymentStatus || !isPaymentEnabled) return;
 
     const rawPending = localStorage.getItem(PENDING_RESERVATION_KEY);
     const cleanupUrl = () => {
@@ -663,6 +664,17 @@ This Information Notice enters into force on the date it is published on the web
         referredByCode: referralCode || undefined
       };
 
+      if (!isPaymentEnabled) {
+        await createReservation({
+          ...reservationDraft,
+          status: 'Confirmed'
+        });
+        setGeneratedTicket(ticket);
+        alert('Reservation completed. Your ticket is ready to download.');
+        setIsSubmitting(false);
+        return;
+      }
+
       const createdReservation = await createReservation({
         ...reservationDraft,
         status: 'Pending'
@@ -713,7 +725,7 @@ This Information Notice enters into force on the date it is published on the web
         }
         localStorage.removeItem(PENDING_RESERVATION_KEY);
       }
-      alert('Payment could not be started. Please try again.');
+      alert(isPaymentEnabled ? 'Payment could not be started. Please try again.' : 'Reservation failed. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -1114,6 +1126,12 @@ This Information Notice enters into force on the date it is published on the web
                           Read Distance Sales & Service Agreement (KVKK)
                         </button>
 
+                        {!isPaymentEnabled && (
+                          <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
+                            Credit card payments via iyzico are temporarily under development. Please complete your reservation without payment for now.
+                          </p>
+                        )}
+
                         <label className="flex items-start gap-3 rounded-lg border border-slate-200/60 dark:border-white/10 bg-slate-50/70 dark:bg-[#0f1922] px-3 py-2 text-xs text-slate-600 dark:text-white/70">
                           <input
                             type="checkbox"
@@ -1144,7 +1162,13 @@ This Information Notice enters into force on the date it is published on the web
                           className="w-full rounded-lg text-white font-bold py-2.5 disabled:opacity-60"
                           style={{ backgroundColor: theme.accent }}
                         >
-                          {isSubmitting ? 'Redirecting to Payment...' : 'Pay & Complete Reservation'}
+                          {isSubmitting
+                            ? isPaymentEnabled
+                              ? 'Redirecting to Payment...'
+                              : 'Completing Reservation...'
+                            : isPaymentEnabled
+                              ? 'Pay & Complete Reservation'
+                              : 'Complete Reservation'}
                         </button>
 
                         {generatedTicket && (
