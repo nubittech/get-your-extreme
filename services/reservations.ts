@@ -179,38 +179,52 @@ const createSupabaseReservation = async (
     referred_by_code: input.referredByCode ?? null
   };
 
-  let insertResult = await supabase
+  const snakeInsertResult = await supabase
     .from(SUPABASE_RESERVATIONS_TABLE)
     .insert(snakePayload)
     .select('*')
     .single();
 
-  // Compatibility fallback for camelCase column names.
-  if (insertResult.error) {
-    insertResult = await supabase
-      .from(SUPABASE_RESERVATIONS_TABLE)
-      .insert({
-        customerName: input.customerName,
-        customerPhone: input.customerPhone,
-        activity: input.activity,
-        route: input.route,
-        date: input.date,
-        status: input.status ?? 'Pending',
-        timestamp: new Date().toISOString(),
-        source: input.source ?? 'event',
-        amount: input.amount ?? null,
-        eventId: input.eventId ?? null,
-        referredByCode: input.referredByCode ?? null
-      })
-      .select('*')
-      .single();
+  if (snakeInsertResult.data && !snakeInsertResult.error) {
+    return mapSupabaseRowToReservation(snakeInsertResult.data as Record<string, unknown>);
   }
 
-  if (insertResult.error || !insertResult.data) {
-    throw new Error(`Supabase create failed: ${insertResult.error?.message ?? 'Unknown error'}`);
+  const snakeErrorMessage = snakeInsertResult.error?.message ?? '';
+  const shouldTryCamelCaseFallback =
+    snakeErrorMessage.includes('customer_name') ||
+    snakeErrorMessage.includes('customer_phone') ||
+    snakeErrorMessage.includes('event_id') ||
+    snakeErrorMessage.includes('referred_by_code') ||
+    snakeErrorMessage.includes('source');
+
+  if (!shouldTryCamelCaseFallback) {
+    throw new Error(`Supabase create failed: ${snakeErrorMessage || 'Unknown error'}`);
   }
 
-  return mapSupabaseRowToReservation(insertResult.data as Record<string, unknown>);
+  // Compatibility fallback for old schemas using camelCase column names.
+  const camelInsertResult = await supabase
+    .from(SUPABASE_RESERVATIONS_TABLE)
+    .insert({
+      customerName: input.customerName,
+      customerPhone: input.customerPhone,
+      activity: input.activity,
+      route: input.route,
+      date: input.date,
+      status: input.status ?? 'Pending',
+      timestamp: new Date().toISOString(),
+      source: input.source ?? 'event',
+      amount: input.amount ?? null,
+      eventId: input.eventId ?? null,
+      referredByCode: input.referredByCode ?? null
+    })
+    .select('*')
+    .single();
+
+  if (camelInsertResult.error || !camelInsertResult.data) {
+    throw new Error(`Supabase create failed: ${camelInsertResult.error?.message ?? 'Unknown error'}`);
+  }
+
+  return mapSupabaseRowToReservation(camelInsertResult.data as Record<string, unknown>);
 };
 
 const deleteSupabaseReservation = async (reservationId: number): Promise<void> => {
