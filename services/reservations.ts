@@ -1,5 +1,5 @@
 import { Reservation, ReservationCreateInput } from '../types/reservation';
-import { requireSupabase, SUPABASE_RESERVATIONS_TABLE } from './supabase';
+import { isSupabaseConfigured, requireSupabase, SUPABASE_RESERVATIONS_TABLE } from './supabase';
 
 const STORAGE_KEY = 'reservations';
 const API_MODE = import.meta.env.VITE_RESERVATIONS_API_MODE ?? 'local';
@@ -287,6 +287,9 @@ export const createReservation = async (
   input: ReservationCreateInput
 ): Promise<Reservation> => {
   if (isSupabaseMode()) {
+    if (!isSupabaseConfigured) {
+      return createReservationViaServerApi(input);
+    }
     return createSupabaseReservation(input);
   }
 
