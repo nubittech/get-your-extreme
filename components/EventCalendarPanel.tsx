@@ -279,7 +279,7 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
     phone: '',
     referralCode: ''
   });
-  const [participantNames, setParticipantNames] = useState<string[]>(['']);
+  const [participantNames, setParticipantNames] = useState<string[]>([]);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [kvkkAccepted, setKvkkAccepted] = useState(false);
   const [isAgreementOpen, setIsAgreementOpen] = useState(false);
@@ -623,7 +623,9 @@ This Information Notice enters into force on the date it is published on the web
   }, [selectedEvent]);
 
   useEffect(() => {
-    const count = Math.max(1, Number(reservationForm.participants) || 1);
+    // "Full Name" already captures the first participant.
+    // Dynamic fields are only for additional participants.
+    const count = Math.max(0, (Number(reservationForm.participants) || 1) - 1);
     setParticipantNames((current) => {
       const next = [...current];
       if (next.length < count) {
@@ -670,8 +672,8 @@ This Information Notice enters into force on the date it is published on the web
       alert('Please complete pickup, participant count, name, email and phone.');
       return;
     }
-    if (normalizedParticipantNames.length !== seatsRequested) {
-      alert('Please enter full names for all participants.');
+    if (normalizedParticipantNames.length !== Math.max(0, seatsRequested - 1)) {
+      alert('Please enter full names for all additional participants.');
       return;
     }
     if (!termsAccepted || !kvkkAccepted) {
@@ -699,13 +701,15 @@ This Information Notice enters into force on the date it is published on the web
       return;
     }
 
+    const ticketParticipantNames = [fullName, ...normalizedParticipantNames];
+
     setIsSubmitting(true);
     try {
       const ticket = buildTicketPayload(
         selectedEvent,
         { ...reservationForm, fullName, email, phone, participants: String(seatsRequested) },
         activeDate,
-        normalizedParticipantNames
+        ticketParticipantNames
       );
 
       const reservationDraft = {
@@ -1127,7 +1131,7 @@ This Information Notice enters into force on the date it is published on the web
 
                           <div className="space-y-2">
                             <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
-                              Participant Names
+                              Additional Participant Names
                             </p>
                             {participantNames.map((name, idx) => (
                               <input
@@ -1141,7 +1145,7 @@ This Information Notice enters into force on the date it is published on the web
                                     return next;
                                   })
                                 }
-                                placeholder={`Participant ${idx + 1} Name Surname`}
+                                placeholder={`Participant ${idx + 2} Name Surname`}
                                 className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
                               />
                             ))}
