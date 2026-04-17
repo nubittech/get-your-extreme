@@ -712,7 +712,8 @@ This Information Notice enters into force on the date it is published on the web
         customerName: fullName,
         customerPhone: phone,
         activity: `${theme.label} Event: ${selectedEvent.title}`,
-        route: `Pickup ${reservationForm.pickupStop}${reservationForm.hotelName.trim() ? ` | Hotel ${reservationForm.hotelName.trim()}` : ''} | Seats ${seatsRequested} | Participants ${normalizedParticipantNames.join(', ')} | ${selectedEvent.serviceStops.join(' -> ')}`,
+        // Keep DB route payload compact; long participant lists can exceed varchar limits.
+        route: `Pickup ${reservationForm.pickupStop}${reservationForm.hotelName.trim() ? ` | Hotel ${reservationForm.hotelName.trim()}` : ''} | Seats ${seatsRequested} | ${selectedEvent.serviceStops.join(' -> ')}`,
         date: activeDate,
         source: 'event' as const,
         amount: selectedEvent.price * seatsRequested,
@@ -770,7 +771,7 @@ This Information Notice enters into force on the date it is published on the web
       }
 
       throw new Error(checkout.errorMessage || 'Checkout initialization failed.');
-    } catch {
+    } catch (error) {
       const rawPending = localStorage.getItem(PENDING_RESERVATION_KEY);
       if (rawPending) {
         try {
@@ -781,7 +782,14 @@ This Information Notice enters into force on the date it is published on the web
         }
         localStorage.removeItem(PENDING_RESERVATION_KEY);
       }
-      alert(isPaymentEnabled ? 'Payment could not be started. Please try again.' : 'Reservation failed. Please try again.');
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unexpected reservation error.';
+      console.error('Reservation submit failed:', error);
+      alert(
+        isPaymentEnabled
+          ? `Payment could not be started. ${errorMessage}`
+          : `Reservation failed. ${errorMessage}`
+      );
       setIsSubmitting(false);
     }
   };
