@@ -107,6 +107,25 @@ const requestJson = async <T>(path: string, init?: RequestInit): Promise<T> => {
   return (await response.json()) as T;
 };
 
+const createReservationViaServerApi = async (
+  input: ReservationCreateInput
+): Promise<Reservation> => {
+  const response = await fetch('/api/reservations', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(input)
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(`Reservations API create failed (${response.status}): ${message}`);
+  }
+
+  return (await response.json()) as Reservation;
+};
+
 const isRemoteMode = () => API_MODE === 'remote';
 const isSupabaseMode = () => API_MODE === 'supabase';
 
@@ -198,6 +217,12 @@ const createSupabaseReservation = async (
     snakeErrorMessage.includes('source');
 
   if (!shouldTryCamelCaseFallback) {
+    const isRlsError =
+      snakeErrorMessage.toLowerCase().includes('row-level security') ||
+      snakeErrorMessage.toLowerCase().includes('violates row-level security policy');
+    if (isRlsError) {
+      return createReservationViaServerApi(input);
+    }
     throw new Error(`Supabase create failed: ${snakeErrorMessage || 'Unknown error'}`);
   }
 
@@ -221,7 +246,14 @@ const createSupabaseReservation = async (
     .single();
 
   if (camelInsertResult.error || !camelInsertResult.data) {
-    throw new Error(`Supabase create failed: ${camelInsertResult.error?.message ?? 'Unknown error'}`);
+    const camelErrorMessage = camelInsertResult.error?.message ?? 'Unknown error';
+    const isRlsError =
+      camelErrorMessage.toLowerCase().includes('row-level security') ||
+      camelErrorMessage.toLowerCase().includes('violates row-level security policy');
+    if (isRlsError) {
+      return createReservationViaServerApi(input);
+    }
+    throw new Error(`Supabase create failed: ${camelErrorMessage}`);
   }
 
   return mapSupabaseRowToReservation(camelInsertResult.data as Record<string, unknown>);
