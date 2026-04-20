@@ -125,7 +125,7 @@ const toTicketQrText = (ticket: GeneratedTicket) =>
     `Phone:${ticket.phone}`,
     `Names:${ticket.participantNames.join(', ')}`,
     `Seats:${ticket.participants}`,
-    `Amount:TRY ${ticket.amount}`
+    `Amount:EUR ${ticket.amount}`
   ].join('|');
 
 const wrapTextLines = (value: string, maxChars: number) => {
@@ -1118,7 +1118,7 @@ This Information Notice enters into force on the date it is published on the web
                                 Total
                               </label>
                               <div className="h-[42px] rounded-lg border border-slate-300 dark:border-white/15 px-3 flex items-center font-bold" style={{ color: theme.accent }}>
-                                TRY {selectedEvent.price * (Number(reservationForm.participants) || 0)}
+                                EUR {selectedEvent.price * (Number(reservationForm.participants) || 0)}
                               </div>
                             </div>
                           </div>
