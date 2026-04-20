@@ -18,6 +18,7 @@ type RouteItem = {
   meetingPoint: string;
   bestFor: string;
   image: string;
+  mapUrl?: string;
 };
 
 const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
@@ -32,7 +33,8 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
       stats: { distance: '2.5 KM', time: '2 Hours', level: 'Easy', type: 'Loop' },
       meetingPoint: 'Beach Park Main Gate',
       bestFor: 'Families and social sessions',
-      image: MEDIA_ASSETS.routeBeachpark
+      image: MEDIA_ASSETS.routeBeachpark,
+      mapUrl: 'https://maps.app.goo.gl/z9EKR5zZBz2fuevz5'
     },
     {
       id: 'sup-karacagoren',
@@ -44,7 +46,8 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
       stats: { distance: 'Free', time: '2 Hours', level: 'Beginner', type: 'Loop' },
       meetingPoint: 'Lara Balık - SupClubAntalya Private Access Area',
       bestFor: 'Photo and video focused calm-water sessions',
-      image: MEDIA_ASSETS.routeKaracagoren
+      image: MEDIA_ASSETS.routeKaracagoren,
+      mapUrl: 'https://maps.app.goo.gl/L5686ity9aJhhcvC7'
     },
     {
       id: 'sup-duden',
@@ -56,7 +59,8 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
       stats: { distance: '3 KM', time: '2 - 2.5 Hours', level: 'Advanced', type: 'Loop' },
       meetingPoint: 'Duden Pickup Point',
       bestFor: 'Advanced paddlers with open-sea experience',
-      image: MEDIA_ASSETS.routeDuden
+      image: MEDIA_ASSETS.routeDuden,
+      mapUrl: 'https://maps.app.goo.gl/mpQTG2F5HAqMExz66'
     },
     {
       id: 'sup-beachpark-lara',
@@ -68,7 +72,8 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
       stats: { distance: '4.5 KM', time: '3-4 Hours', level: 'Moderate', type: 'One Way' },
       meetingPoint: 'Beach Park Start Zone',
       bestFor: 'Active groups with prior paddling',
-      image: MEDIA_ASSETS.routeBeachparkLara
+      image: MEDIA_ASSETS.routeBeachparkLara,
+      mapUrl: 'https://maps.app.goo.gl/z9EKR5zZBz2fuevz5'
     }
   ],
   BIKE: [
@@ -82,7 +87,8 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
       stats: { distance: '10 KM', time: '3 Hours', level: 'Beginner', type: 'Loop' },
       meetingPoint: 'Guver Cliff Canyon Entrance',
       bestFor: 'Scenic rides and photo-focused cycling groups',
-      image: '/PHOTO-2026-02-26-18-04-17.jpg'
+      image: '/PHOTO-2026-02-26-18-04-17.jpg',
+      mapUrl: ''
     }
   ],
   SKI: [
@@ -101,7 +107,8 @@ const routesByCategory: Record<ExperienceCategory, RouteItem[]> = {
       },
       meetingPoint: 'Upper Lift Exit',
       bestFor: 'Experienced ski groups',
-      image: '/PHOTO-2026-02-25-16-16-24.jpg'
+      image: '/PHOTO-2026-02-25-16-16-24.jpg',
+      mapUrl: ''
     }
   ]
 };
@@ -111,6 +118,12 @@ const RoutesPage: React.FC = () => {
   const [selectedRoute, setSelectedRoute] = useState<RouteItem | null>(null);
   const [imageRatios, setImageRatios] = useState<Record<string, number>>({});
   const routesData = routesByCategory[activeCategory];
+
+  const getRouteMapLink = (route: RouteItem) => {
+    if (route.mapUrl && route.mapUrl.trim()) return route.mapUrl.trim();
+    const query = encodeURIComponent(`${route.meetingPoint}, Antalya`);
+    return `https://www.google.com/maps/search/?api=1&query=${query}`;
+  };
 
   const handleImageLoad = (key: string, event: React.SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth, naturalHeight } = event.currentTarget;
@@ -299,9 +312,18 @@ const RoutesPage: React.FC = () => {
 
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="/#booking-form"
+                  href={getRouteMapLink(selectedRoute)}
+                  target="_blank"
+                  rel="noreferrer"
                   className="inline-flex items-center justify-center rounded-lg px-5 py-3 text-sm font-bold text-white"
                   style={{ backgroundColor: theme.accent }}
+                >
+                  Open Pickup In Google Maps
+                </a>
+                <a
+                  href="/#booking-form"
+                  className="inline-flex items-center justify-center rounded-lg border px-5 py-3 text-sm font-bold"
+                  style={{ borderColor: theme.accent, color: theme.accent }}
                 >
                   Request This Route
                 </a>
