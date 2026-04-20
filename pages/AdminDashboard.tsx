@@ -419,6 +419,12 @@ const AdminDashboard: React.FC = () => {
           </label>
         </div>
         <div className="flex flex-1 justify-end gap-6">
+          <Link
+            to="/admin/members"
+            className="rounded-lg border border-[#1183d4]/40 px-3 py-2 text-sm font-semibold text-[#1183d4]"
+          >
+            Members
+          </Link>
           {!user ? (
             <button
               type="button"

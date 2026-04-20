@@ -5,6 +5,7 @@ import RoutesPage from './pages/Routes';
 import Gallery from './pages/Gallery';
 import Shop from './pages/Shop';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminMembers from './pages/AdminMembers';
 import PublicLayout from './components/PublicLayout';
 import { ExperienceProvider } from './context/ExperienceContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -92,6 +93,14 @@ const App: React.FC = () => {
               element={
                 <RequireAdmin>
                   <AdminDashboard />
+                </RequireAdmin>
+              }
+            />
+            <Route
+              path="/admin/members"
+              element={
+                <RequireAdmin>
+                  <AdminMembers />
                 </RequireAdmin>
               }
             />
