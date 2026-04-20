@@ -399,6 +399,13 @@ const AdminDashboard: React.FC = () => {
       .filter(Boolean);
   };
 
+  const getSeatsCount = (routeValue: string) => {
+    const match = routeValue.match(/Seats\s*([0-9]+)/i);
+    if (!match) return null;
+    const parsed = Number(match[1]);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
   return (
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#f6f7f8] dark:bg-[#101a22]">
       {/* Admin Header */}
@@ -966,9 +973,24 @@ const AdminDashboard: React.FC = () => {
                       <td className="px-6 py-4">
                         {(() => {
                           const additionalNames = getAdditionalParticipantNames(res.route);
-                          if (additionalNames.length === 0) return '-';
+                          const seats = getSeatsCount(res.route);
+                          if (additionalNames.length === 0) {
+                            return (
+                              <div className="space-y-1">
+                                <span className="inline-flex items-center rounded-full border border-slate-300 dark:border-[#3b4954] px-2 py-0.5 text-xs">
+                                  {seats ?? '-'}
+                                </span>
+                                {seats && seats > 1 && (
+                                  <p className="text-[10px] text-[#9dadb9]">No guest names saved</p>
+                                )}
+                              </div>
+                            );
+                          }
                           return (
                             <div className="space-y-0.5">
+                              <span className="inline-flex items-center rounded-full border border-slate-300 dark:border-[#3b4954] px-2 py-0.5 text-xs">
+                                {seats ?? additionalNames.length + 1}
+                              </span>
                               {additionalNames.map((name) => (
                                 <p key={`${res.id}-${name}`} className="text-xs font-medium text-slate-700 dark:text-white/85">
                                   {name}

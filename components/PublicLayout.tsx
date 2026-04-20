@@ -189,7 +189,7 @@ const PublicLayout: React.FC = () => {
               </p>
               <p className="text-white/40 text-sm flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#1183d4] text-lg">call</span>
-                +90 546 136 3407
+                +90 546 136 34 07
               </p>
             </div>
           </div>
