@@ -9,6 +9,15 @@ export type RegisteredUser = {
   createdAt: string | null;
 };
 
+const fetchUsersViaServerApi = async (): Promise<RegisteredUser[]> => {
+  const response = await fetch('/api/users');
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(`Users API failed (${response.status}): ${message}`);
+  }
+  return (await response.json()) as RegisteredUser[];
+};
+
 export const listRegisteredUsers = async (): Promise<RegisteredUser[]> => {
   const supabase = requireSupabase();
 
@@ -19,7 +28,7 @@ export const listRegisteredUsers = async (): Promise<RegisteredUser[]> => {
 
   if (profilesError) {
     console.warn('Users list warning:', profilesError.message);
-    throw new Error(`Users list failed: ${profilesError.message}`);
+    return fetchUsersViaServerApi();
   }
 
   const userIds = (profiles ?? []).map((item) => String(item.id));
@@ -43,7 +52,7 @@ export const listRegisteredUsers = async (): Promise<RegisteredUser[]> => {
     }
   });
 
-  return (profiles ?? []).map((item) => ({
+  const users = (profiles ?? []).map((item) => ({
     id: String(item.id),
     fullName: item.full_name ?? null,
     phone: item.phone ?? null,
@@ -51,4 +60,18 @@ export const listRegisteredUsers = async (): Promise<RegisteredUser[]> => {
     role: roleMap.get(String(item.id)) ?? null,
     createdAt: item.created_at ?? null
   }));
+
+  // If client-side RLS returns only the signed-in user, pull the full list from server API.
+  if (users.length <= 1) {
+    try {
+      const serverUsers = await fetchUsersViaServerApi();
+      if (serverUsers.length >= users.length) {
+        return serverUsers;
+      }
+    } catch (error) {
+      console.warn('Users API fallback warning:', error);
+    }
+  }
+
+  return users;
 };
