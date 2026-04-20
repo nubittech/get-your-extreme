@@ -390,6 +390,15 @@ const AdminDashboard: React.FC = () => {
     0
   );
 
+  const getAdditionalParticipantNames = (routeValue: string) => {
+    const match = routeValue.match(/Guests:\s*([^|]+)/i);
+    if (!match) return [];
+    return match[1]
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  };
+
   return (
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#f6f7f8] dark:bg-[#101a22]">
       {/* Admin Header */}
@@ -930,7 +939,7 @@ const AdminDashboard: React.FC = () => {
                 <thead className="bg-slate-50 dark:bg-[#1a262f] text-slate-600 dark:text-[#9dadb9] text-sm uppercase font-bold tracking-wider">
                   <tr>
                     <th className="px-6 py-4">Customer</th>
-                    <th className="px-6 py-4">Type</th>
+                    <th className="px-6 py-4">Participants</th>
                     <th className="px-6 py-4">Activity</th>
                     <th className="px-6 py-4">Route</th>
                     <th className="px-6 py-4">Date</th>
@@ -955,9 +964,19 @@ const AdminDashboard: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center rounded-full border border-slate-300 dark:border-[#3b4954] px-2 py-0.5 text-xs">
-                          {res.source === 'special' ? 'Special' : 'Event'}
-                        </span>
+                        {(() => {
+                          const additionalNames = getAdditionalParticipantNames(res.route);
+                          if (additionalNames.length === 0) return '-';
+                          return (
+                            <div className="space-y-0.5">
+                              {additionalNames.map((name) => (
+                                <p key={`${res.id}-${name}`} className="text-xs font-medium text-slate-700 dark:text-white/85">
+                                  {name}
+                                </p>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-4">{res.activity}</td>
                       <td className="px-6 py-4">{res.route}</td>

@@ -59,6 +59,8 @@ type EventCalendarPanelProps = {
   embedded?: boolean;
 };
 
+type NoticeTone = 'success' | 'error' | 'info';
+
 type ReservationFormState = {
   pickupStop: string;
   participants: string;
@@ -284,6 +286,11 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
   const [kvkkAccepted, setKvkkAccepted] = useState(false);
   const [isAgreementOpen, setIsAgreementOpen] = useState(false);
   const [agreementLang, setAgreementLang] = useState<'tr' | 'en'>('tr');
+  const [notice, setNotice] = useState<{ message: string; tone: NoticeTone } | null>(null);
+
+  const showNotice = (message: string, tone: NoticeTone = 'info') => {
+    setNotice({ message, tone });
+  };
 
   const agreementTextTr = `MESAFELİ SATIŞ VE HİZMET SÖZLEŞMESİ
 1. TARAFLAR
@@ -535,7 +542,7 @@ This Information Notice enters into force on the date it is published on the web
           }
           setGeneratedTicket(pending.ticket);
           localStorage.removeItem(PENDING_RESERVATION_KEY);
-          alert('Payment successful. Your ticket is ready to download.');
+          showNotice('Payment successful. Your ticket is ready to download.', 'success');
         } else {
           try {
             await updateReservationStatus(pending.reservationId, 'Cancelled');
@@ -543,10 +550,10 @@ This Information Notice enters into force on the date it is published on the web
             // Webhook will also update; ignore client update failures.
           }
           localStorage.removeItem(PENDING_RESERVATION_KEY);
-          alert('Payment failed. Please try again.');
+          showNotice('Payment failed. Please try again.', 'error');
         }
       } catch {
-        alert('Payment confirmation failed. Please contact support.');
+        showNotice('Payment confirmation failed. Please contact support.', 'error');
       } finally {
         cleanupUrl();
         setIsSubmitting(false);
@@ -669,35 +676,35 @@ This Information Notice enters into force on the date it is published on the web
     const normalizedParticipantNames = participantNames.map((name) => name.trim()).filter(Boolean);
 
     if (!reservationForm.pickupStop || !fullName || !email || !phone || !seatsRequested) {
-      alert('Please complete pickup, participant count, name, email and phone.');
+      showNotice('Please complete pickup, participant count, name, email and phone.', 'error');
       return;
     }
     if (normalizedParticipantNames.length !== Math.max(0, seatsRequested - 1)) {
-      alert('Please enter full names for all additional participants.');
+      showNotice('Please enter full names for all additional participants.', 'error');
       return;
     }
     if (!termsAccepted || !kvkkAccepted) {
-      alert('Please confirm that you have read and accepted the required terms.');
+      showNotice('Please confirm that you have read and accepted the required terms.', 'error');
       return;
     }
 
     if (!Number.isInteger(seatsRequested) || seatsRequested < 1) {
-      alert('Participant count must be at least 1.');
+      showNotice('Participant count must be at least 1.', 'error');
       return;
     }
 
     if (seatsRequested > seatsLeft) {
-      alert(`Only ${seatsLeft} seats available for this event.`);
+      showNotice(`Only ${seatsLeft} seats available for this event.`, 'error');
       return;
     }
 
     if (!isValidEmail(email)) {
-      alert('Please enter a valid email address.');
+      showNotice('Please enter a valid email address.', 'error');
       return;
     }
 
     if (!isValidPhoneNumber(phone)) {
-      alert('Please enter a valid phone number.');
+      showNotice('Please enter a valid phone number.', 'error');
       return;
     }
 
@@ -717,7 +724,7 @@ This Information Notice enters into force on the date it is published on the web
         customerPhone: phone,
         activity: `${theme.label} Event: ${selectedEvent.title}`,
         // Keep DB route payload compact; long participant lists can exceed varchar limits.
-        route: `Pickup ${reservationForm.pickupStop}${reservationForm.hotelName.trim() ? ` | Hotel ${reservationForm.hotelName.trim()}` : ''} | Seats ${seatsRequested} | ${selectedEvent.serviceStops.join(' -> ')}`,
+        route: `Pickup ${reservationForm.pickupStop}${reservationForm.hotelName.trim() ? ` | Hotel ${reservationForm.hotelName.trim()}` : ''} | Seats ${seatsRequested}${normalizedParticipantNames.length > 0 ? ` | Guests:${normalizedParticipantNames.join(', ')}` : ''} | ${selectedEvent.serviceStops.join(' -> ')}`,
         date: activeDate,
         source: 'event' as const,
         amount: selectedEvent.price * seatsRequested,
@@ -731,7 +738,7 @@ This Information Notice enters into force on the date it is published on the web
           status: 'Confirmed'
         });
         setGeneratedTicket(ticket);
-        alert('Reservation completed. Your ticket is ready to download.');
+        showNotice('Reservation completed. Your ticket is ready to download.', 'success');
         setIsSubmitting(false);
         return;
       }
@@ -789,10 +796,11 @@ This Information Notice enters into force on the date it is published on the web
       const errorMessage =
         error instanceof Error ? error.message : 'Unexpected reservation error.';
       console.error('Reservation submit failed:', error);
-      alert(
+      showNotice(
         isPaymentEnabled
           ? `Payment could not be started. ${errorMessage}`
-          : `Reservation failed. ${errorMessage}`
+          : `Reservation failed. ${errorMessage}`,
+        'error'
       );
       setIsSubmitting(false);
     }
@@ -809,7 +817,7 @@ This Information Notice enters into force on the date it is published on the web
         .toLowerCase()}-ticket.png`;
       link.click();
     } catch {
-      alert('Ticket image could not be generated. Please try again.');
+      showNotice('Ticket image could not be generated. Please try again.', 'error');
     }
   };
 
@@ -847,7 +855,7 @@ This Information Notice enters into force on the date it is published on the web
           .toLowerCase()}-ticket.pdf`
       );
     } catch {
-      alert('Ticket PDF could not be generated. Please try again.');
+      showNotice('Ticket PDF could not be generated. Please try again.', 'error');
     }
   };
 
@@ -1348,6 +1356,38 @@ This Information Notice enters into force on the date it is published on the web
                 className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/80 hover:text-white"
               >
                 {agreementLang === 'tr' ? 'Kapat' : 'Close'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {notice && (
+        <div className="fixed bottom-5 right-5 z-[60] w-[min(92vw,460px)]">
+          <div
+            className={`rounded-2xl border p-4 shadow-2xl backdrop-blur ${
+              notice.tone === 'success'
+                ? 'border-emerald-300/35 bg-emerald-500/15'
+                : notice.tone === 'error'
+                  ? 'border-red-300/35 bg-red-500/15'
+                  : 'border-sky-300/35 bg-sky-500/15'
+            }`}
+          >
+            <p className="text-sm font-semibold text-white">
+              {notice.tone === 'success'
+                ? 'Reservation Update'
+                : notice.tone === 'error'
+                  ? 'Action Required'
+                  : 'Notice'}
+            </p>
+            <p className="mt-1 text-sm text-white/90">{notice.message}</p>
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setNotice(null)}
+                className="rounded-lg bg-white/90 px-4 py-1.5 text-sm font-semibold text-slate-900 hover:bg-white"
+              >
+                Tamam
               </button>
             </div>
           </div>
