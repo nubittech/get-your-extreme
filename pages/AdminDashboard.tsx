@@ -16,17 +16,39 @@ const PUBLISHED_CATEGORY_LABELS: Record<ExperienceCategory, string> = {
   SKI: 'Tırmanış'
 };
 
-const parseBulkDates = (value: string) =>
-  Array.from(
-    new Set(
-      value
-        .split(/[\n,;]+/)
-        .map((item) => item.trim())
-        .filter(Boolean)
-    )
-  );
-
 const isISODate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value);
+
+const toISODate = (date: Date) => {
+  const offsetMs = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 10);
+};
+
+const getCurrentMonth = () => toISODate(new Date()).slice(0, 7);
+
+const getMonthLabel = (yearMonth: string) => {
+  const [year, month] = yearMonth.split('-').map(Number);
+  return new Date(year, month - 1, 1).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric'
+  });
+};
+
+const shiftMonth = (yearMonth: string, offset: number) => {
+  const [year, month] = yearMonth.split('-').map(Number);
+  return toISODate(new Date(year, month - 1 + offset, 1)).slice(0, 7);
+};
+
+const getCalendarDates = (yearMonth: string) => {
+  const [year, month] = yearMonth.split('-').map(Number);
+  const firstDate = new Date(year, month - 1, 1);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  return [
+    ...Array.from({ length: firstDate.getDay() }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, index) => toISODate(new Date(year, month - 1, index + 1)))
+  ];
+};
+
+const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const AdminDashboard: React.FC = () => {
   const { user, profile, openAuthModal, signOut } = useAuth();
@@ -56,7 +78,9 @@ const AdminDashboard: React.FC = () => {
     details: '',
     serviceStops: 'Kemer Saat Kulesi, Goynuk, Liman'
   });
-  const [bulkDates, setBulkDates] = useState('');
+  const [selectedEventDates, setSelectedEventDates] = useState<string[]>([]);
+  const [datePickerMonth, setDatePickerMonth] = useState(getCurrentMonth());
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [qrUrl, setQrUrl] = useState('https://www.getyourextreme.com/');
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(true);
@@ -204,8 +228,7 @@ const AdminDashboard: React.FC = () => {
     const title = eventForm.title.trim();
     const summary = eventForm.summary.trim();
     const details = eventForm.details.trim();
-    const parsedBulkDates = editingEventId ? [] : parseBulkDates(bulkDates);
-    const targetDates = parsedBulkDates.length > 0 ? parsedBulkDates : [eventForm.date].filter(Boolean);
+    const targetDates = selectedEventDates.length > 0 ? selectedEventDates : [eventForm.date].filter(Boolean);
     const serviceStops = eventForm.serviceStops
       .split(',')
       .map((item) => item.trim())
@@ -291,7 +314,9 @@ const AdminDashboard: React.FC = () => {
         details: '',
         serviceStops: 'Kemer Saat Kulesi, Goynuk, Liman'
       });
-      setBulkDates('');
+      setSelectedEventDates([]);
+      setDatePickerMonth(getCurrentMonth());
+      setIsDatePickerOpen(false);
     } catch {
       alert(editingEventId ? 'Event could not be updated.' : 'Event could not be created. Please check backend settings.');
     } finally {
@@ -313,7 +338,9 @@ const AdminDashboard: React.FC = () => {
       details: eventItem.details,
       serviceStops: eventItem.serviceStops.join(', ')
     });
-    setBulkDates('');
+    setSelectedEventDates([eventItem.date]);
+    setDatePickerMonth(eventItem.date.slice(0, 7));
+    setIsDatePickerOpen(false);
   };
 
   const cancelEditEvent = () => {
@@ -330,7 +357,9 @@ const AdminDashboard: React.FC = () => {
       details: '',
       serviceStops: 'Kemer Saat Kulesi, Goynuk, Liman'
     });
-    setBulkDates('');
+    setSelectedEventDates([]);
+    setDatePickerMonth(getCurrentMonth());
+    setIsDatePickerOpen(false);
   };
 
   const handleDeleteEvent = async (eventId: string) => {
@@ -436,6 +465,29 @@ const AdminDashboard: React.FC = () => {
     if (!match) return null;
     const parsed = Number(match[1]);
     return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const calendarDates = getCalendarDates(datePickerMonth);
+
+  const toggleEventDate = (date: string) => {
+    setSelectedEventDates((current) => {
+      if (editingEventId) {
+        setEventForm((form) => ({ ...form, date }));
+        return [date];
+      }
+
+      const next = current.includes(date)
+        ? current.filter((item) => item !== date)
+        : [...current, date];
+      const sorted = [...next].sort();
+      setEventForm((form) => ({ ...form, date: sorted[0] ?? '' }));
+      return sorted;
+    });
+  };
+
+  const clearEventDates = () => {
+    setSelectedEventDates([]);
+    setEventForm((current) => ({ ...current, date: '' }));
   };
 
   return (
@@ -775,31 +827,106 @@ const AdminDashboard: React.FC = () => {
                       <option value="SKI">{EXPERIENCE_CATEGORY_LABELS.SKI}</option>
                     </select>
                   </label>
-                  <label className="text-xs font-bold text-slate-600 dark:text-white/70">
+                  <div className="relative text-xs font-bold text-slate-600 dark:text-white/70">
                     Date
-                    <input
-                      type="date"
-                      name="date"
-                      value={eventForm.date}
-                      onChange={handleEventFormChange}
-                      className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
-                    />
-                  </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsDatePickerOpen((current) => !current)}
+                      className="mt-1 flex w-full items-center justify-between rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-sm font-semibold text-slate-900 dark:border-white/15 dark:bg-[#16202a] dark:text-white"
+                    >
+                      <span>
+                        {selectedEventDates.length === 0
+                          ? 'Select date'
+                          : editingEventId
+                            ? selectedEventDates[0]
+                            : `${selectedEventDates.length} date${selectedEventDates.length === 1 ? '' : 's'} selected`}
+                      </span>
+                      <span className="material-symbols-outlined text-[18px] text-[#9dadb9]">
+                        calendar_month
+                      </span>
+                    </button>
+                    {isDatePickerOpen && (
+                      <div className="absolute left-0 right-0 top-[68px] z-30 rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-[#3b4954] dark:bg-[#16202a]">
+                        <div className="mb-3 flex items-center justify-between">
+                          <button
+                            type="button"
+                            onClick={() => setDatePickerMonth((current) => shiftMonth(current, -1))}
+                            className="flex size-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 dark:border-white/15 dark:text-white"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                          </button>
+                          <span className="text-sm font-bold text-slate-900 dark:text-white">
+                            {getMonthLabel(datePickerMonth)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setDatePickerMonth((current) => shiftMonth(current, 1))}
+                            className="flex size-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 dark:border-white/15 dark:text-white"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-7 gap-1 text-center">
+                          {weekDays.map((day) => (
+                            <span key={day} className="py-1 text-[10px] font-bold text-[#9dadb9]">
+                              {day}
+                            </span>
+                          ))}
+                          {calendarDates.map((date, index) =>
+                            date ? (
+                              <button
+                                key={date}
+                                type="button"
+                                onClick={() => toggleEventDate(date)}
+                                className={`h-9 rounded-lg text-xs font-bold transition-colors ${
+                                  selectedEventDates.includes(date)
+                                    ? 'bg-[#1183d4] text-white'
+                                    : 'text-slate-700 hover:bg-slate-100 dark:text-white dark:hover:bg-[#283239]'
+                                }`}
+                              >
+                                {Number(date.slice(-2))}
+                              </button>
+                            ) : (
+                              <span key={`empty-${index}`} className="h-9" />
+                            )
+                          )}
+                        </div>
+                        <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-200 pt-3 dark:border-white/10">
+                          <button
+                            type="button"
+                            onClick={clearEventDates}
+                            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:border-white/15 dark:text-white/70"
+                          >
+                            Clear
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsDatePickerOpen(false)}
+                            className="rounded-lg bg-[#1183d4] px-3 py-1.5 text-xs font-bold text-white"
+                          >
+                            Done
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {!editingEventId && (
-                  <label className="block text-xs font-bold text-slate-600 dark:text-white/70">
-                    Bulk Dates
-                    <textarea
-                      value={bulkDates}
-                      onChange={(e) => setBulkDates(e.target.value)}
-                      rows={3}
-                      placeholder={'2026-06-01\n2026-06-08\n2026-06-15'}
-                      className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
-                    />
-                    <span className="mt-1 block text-[10px] font-normal text-[#9dadb9]">
-                      Add one date per line, or separate dates with commas. If filled, the single Date field is optional.
-                    </span>
-                  </label>
+                {selectedEventDates.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedEventDates.map((date) => (
+                      <button
+                        key={date}
+                        type="button"
+                        onClick={() => toggleEventDate(date)}
+                        className="inline-flex items-center gap-1 rounded-full border border-[#1183d4]/30 bg-[#1183d4]/10 px-2.5 py-1 text-[11px] font-bold text-[#1183d4]"
+                      >
+                        {date}
+                        {!editingEventId && (
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 )}
                 <div className="grid grid-cols-4 gap-3">
                   <label className="text-xs font-bold text-slate-600 dark:text-white/70">
