@@ -125,7 +125,7 @@ export const createEvent = async (input: EventCreateInput): Promise<EventSchedul
   }
 
   const nextEvent: EventScheduleItem = {
-    id: `evt-${Date.now()}`,
+    id: `evt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     category: input.category,
     date: input.date,
     time: input.time,

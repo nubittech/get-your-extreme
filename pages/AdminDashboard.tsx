@@ -16,6 +16,18 @@ const PUBLISHED_CATEGORY_LABELS: Record<ExperienceCategory, string> = {
   SKI: 'Tırmanış'
 };
 
+const parseBulkDates = (value: string) =>
+  Array.from(
+    new Set(
+      value
+        .split(/[\n,;]+/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+    )
+  );
+
+const isISODate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value);
+
 const AdminDashboard: React.FC = () => {
   const { user, profile, openAuthModal, signOut } = useAuth();
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -44,6 +56,7 @@ const AdminDashboard: React.FC = () => {
     details: '',
     serviceStops: 'Kemer Saat Kulesi, Goynuk, Liman'
   });
+  const [bulkDates, setBulkDates] = useState('');
   const [qrUrl, setQrUrl] = useState('https://www.getyourextreme.com/');
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(true);
@@ -191,13 +204,20 @@ const AdminDashboard: React.FC = () => {
     const title = eventForm.title.trim();
     const summary = eventForm.summary.trim();
     const details = eventForm.details.trim();
+    const parsedBulkDates = editingEventId ? [] : parseBulkDates(bulkDates);
+    const targetDates = parsedBulkDates.length > 0 ? parsedBulkDates : [eventForm.date].filter(Boolean);
     const serviceStops = eventForm.serviceStops
       .split(',')
       .map((item) => item.trim())
       .filter(Boolean);
 
-    if (!eventForm.date || !eventForm.time || !title || !summary || !details || serviceStops.length === 0) {
+    if (targetDates.length === 0 || !eventForm.time || !title || !summary || !details || serviceStops.length === 0) {
       alert('Please fill all event fields including service stops.');
+      return;
+    }
+
+    if (!targetDates.every(isISODate)) {
+      alert('Dates must use YYYY-MM-DD format.');
       return;
     }
 
@@ -222,9 +242,8 @@ const AdminDashboard: React.FC = () => {
 
     setIsCreatingEvent(true);
     try {
-      const payload = {
+      const basePayload = {
         category: eventForm.category,
-        date: eventForm.date,
         time: eventForm.time,
         durationHours,
         capacity,
@@ -236,7 +255,10 @@ const AdminDashboard: React.FC = () => {
       };
 
       if (editingEventId) {
-        const updated = await updateEvent(editingEventId, payload);
+        const updated = await updateEvent(editingEventId, {
+          ...basePayload,
+          date: targetDates[0]
+        });
         setEvents((current) =>
           current
             .map((item) => (item.id === editingEventId ? updated : item))
@@ -244,9 +266,16 @@ const AdminDashboard: React.FC = () => {
         );
         setEditingEventId(null);
       } else {
-        const created = await createEvent(payload);
+        const createdEvents: EventScheduleItem[] = [];
+        for (const date of targetDates) {
+          const created = await createEvent({
+            ...basePayload,
+            date
+          });
+          createdEvents.push(created);
+        }
         setEvents((current) =>
-          [...current, created].sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
+          [...current, ...createdEvents].sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
         );
       }
 
@@ -262,6 +291,7 @@ const AdminDashboard: React.FC = () => {
         details: '',
         serviceStops: 'Kemer Saat Kulesi, Goynuk, Liman'
       });
+      setBulkDates('');
     } catch {
       alert(editingEventId ? 'Event could not be updated.' : 'Event could not be created. Please check backend settings.');
     } finally {
@@ -283,6 +313,7 @@ const AdminDashboard: React.FC = () => {
       details: eventItem.details,
       serviceStops: eventItem.serviceStops.join(', ')
     });
+    setBulkDates('');
   };
 
   const cancelEditEvent = () => {
@@ -299,6 +330,7 @@ const AdminDashboard: React.FC = () => {
       details: '',
       serviceStops: 'Kemer Saat Kulesi, Goynuk, Liman'
     });
+    setBulkDates('');
   };
 
   const handleDeleteEvent = async (eventId: string) => {
@@ -754,6 +786,21 @@ const AdminDashboard: React.FC = () => {
                     />
                   </label>
                 </div>
+                {!editingEventId && (
+                  <label className="block text-xs font-bold text-slate-600 dark:text-white/70">
+                    Bulk Dates
+                    <textarea
+                      value={bulkDates}
+                      onChange={(e) => setBulkDates(e.target.value)}
+                      rows={3}
+                      placeholder={'2026-06-01\n2026-06-08\n2026-06-15'}
+                      className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                    />
+                    <span className="mt-1 block text-[10px] font-normal text-[#9dadb9]">
+                      Add one date per line, or separate dates with commas. If filled, the single Date field is optional.
+                    </span>
+                  </label>
+                )}
                 <div className="grid grid-cols-4 gap-3">
                   <label className="text-xs font-bold text-slate-600 dark:text-white/70">
                     Time
