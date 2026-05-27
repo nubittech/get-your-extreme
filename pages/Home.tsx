@@ -46,7 +46,7 @@ const Home: React.FC = () => {
         </div>
         
         {/* Hero Content */}
-        <div className="relative z-10 w-full max-w-[1200px] px-6 pt-28 md:pt-48 pb-12 flex flex-col items-center text-center">
+        <div className="relative z-10 w-full max-w-[1480px] px-6 pt-28 md:pt-48 pb-12 flex flex-col items-center text-center">
           <div className="w-full max-w-[980px] mb-8">
             <div
               className="relative grid grid-cols-3 p-1 rounded-xl border border-white/15 bg-black/25 backdrop-blur-md"
@@ -84,7 +84,7 @@ const Home: React.FC = () => {
           <p className="text-white text-lg md:text-xl font-medium leading-relaxed max-w-2xl mb-12 drop-shadow-lg text-shadow-sm">
             {theme.heroSubtitle}
           </p>
-          <div id="booking-form" className="w-full max-w-6xl mt-2">
+          <div id="booking-form" className="w-full max-w-[1480px] mt-2">
             <EventCalendarPanel embedded />
           </div>
         </div>
