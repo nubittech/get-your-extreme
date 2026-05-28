@@ -286,14 +286,24 @@ const getEventImage = (event: EventScheduleItem, index: number) => {
   return waterEventImages[index % waterEventImages.length];
 };
 
-const getDifficultyLabel = (event: EventScheduleItem) => {
-  if (event.durationHours >= 4.5) return 'Advanced';
-  if (event.durationHours >= 3) return 'Intermediate';
-  return 'Beginner';
+const getRouteSubtitle = (event: EventScheduleItem) => {
+  if (event.serviceStops.length >= 2) {
+    return `${event.serviceStops[0]} to ${event.serviceStops[event.serviceStops.length - 1]}`;
+  }
+  return event.serviceStops[0] ?? 'Antalya coastal route';
 };
 
-const getStopCountLabel = (event: EventScheduleItem) =>
-  `${event.serviceStops.length} ${event.serviceStops.length === 1 ? 'point' : 'points'}`;
+const getDifficultyLabel = (event: EventScheduleItem) => {
+  if (event.durationHours >= 3.5) return 'Intermediate';
+  if (event.durationHours <= 2) return 'Beginner friendly';
+  return 'All levels';
+};
+
+const getAgeLabel = (event: EventScheduleItem) => {
+  if (event.durationHours >= 3.5) return '16+';
+  if (event.category === 'SKI') return '12+';
+  return '10+';
+};
 
 const equipmentIconsByCategory: Record<EventScheduleItem['category'], Array<{ icon: string; label: string }>> = {
   SUP: [
@@ -323,7 +333,6 @@ const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = fals
   const [eventsLoadError, setEventsLoadError] = useState<string | null>(null);
   const [events, setEvents] = useState<EventScheduleItem[]>([]);
   const [generatedTicket, setGeneratedTicket] = useState<GeneratedTicket | null>(null);
-  const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [reservationForm, setReservationForm] = useState<ReservationFormState>({
     pickupStop: '',
     participants: '1',
@@ -949,10 +958,12 @@ This Information Notice enters into force on the date it is published on the web
         )}
 
         <div
-          className={`grid grid-cols-1 gap-5 ${embedded ? 'lg:grid-cols-[350px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)] lg:items-start text-white' : 'lg:grid-cols-[390px_minmax(0,1fr)] items-start'}`}
+          className={`grid grid-cols-1 gap-5 ${embedded ? 'lg:grid-cols-[350px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)] lg:items-stretch text-white' : 'lg:grid-cols-[390px_minmax(0,1fr)] items-start'}`}
         >
           <div
-            className="rounded-[28px] border border-white/12 bg-[#06111d]/62 p-4 md:p-5 shadow-[0_24px_80px_rgba(0,0,0,0.34)] backdrop-blur-xl"
+            className={`rounded-[28px] border border-white/12 bg-[#06111d]/62 p-4 md:p-5 shadow-[0_24px_80px_rgba(0,0,0,0.34)] backdrop-blur-xl ${
+              embedded ? 'lg:h-[820px]' : ''
+            }`}
           >
             <div className="flex items-center justify-between mb-4">
               <button
@@ -1108,7 +1119,7 @@ This Information Notice enters into force on the date it is published on the web
                               loading="lazy"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#06111d] via-[#06111d]/10 to-transparent"></div>
-                            <span className="absolute right-3 top-3 rounded-full border border-sky-200/25 bg-black/50 px-3.5 py-1.5 text-base font-black leading-none text-white shadow-lg backdrop-blur-md">
+                            <span className="absolute right-3 top-3 rounded-full border border-sky-200/25 bg-black/45 px-3 py-1 text-xs font-black text-white shadow-lg backdrop-blur-md">
                               {event.time}
                             </span>
                           </div>
@@ -1118,26 +1129,26 @@ This Information Notice enters into force on the date it is published on the web
                               <h4 className="text-base font-black leading-tight text-white">
                                 {event.title}
                               </h4>
-                              <p className="mt-1 text-xs font-black uppercase tracking-[0.16em] text-sky-200/72">
-                                Stop Service Points
+                              <p className="mt-1 text-xs font-semibold text-sky-200/80">
+                                {getRouteSubtitle(event)}
                               </p>
                               <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-white/68">
                                 {event.summary}
                               </p>
                             </div>
 
-                            <div className="mt-3 grid grid-cols-3 gap-2 text-white/85">
-                              <div className="flex min-h-[58px] flex-col justify-center rounded-2xl border border-white/10 bg-white/[0.055] px-3 py-2">
-                                <span className="text-[11px] font-black uppercase tracking-[0.14em] text-white/42">Duration</span>
-                                <span className="mt-1 text-lg font-black leading-none">{event.durationHours}h</span>
+                            <div className="mt-3 grid grid-cols-3 gap-2 text-[10px] font-bold text-white/78">
+                              <div className="rounded-2xl border border-white/10 bg-white/[0.055] px-3 py-2">
+                                <span className="block text-white/42">Duration</span>
+                                {event.durationHours}h
                               </div>
-                              <div className="flex min-h-[58px] flex-col justify-center rounded-2xl border border-sky-300/20 bg-sky-300/[0.075] px-3 py-2">
-                                <span className="text-[11px] font-black uppercase tracking-[0.14em] text-sky-100/52">Level</span>
-                                <span className="mt-1 text-sm font-black leading-tight text-sky-50">{getDifficultyLabel(event)}</span>
+                              <div className="rounded-2xl border border-white/10 bg-white/[0.055] px-3 py-2">
+                                <span className="block text-white/42">Difficulty</span>
+                                {getDifficultyLabel(event)}
                               </div>
-                              <div className="flex min-h-[58px] flex-col justify-center rounded-2xl border border-white/10 bg-white/[0.055] px-3 py-2">
-                                <span className="text-[11px] font-black uppercase tracking-[0.14em] text-white/42">Stops</span>
-                                <span className="mt-1 text-sm font-black leading-tight">{getStopCountLabel(event)}</span>
+                              <div className="rounded-2xl border border-white/10 bg-white/[0.055] px-3 py-2">
+                                <span className="block text-white/42">Age</span>
+                                {getAgeLabel(event)}
                               </div>
                             </div>
 
@@ -1153,14 +1164,6 @@ This Information Notice enters into force on the date it is published on the web
                                   </span>
                                 </span>
                               ))}
-                              <span
-                                title="Service"
-                                className="inline-flex size-8 items-center justify-center rounded-full border border-sky-300/20 bg-sky-300/10 text-sky-100"
-                              >
-                                <span className="material-symbols-outlined text-[18px]">
-                                  airport_shuttle
-                                </span>
-                              </span>
                               <span className="ml-auto text-xs font-bold text-white/50">
                                 {seatsLeft}/{event.capacity} seats
                               </span>
@@ -1184,12 +1187,11 @@ This Information Notice enters into force on the date it is published on the web
                                   onClick={() => {
                                     setActiveDate(event.date);
                                     setSelectedEventId(event.id);
-                                    setExpandedEventId(event.id);
                                   }}
                                   className="rounded-full px-4 py-2 text-xs font-black text-white shadow-[0_10px_24px_rgba(17,131,212,0.26)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(17,131,212,0.42)]"
                                   style={{ backgroundColor: theme.accent }}
                                 >
-                                  View Details
+                                  {isSelected ? 'Selected' : 'Book Now'}
                                 </button>
                               </div>
                             </div>
@@ -1213,49 +1215,8 @@ This Information Notice enters into force on the date it is published on the web
                     ))}
                   </div>
 
-                  {selectedEvent && expandedEventId === selectedEvent.id && (
+                  {selectedEvent && (
                     <>
-                      {(() => {
-                        const detailLines = parseEventDetailsLines(selectedEvent.details);
-
-                        return (
-                          <article className="rounded-[22px] border border-sky-300/18 bg-white/[0.055] p-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur">
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                              <div>
-                                <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-200/65">
-                                  Event details
-                                </p>
-                                <h4 className="mt-1 text-lg font-black text-white">{selectedEvent.title}</h4>
-                                <p className="mt-2 text-sm leading-relaxed text-white/72">
-                                  {selectedEvent.summary}
-                                </p>
-                              </div>
-                              <div className="rounded-2xl border border-sky-300/20 bg-sky-300/10 px-4 py-3 text-right">
-                                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-sky-100/55">
-                                  Level
-                                </p>
-                                <p className="mt-1 text-base font-black text-white">
-                                  {getDifficultyLabel(selectedEvent)}
-                                </p>
-                              </div>
-                            </div>
-
-                            {detailLines.length > 0 && (
-                              <div className="mt-3 grid gap-2 text-sm text-white/78 md:grid-cols-2">
-                                {detailLines.slice(0, 4).map((line) => (
-                                  <p
-                                    key={`${selectedEvent.id}-${line}`}
-                                    className="rounded-2xl border border-white/10 bg-white/[0.045] px-3 py-2 leading-relaxed"
-                                  >
-                                    {line}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
-                          </article>
-                        );
-                      })()}
-
                       <form className="rounded-[22px] border border-sky-300/18 bg-[#06111d]/72 p-4 space-y-3 shadow-[0_20px_70px_rgba(0,0,0,0.24)]" onSubmit={handleReservationSubmit}>
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                           <div>
@@ -1270,22 +1231,17 @@ This Information Notice enters into force on the date it is published on the web
                           </p>
                         </div>
 
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-sky-100/55">
-                            Stop Service Points
-                          </p>
-                          <div className="mt-2 flex flex-wrap items-center gap-2">
-                            {selectedEvent.serviceStops.map((stop, idx) => (
-                              <React.Fragment key={stop}>
-                                <span className="rounded-full border border-white/10 bg-white/[0.065] px-3 py-1 text-xs font-semibold text-white/85">
-                                  {stop}
-                                </span>
-                                {idx < selectedEvent.serviceStops.length - 1 && (
-                                  <span className="text-sky-200/45 text-xs">---</span>
-                                )}
-                              </React.Fragment>
-                            ))}
-                          </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {selectedEvent.serviceStops.map((stop, idx) => (
+                            <React.Fragment key={stop}>
+                              <span className="rounded-full border border-white/10 bg-white/[0.065] px-3 py-1 text-xs font-semibold text-white/85">
+                                {stop}
+                              </span>
+                              {idx < selectedEvent.serviceStops.length - 1 && (
+                                <span className="text-sky-200/45 text-xs">---</span>
+                              )}
+                            </React.Fragment>
+                          ))}
                         </div>
 
                         <div className="grid grid-cols-1 gap-3">
