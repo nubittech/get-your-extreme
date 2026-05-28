@@ -262,67 +262,6 @@ const createTicketCanvas = async (ticket: GeneratedTicket, accent: string) => {
   return canvas;
 };
 
-const waterEventImages = [
-  encodeURI('/Konyaaltı Rotası (1).jpg'),
-  encodeURI('/Lara Düden Rota.jpg'),
-  '/SUP-tour.jpg',
-  '/yenianasayfa2.jpg',
-  encodeURI('/PHOTO-2026-02-25-03-47-25.jpg'),
-  '/outdoor8.jpeg'
-];
-
-const getEventImage = (event: EventScheduleItem, index: number) => {
-  const title = event.title.toLowerCase();
-  if (title.includes('düden') || title.includes('duden') || event.id.includes('duden')) {
-    return encodeURI('/Lara Düden Rota.jpg');
-  }
-  if (title.includes('konya') || title.includes('lara') || event.id.includes('cliffs')) {
-    return encodeURI('/Konyaaltı Rotası (1).jpg');
-  }
-  if (title.includes('phaselis')) return '/SUP-tour.jpg';
-  if (title.includes('kayak') || title.includes('çıralı') || title.includes('cirali')) {
-    return encodeURI('/PHOTO-2026-02-25-03-47-25.jpg');
-  }
-  return waterEventImages[index % waterEventImages.length];
-};
-
-const getRouteSubtitle = (event: EventScheduleItem) => {
-  if (event.serviceStops.length >= 2) {
-    return `${event.serviceStops[0]} to ${event.serviceStops[event.serviceStops.length - 1]}`;
-  }
-  return event.serviceStops[0] ?? 'Antalya coastal route';
-};
-
-const getDifficultyLabel = (event: EventScheduleItem) => {
-  if (event.durationHours >= 3.5) return 'Intermediate';
-  if (event.durationHours <= 2) return 'Beginner friendly';
-  return 'All levels';
-};
-
-const getAgeLabel = (event: EventScheduleItem) => {
-  if (event.durationHours >= 3.5) return '16+';
-  if (event.category === 'SKI') return '12+';
-  return '10+';
-};
-
-const equipmentIconsByCategory: Record<EventScheduleItem['category'], Array<{ icon: string; label: string }>> = {
-  SUP: [
-    { icon: 'surfing', label: 'Board' },
-    { icon: 'kayaking', label: 'Paddle' },
-    { icon: 'health_and_safety', label: 'Safety' }
-  ],
-  BIKE: [
-    { icon: 'directions_bike', label: 'Bike' },
-    { icon: 'sports_motorsports', label: 'Helmet' },
-    { icon: 'water_drop', label: 'Water' }
-  ],
-  SKI: [
-    { icon: 'downhill_skiing', label: 'Skis' },
-    { icon: 'ac_unit', label: 'Winter kit' },
-    { icon: 'health_and_safety', label: 'Safety' }
-  ]
-};
-
 const EventCalendarPanel: React.FC<EventCalendarPanelProps> = ({ embedded = false }) => {
   const { activeCategory, activeDate, setActiveDate, theme } = useExperience();
   const isPaymentEnabled = false;
@@ -640,23 +579,9 @@ This Information Notice enters into force on the date it is published on the web
       events.filter((item) => item.date === activeDate && item.category === activeCategory),
     [events, activeDate, activeCategory]
   );
-  const activeEventCards = useMemo(() => {
-    const categoryEvents = events
-      .filter((item) => item.category === activeCategory && item.date >= todayIsoDate)
-      .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`));
-    const selectedDateEvents = categoryEvents.filter((item) => item.date === activeDate);
-    const otherEvents = categoryEvents.filter((item) => item.date !== activeDate);
-
-    return [...selectedDateEvents, ...otherEvents].slice(0, 6);
-  }, [events, activeCategory, activeDate, todayIsoDate]);
   const selectedEvent = useMemo(
-    () =>
-      activeEventCards.find((item) => item.id === selectedEventId) ??
-      selectedDayEvents.find((item) => item.id === selectedEventId) ??
-      activeEventCards[0] ??
-      selectedDayEvents[0] ??
-      null,
-    [activeEventCards, selectedDayEvents, selectedEventId]
+    () => selectedDayEvents.find((item) => item.id === selectedEventId) ?? selectedDayEvents[0] ?? null,
+    [selectedDayEvents, selectedEventId]
   );
 
   useEffect(() => {
@@ -691,17 +616,8 @@ This Information Notice enters into force on the date it is published on the web
   }, []);
 
   useEffect(() => {
-    setSelectedEventId((current) => {
-      if (
-        current &&
-        (activeEventCards.some((item) => item.id === current) ||
-          selectedDayEvents.some((item) => item.id === current))
-      ) {
-        return current;
-      }
-      return activeEventCards[0]?.id ?? selectedDayEvents[0]?.id ?? null;
-    });
-  }, [activeEventCards, selectedDayEvents]);
+    setSelectedEventId(selectedDayEvents[0]?.id ?? null);
+  }, [selectedDayEvents]);
 
   useEffect(() => {
     if (!selectedEvent) return;
@@ -958,28 +874,28 @@ This Information Notice enters into force on the date it is published on the web
         )}
 
         <div
-          className={`grid grid-cols-1 gap-5 ${embedded ? 'lg:grid-cols-[350px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)] lg:items-stretch text-white' : 'lg:grid-cols-[390px_minmax(0,1fr)] items-start'}`}
+          className={`grid grid-cols-1 gap-6 ${embedded ? 'lg:grid-cols-[0.92fr_1.08fr] lg:items-stretch text-white' : 'lg:grid-cols-[1.2fr_1fr] items-start'}`}
         >
           <div
-            className={`rounded-[28px] border border-white/12 bg-[#06111d]/62 p-4 md:p-5 shadow-[0_24px_80px_rgba(0,0,0,0.34)] backdrop-blur-xl ${
-              embedded ? 'lg:h-[820px]' : ''
+            className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-4 md:p-5 ${
+              embedded ? 'lg:h-[520px]' : ''
             }`}
           >
             <div className="flex items-center justify-between mb-4">
               <button
                 type="button"
                 onClick={goToPreviousMonth}
-                className="rounded-full border border-white/12 bg-white/[0.06] px-3 py-1.5 text-sm font-bold text-white/85 transition-colors hover:border-sky-300/55 hover:text-white"
+                className="rounded-md border border-slate-300 dark:border-white/15 px-3 py-1.5 text-sm font-bold text-slate-700 dark:text-white"
               >
                 Prev
               </button>
-              <p className="text-lg font-black text-white">
+              <p className="text-lg font-black text-slate-900 dark:text-white">
                 {getMonthLabel(viewYear, viewMonth - 1)}
               </p>
               <button
                 type="button"
                 onClick={goToNextMonth}
-                className="rounded-full border border-white/12 bg-white/[0.06] px-3 py-1.5 text-sm font-bold text-white/85 transition-colors hover:border-sky-300/55 hover:text-white"
+                className="rounded-md border border-slate-300 dark:border-white/15 px-3 py-1.5 text-sm font-bold text-slate-700 dark:text-white"
               >
                 Next
               </button>
@@ -987,7 +903,7 @@ This Information Notice enters into force on the date it is published on the web
 
             <div className="grid grid-cols-7 gap-2 text-center mb-2">
               {weekDays.map((item) => (
-                <div key={item} className="text-[11px] md:text-xs font-bold text-white/55">
+                <div key={item} className="text-[11px] md:text-xs font-bold text-slate-500 dark:text-white/60">
                   {item}
                 </div>
               ))}
@@ -1015,25 +931,20 @@ This Information Notice enters into force on the date it is published on the web
                       }
                     }}
                     disabled={isPastDate}
-                    className={`${embedded ? 'h-10 md:h-11' : 'h-12 md:h-14'} rounded-xl border text-sm font-bold relative transition-all duration-200 ${
-                      isPastDate ? 'opacity-45 cursor-not-allowed' : 'hover:-translate-y-0.5 hover:border-sky-300/65 hover:bg-sky-300/10'
-                    }`}
+                    className={`${embedded ? 'h-10 md:h-11' : 'h-12 md:h-14'} rounded-md border text-sm font-bold relative ${
+                      embedded ? 'text-white' : ''
+                    } ${isPastDate ? 'opacity-45 cursor-not-allowed' : ''}`}
                     style={
                       isPastDate
                         ? {
                             borderColor: 'rgba(148,163,184,0.22)',
-                            color: 'rgba(226,232,240,0.5)'
+                            color: embedded ? 'rgba(226,232,240,0.5)' : 'rgba(51,65,85,0.55)'
                           }
                         : isActive
-                          ? {
-                              borderColor: theme.accent,
-                              backgroundColor: `${theme.accent}22`,
-                              color: '#ffffff',
-                              boxShadow: `0 0 24px ${theme.accent}55`
-                            }
+                          ? { borderColor: theme.accent, backgroundColor: theme.accentSoft, color: theme.accent }
                           : {
-                              borderColor: 'rgba(148,163,184,0.25)',
-                              color: 'rgba(226,232,240,0.88)'
+                              borderColor: 'rgba(148,163,184,0.35)',
+                              color: embedded ? 'rgba(226,232,240,0.9)' : '#334155'
                             }
                     }
                   >
@@ -1051,25 +962,18 @@ This Information Notice enters into force on the date it is published on the web
           </div>
 
           <div
-            className={`rounded-[28px] border border-sky-300/18 bg-[#06111d]/58 p-4 md:p-5 shadow-[0_24px_90px_rgba(0,0,0,0.38)] backdrop-blur-xl ${
-              embedded ? 'lg:h-[820px] lg:overflow-y-auto' : ''
+            className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-5 ${
+              embedded ? 'lg:h-[520px] lg:overflow-y-auto lg:pr-3' : ''
             }`}
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-sky-200/70">
-                  ACTIVE EVENTS
-                </p>
-                <h3 className="mt-1 text-2xl font-black leading-tight text-white">
-                  Ocean adventures ready to book
-                </h3>
-              </div>
-              <div className="rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-1.5 text-xs font-bold text-sky-100">
-                {activeEventCards.length || 0} live slots
-              </div>
-            </div>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white">
+              {formatISODateLabel(activeDate)}
+            </h3>
+            <p className="text-sm mt-1" style={{ color: theme.accent }}>
+              {theme.label} schedule
+            </p>
 
-            <div className="mt-5 space-y-4">
+            <div className="mt-4 space-y-3">
               {eventsLoadError && (
                 <div className="rounded-xl border border-red-300/30 px-4 py-3 text-sm text-red-300 bg-red-500/10">
                   {eventsLoadError}
@@ -1084,176 +988,109 @@ This Information Notice enters into force on the date it is published on the web
                 </div>
               )}
 
-              {!isEventsLoading && activeEventCards.length === 0 && (
+              {!isEventsLoading && selectedDayEvents.length === 0 && (
                 <div className="rounded-xl border border-dashed border-slate-300 dark:border-white/20 px-4 py-6 text-center">
                   <p className="text-slate-600 dark:text-white/70 text-sm font-medium">
-                    No active event published yet.
+                    No event published for this day.
                   </p>
                 </div>
               )}
 
-              {activeEventCards.length > 0 && (
+              {selectedDayEvents.length > 0 && (
                 <>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    {activeEventCards.map((event, index) => {
-                      const isSelected = selectedEvent?.id === event.id;
-                      const seatsLeft = event.capacity - event.booked;
-                      const equipmentIcons = equipmentIconsByCategory[event.category];
-
-                      return (
-                        <article
-                          key={event.id}
-                          className="group relative flex min-h-[332px] flex-col overflow-hidden rounded-2xl border bg-[linear-gradient(145deg,rgba(8,22,36,0.94),rgba(3,10,20,0.92))] shadow-[0_18px_50px_rgba(0,0,0,0.32)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.015]"
-                          style={{
-                            borderColor: isSelected ? theme.accent : 'rgba(56,189,248,0.22)',
-                            boxShadow: isSelected
-                              ? `0 0 0 1px ${theme.accent}66, 0 24px 70px rgba(0,0,0,0.38), 0 0 36px ${theme.accent}38`
-                              : undefined
-                          }}
-                        >
-                          <div className="relative h-32 overflow-hidden">
-                            <img
-                              src={getEventImage(event, index)}
-                              alt={`${event.title} cover`}
-                              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                              loading="lazy"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#06111d] via-[#06111d]/10 to-transparent"></div>
-                            <span className="absolute right-3 top-3 rounded-full border border-sky-200/25 bg-black/45 px-3 py-1 text-xs font-black text-white shadow-lg backdrop-blur-md">
-                              {event.time}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-1 flex-col p-3.5">
-                            <div>
-                              <h4 className="text-base font-black leading-tight text-white">
-                                {event.title}
-                              </h4>
-                              <p className="mt-1 text-xs font-semibold text-sky-200/80">
-                                {getRouteSubtitle(event)}
-                              </p>
-                              <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-white/68">
-                                {event.summary}
-                              </p>
-                            </div>
-
-                            <div className="mt-3 grid grid-cols-3 gap-2 text-[10px] font-bold text-white/78">
-                              <div className="rounded-2xl border border-white/10 bg-white/[0.055] px-3 py-2">
-                                <span className="block text-white/42">Duration</span>
-                                {event.durationHours}h
-                              </div>
-                              <div className="rounded-2xl border border-white/10 bg-white/[0.055] px-3 py-2">
-                                <span className="block text-white/42">Difficulty</span>
-                                {getDifficultyLabel(event)}
-                              </div>
-                              <div className="rounded-2xl border border-white/10 bg-white/[0.055] px-3 py-2">
-                                <span className="block text-white/42">Age</span>
-                                {getAgeLabel(event)}
-                              </div>
-                            </div>
-
-                            <div className="mt-3 flex items-center gap-1.5">
-                              {equipmentIcons.map((item) => (
-                                <span
-                                  key={`${event.id}-${item.label}`}
-                                  title={item.label}
-                                  className="inline-flex size-8 items-center justify-center rounded-full border border-sky-300/20 bg-sky-300/10 text-sky-100"
-                                >
-                                  <span className="material-symbols-outlined text-[18px]">
-                                    {item.icon}
-                                  </span>
-                                </span>
-                              ))}
-                              <span className="ml-auto text-xs font-bold text-white/50">
-                                {seatsLeft}/{event.capacity} seats
-                              </span>
-                            </div>
-
-                            <div className="mt-auto pt-4">
-                              <div className="flex items-end justify-between gap-3">
-                                <div>
-                                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/42">
-                                    Price
-                                  </p>
-                                  <p className="text-4xl font-black leading-none text-white">
-                                    €{event.price}
-                                  </p>
-                                  <p className="mt-1 text-xs font-semibold text-sky-100/70">
-                                    / person
-                                  </p>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setActiveDate(event.date);
-                                    setSelectedEventId(event.id);
-                                  }}
-                                  className="rounded-full px-4 py-2 text-xs font-black text-white shadow-[0_10px_24px_rgba(17,131,212,0.26)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(17,131,212,0.42)]"
-                                  style={{ backgroundColor: theme.accent }}
-                                >
-                                  {isSelected ? 'Selected' : 'Book Now'}
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 rounded-2xl border border-sky-300/15 bg-white/[0.04] p-3 text-left sm:grid-cols-4">
-                    {[
-                      ['verified_user', 'Expert Guides'],
-                      ['health_and_safety', 'Safe & Secure'],
-                      ['explore', 'Best Routes'],
-                      ['event_available', 'Flexible Booking']
-                    ].map(([icon, label]) => (
-                      <div key={label} className="flex items-center gap-2 rounded-xl bg-white/[0.045] px-3 py-2 text-xs font-bold text-white/78">
-                        <span className="material-symbols-outlined text-[18px] text-sky-200">{icon}</span>
-                        <span>{label}</span>
-                      </div>
+                  <div className="space-y-2">
+                    {selectedDayEvents.map((event) => (
+                      <button
+                        key={event.id}
+                        type="button"
+                        onClick={() => setSelectedEventId(event.id)}
+                        className="w-full rounded-xl border p-3 text-left"
+                        style={
+                          selectedEvent?.id === event.id
+                            ? { borderColor: theme.accent, backgroundColor: `${theme.accent}18` }
+                            : { borderColor: 'rgba(148,163,184,0.25)' }
+                        }
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-bold text-slate-900 dark:text-white">{event.title}</p>
+                          <span className="text-xs font-bold" style={{ color: theme.accent }}>
+                            {event.time}
+                          </span>
+                        </div>
+                        <p className="text-xs mt-1 text-slate-600 dark:text-white/70">{event.summary}</p>
+                      </button>
                     ))}
                   </div>
 
                   {selectedEvent && (
                     <>
-                      <form className="rounded-[22px] border border-sky-300/18 bg-[#06111d]/72 p-4 space-y-3 shadow-[0_20px_70px_rgba(0,0,0,0.24)]" onSubmit={handleReservationSubmit}>
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                          <div>
-                            <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-200/65">
-                              Selected experience
-                            </p>
-                            <p className="text-sm font-bold text-white">{selectedEvent.title}</p>
-                          </div>
-                          <p className="text-2xl font-black text-white">
-                            €{selectedEvent.price}
-                            <span className="ml-1 text-xs font-semibold text-white/45">/ person</span>
-                          </p>
+                      {(() => {
+                        const detailLines = parseEventDetailsLines(selectedEvent.details);
+                        return (
+                      <article className="rounded-xl border border-slate-200 dark:border-white/10 p-4 bg-slate-50 dark:bg-[#0f1922] text-left">
+                        <div className="flex items-start justify-between gap-3">
+                          <h4 className="font-bold text-slate-900 dark:text-white">{selectedEvent.title}</h4>
+                          <span
+                            className="rounded-full px-2.5 py-1 text-xs font-bold"
+                            style={{ color: theme.accent, backgroundColor: theme.accentSoft }}
+                          >
+                            {selectedEvent.time}
+                          </span>
                         </div>
+                        <p className="mt-2 text-left text-sm text-slate-600 dark:text-white/70">{selectedEvent.summary}</p>
+                        {detailLines.length > 0 && (
+                          <div className="mt-2 space-y-1.5 text-left text-sm text-slate-600 dark:text-white/80">
+                            {detailLines.map((line) => (
+                              <p key={`${selectedEvent.id}-${line}`} className="leading-relaxed text-left">
+                                {line}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
+                          <span className="text-slate-700 dark:text-white/80">Duration: {selectedEvent.durationHours}h</span>
+                          <span className="text-slate-700 dark:text-white/80">
+                            Seats: {selectedEvent.capacity - selectedEvent.booked}/{selectedEvent.capacity}
+                          </span>
+                          <span className="font-bold text-right" style={{ color: theme.accent }}>
+                            EUR {selectedEvent.price}
+                          </span>
+                        </div>
+                      </article>
+                        );
+                      })()}
 
+                      <div className="rounded-xl border border-slate-200 dark:border-white/10 p-4">
+                        <p className="text-xs font-bold uppercase tracking-wide mb-2 text-slate-500 dark:text-white/60">
+                          Service Route
+                        </p>
                         <div className="flex flex-wrap items-center gap-2">
                           {selectedEvent.serviceStops.map((stop, idx) => (
                             <React.Fragment key={stop}>
-                              <span className="rounded-full border border-white/10 bg-white/[0.065] px-3 py-1 text-xs font-semibold text-white/85">
+                              <span className="rounded-md bg-slate-100 dark:bg-[#0f1922] px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-white/85">
                                 {stop}
                               </span>
                               {idx < selectedEvent.serviceStops.length - 1 && (
-                                <span className="text-sky-200/45 text-xs">---</span>
+                                <span className="text-slate-400 text-xs">---</span>
                               )}
                             </React.Fragment>
                           ))}
                         </div>
+                      </div>
+
+                      <form className="rounded-xl border border-slate-200 dark:border-white/10 p-4 space-y-3" onSubmit={handleReservationSubmit}>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">Complete Reservation</p>
 
                         <div className="grid grid-cols-1 gap-3">
                           <div className="space-y-1">
-                            <label className="text-xs font-bold uppercase tracking-wide text-white/50">
+                            <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
                               Pickup Stop
                             </label>
                             <select
                               name="pickupStop"
                               value={reservationForm.pickupStop}
                               onChange={handleFormChange}
-                              className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2 text-white outline-none transition-colors focus:border-sky-300/65"
+                              className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
                             >
                               {selectedEvent.serviceStops.map((stop) => (
                                 <option key={stop} value={stop}>{stop}</option>
@@ -1263,7 +1100,7 @@ This Information Notice enters into force on the date it is published on the web
 
                           <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1">
-                              <label className="text-xs font-bold uppercase tracking-wide text-white/50">
+                              <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
                                 Participants
                               </label>
                               <input
@@ -1273,21 +1110,21 @@ This Information Notice enters into force on the date it is published on the web
                                 name="participants"
                                 value={reservationForm.participants}
                                 onChange={handleFormChange}
-                                className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2 text-white outline-none transition-colors focus:border-sky-300/65"
+                                className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-xs font-bold uppercase tracking-wide text-white/50">
+                              <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
                                 Total
                               </label>
-                              <div className="h-[42px] rounded-xl border border-white/12 bg-white/[0.07] px-3 flex items-center font-bold" style={{ color: theme.accent }}>
+                              <div className="h-[42px] rounded-lg border border-slate-300 dark:border-white/15 px-3 flex items-center font-bold" style={{ color: theme.accent }}>
                                 EUR {selectedEvent.price * (Number(reservationForm.participants) || 0)}
                               </div>
                             </div>
                           </div>
 
                         <div className="space-y-1">
-                          <label className="text-xs font-bold uppercase tracking-wide text-white/50">
+                          <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
                             Full Name
                           </label>
                           <input
@@ -1296,12 +1133,12 @@ This Information Notice enters into force on the date it is published on the web
                               value={reservationForm.fullName}
                               onChange={handleFormChange}
                               placeholder="Name Surname"
-                              className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2 text-white placeholder:text-white/35 outline-none transition-colors focus:border-sky-300/65"
+                              className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
                             />
                           </div>
 
                           <div className="space-y-2">
-                            <p className="text-xs font-bold uppercase tracking-wide text-white/50">
+                            <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
                               Additional Participant Names
                             </p>
                             {participantNames.map((name, idx) => (
@@ -1317,13 +1154,13 @@ This Information Notice enters into force on the date it is published on the web
                                   })
                                 }
                                 placeholder={`Participant ${idx + 2} Name Surname`}
-                                className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2 text-white placeholder:text-white/35 outline-none transition-colors focus:border-sky-300/65"
+                                className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
                               />
                             ))}
                           </div>
 
                           <div className="space-y-1">
-                            <label className="text-xs font-bold uppercase tracking-wide text-white/50">
+                            <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
                               Email
                             </label>
                             <input
@@ -1332,12 +1169,12 @@ This Information Notice enters into force on the date it is published on the web
                               value={reservationForm.email}
                               onChange={handleFormChange}
                               placeholder="name@example.com"
-                              className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2 text-white placeholder:text-white/35 outline-none transition-colors focus:border-sky-300/65"
+                              className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
                             />
                           </div>
 
                           <div className="space-y-1">
-                            <label className="text-xs font-bold uppercase tracking-wide text-white/50">
+                            <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
                               Hotel Name (Optional)
                             </label>
                             <input
@@ -1346,12 +1183,12 @@ This Information Notice enters into force on the date it is published on the web
                               value={reservationForm.hotelName}
                               onChange={handleFormChange}
                               placeholder="e.g. Rixos Sungate"
-                              className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2 text-white placeholder:text-white/35 outline-none transition-colors focus:border-sky-300/65"
+                              className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
                             />
                           </div>
 
                           <div className="space-y-1">
-                            <label className="text-xs font-bold uppercase tracking-wide text-white/50">
+                            <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
                               Phone Number
                             </label>
                             <input
@@ -1360,12 +1197,12 @@ This Information Notice enters into force on the date it is published on the web
                               value={reservationForm.phone}
                               onChange={handleFormChange}
                                 placeholder="+90 5xx xxx xx xx"
-                                className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2 text-white placeholder:text-white/35 outline-none transition-colors focus:border-sky-300/65"
+                                className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white"
                               />
                             </div>
 
                           <div className="space-y-1">
-                            <label className="text-xs font-bold uppercase tracking-wide text-white/50">
+                            <label className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
                               Referral Code (Optional)
                             </label>
                             <input
@@ -1374,7 +1211,7 @@ This Information Notice enters into force on the date it is published on the web
                               value={reservationForm.referralCode}
                               onChange={handleFormChange}
                               placeholder="GYE-XXXXXX"
-                              className="w-full rounded-xl border border-white/12 bg-white/[0.07] px-3 py-2 text-white placeholder:text-white/35 outline-none transition-colors focus:border-sky-300/65 uppercase"
+                              className="w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-slate-900 dark:text-white uppercase"
                             />
                           </div>
                         </div>
@@ -1382,7 +1219,7 @@ This Information Notice enters into force on the date it is published on the web
                         <button
                           type="button"
                           onClick={() => setIsAgreementOpen(true)}
-                          className="w-full rounded-xl border border-white/12 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-white/78 transition-colors hover:border-sky-300/45 hover:text-white"
+                          className="w-full rounded-lg border border-slate-200/70 dark:border-white/10 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-white/80 hover:border-slate-300"
                         >
                           Read Distance Sales & Service Agreement (KVKK)
                         </button>
@@ -1393,7 +1230,7 @@ This Information Notice enters into force on the date it is published on the web
                           </p>
                         )}
 
-                        <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white/70">
+                        <label className="flex items-start gap-3 rounded-lg border border-slate-200/60 dark:border-white/10 bg-slate-50/70 dark:bg-[#0f1922] px-3 py-2 text-xs text-slate-600 dark:text-white/70">
                           <input
                             type="checkbox"
                             checked={termsAccepted}
@@ -1405,7 +1242,7 @@ This Information Notice enters into force on the date it is published on the web
                           </span>
                         </label>
 
-                        <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white/70">
+                        <label className="flex items-start gap-3 rounded-lg border border-slate-200/60 dark:border-white/10 bg-slate-50/70 dark:bg-[#0f1922] px-3 py-2 text-xs text-slate-600 dark:text-white/70">
                           <input
                             type="checkbox"
                             checked={kvkkAccepted}
@@ -1420,7 +1257,7 @@ This Information Notice enters into force on the date it is published on the web
                         <button
                           type="submit"
                           disabled={isSubmitting || !termsAccepted || !kvkkAccepted}
-                          className="w-full rounded-xl text-white font-bold py-3 shadow-[0_14px_34px_rgba(17,131,212,0.28)] transition-all hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-60"
+                          className="w-full rounded-lg text-white font-bold py-2.5 disabled:opacity-60"
                           style={{ backgroundColor: theme.accent }}
                         >
                           {isSubmitting
