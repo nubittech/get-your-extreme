@@ -85,6 +85,17 @@ const Home: React.FC = () => {
             {theme.heroSubtitle}
           </p>
           <div id="booking-form" className="w-full max-w-6xl mt-2">
+            <div className="mb-5 overflow-hidden rounded-2xl border border-white/15 bg-black/35 shadow-2xl">
+              <video
+                className="h-[220px] w-full object-cover md:h-[320px]"
+                src="/water-adventures-preview.mov"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+              />
+            </div>
             <EventCalendarPanel embedded />
           </div>
         </div>
