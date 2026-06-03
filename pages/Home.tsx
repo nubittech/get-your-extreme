@@ -75,19 +75,16 @@ const Home: React.FC = () => {
               ))}
             </div>
           </div>
-          <h1 className="text-white text-5xl md:text-7xl font-black leading-tight tracking-[-0.033em] mb-6 drop-shadow-2xl">
+          <h1 className="text-white text-5xl md:text-7xl font-black leading-tight tracking-[-0.033em] mb-8 drop-shadow-2xl">
             {theme.heroTitle.split(' ').slice(0, 4).join(' ')} <br/>
             <span className="drop-shadow-md" style={{ color: theme.accent }}>
               {theme.heroTitle.split(' ').slice(4).join(' ')}
             </span>
           </h1>
-          <p className="text-white text-lg md:text-xl font-medium leading-relaxed max-w-2xl mb-12 drop-shadow-lg text-shadow-sm">
-            {theme.heroSubtitle}
-          </p>
           <div id="booking-form" className="w-full max-w-6xl mt-2">
             <div className="mb-5 overflow-hidden rounded-2xl border border-white/15 bg-black/35 shadow-2xl">
               <video
-                className="h-[220px] w-full object-cover md:h-[320px]"
+                className="h-[260px] w-full object-cover md:h-[420px]"
                 src="/water-adventures-preview.mov"
                 autoPlay
                 muted
