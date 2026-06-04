@@ -9,6 +9,7 @@ export type ExperienceTheme = {
   accentSoft: string;
   headerGradient: string;
   heroImage: string;
+  heroVideo?: string;
   heroTitle: string;
   heroSubtitle: string;
   activities: string[];
@@ -31,6 +32,7 @@ export const EXPERIENCE_THEMES: Record<ExperienceCategory, ExperienceTheme> = {
     accentSoft: '#d7ecfb',
     headerGradient: 'linear-gradient(90deg, #0f2230 0%, #0c1b27 100%)',
     heroImage: MEDIA_ASSETS.supHero,
+    heroVideo: MEDIA_ASSETS.supHeroVideo,
     heroTitle: "Experience the Thrill of Antalya's Waters",
     heroSubtitle:
       'Premium water sports experiences for groups, private sessions, and coastal explorers. From calm paddling routes to dynamic water adventures, discover Antalya’s waters your way. We recommend reviewing our routes in the “ROUTES” section before booking.',

@@ -33,14 +33,42 @@ const Home: React.FC = () => {
     <div className="flex flex-col">
       {/* Hero Section */}
       <div className="relative -mt-24 md:-mt-44 min-h-[850px] w-full flex flex-col items-center justify-center bg-[#101a22] overflow-hidden">
-        {/* Background Image - Using img tag for reliability */}
-        <div className="absolute inset-0 z-0">
-          <img 
+        {/* Background media */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <img
             src={theme.heroImage}
             alt={`${theme.label} hero cover`}
-            className="w-full h-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
             loading="eager"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover'
+            }}
           />
+          {theme.heroVideo && (
+            <video
+              className="absolute inset-0 h-full w-full object-cover"
+              src={theme.heroVideo}
+              poster={theme.heroImage}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block'
+              }}
+            />
+          )}
           {/* Overlay Gradient */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#101a22]/40 via-[#101a22]/20 to-[#101a22]/70"></div>
         </div>
