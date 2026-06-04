@@ -109,18 +109,10 @@ const Home: React.FC = () => {
               {theme.heroTitle.split(' ').slice(4).join(' ')}
             </span>
           </h1>
+          <p className="text-white text-lg md:text-xl font-medium leading-relaxed max-w-2xl mb-12 drop-shadow-lg text-shadow-sm">
+            {theme.heroSubtitle}
+          </p>
           <div id="booking-form" className="w-full max-w-6xl mt-2">
-            <div className="mb-5 overflow-hidden rounded-2xl border border-white/15 bg-black/35 shadow-2xl">
-              <video
-                className="h-[260px] w-full object-cover md:h-[420px]"
-                src="/water-adventures-preview.mov"
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-              />
-            </div>
             <EventCalendarPanel embedded />
           </div>
         </div>

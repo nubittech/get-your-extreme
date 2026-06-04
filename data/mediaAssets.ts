@@ -3,7 +3,7 @@ export const driveImageUrl = (id: string) => `https://lh3.googleusercontent.com/
 export const MEDIA_ASSETS = {
   logo: '/logo.png',
   supHero: '/SUP-tour.jpg',
-  supHeroVideo: '/sup-hero-video.mp4',
+  supHeroVideo: '/water-adventures-preview.mov',
   bikeHero:
     'https://images.unsplash.com/photo-1541625602330-2277a4c46182?q=80&w=2400&auto=format&fit=crop',
   routeKaracagoren: encodeURI('/PHOTO-2026-02-25-03-47-25.jpg'),
