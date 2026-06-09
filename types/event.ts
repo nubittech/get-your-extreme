@@ -6,6 +6,7 @@ export interface EventScheduleItem {
   date: string; // YYYY-MM-DD
   time: string;
   durationHours: number;
+  routeDistanceKm?: number;
   capacity: number;
   booked: number;
   price: number;
@@ -20,6 +21,7 @@ export interface EventCreateInput {
   date: string;
   time: string;
   durationHours: number;
+  routeDistanceKm?: number;
   capacity: number;
   price: number;
   title: string;

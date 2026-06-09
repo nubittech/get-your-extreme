@@ -16,6 +16,7 @@ const isEventScheduleItem = (value: unknown): value is EventScheduleItem => {
     typeof item.date === 'string' &&
     typeof item.time === 'string' &&
     typeof item.durationHours === 'number' &&
+    (item.routeDistanceKm === undefined || typeof item.routeDistanceKm === 'number') &&
     typeof item.capacity === 'number' &&
     typeof item.booked === 'number' &&
     typeof item.price === 'number' &&
@@ -58,6 +59,12 @@ const mapSupabaseRow = (row: Record<string, unknown>): EventScheduleItem => ({
   date: String(row.date ?? ''),
   time: String(row.time ?? ''),
   durationHours: Number(row.duration_hours ?? row.durationHours ?? 0),
+  routeDistanceKm:
+    row.route_distance_km === null || row.routeDistanceKm === null
+      ? undefined
+      : row.route_distance_km !== undefined || row.routeDistanceKm !== undefined
+        ? Number(row.route_distance_km ?? row.routeDistanceKm)
+        : undefined,
   capacity: Number(row.capacity ?? 0),
   booked: Number(row.booked ?? 0),
   price: Number(row.price ?? 0),
@@ -130,6 +137,7 @@ export const createEvent = async (input: EventCreateInput): Promise<EventSchedul
     date: input.date,
     time: input.time,
     durationHours: input.durationHours,
+    routeDistanceKm: input.routeDistanceKm,
     capacity: input.capacity,
     booked: 0,
     price: input.price,
@@ -213,6 +221,7 @@ export const updateEvent = async (
     date: input.date,
     time: input.time,
     durationHours: input.durationHours,
+    routeDistanceKm: input.routeDistanceKm,
     capacity: input.capacity,
     price: input.price,
     title: input.title,

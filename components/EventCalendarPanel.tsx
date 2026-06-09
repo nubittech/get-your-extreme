@@ -55,6 +55,25 @@ const parseEventDetailsLines = (value: string) => {
     .filter(Boolean);
 };
 
+const getEventRouteDistanceKm = (event: EventScheduleItem) => {
+  if (typeof event.routeDistanceKm === 'number' && Number.isFinite(event.routeDistanceKm) && event.routeDistanceKm > 0) {
+    return event.routeDistanceKm;
+  }
+
+  const normalizedTitle = event.title.toLocaleLowerCase('en-US');
+  if (normalizedTitle.includes('duden') || normalizedTitle.includes('düden')) return 7.5;
+  if (normalizedTitle.includes('phaselis')) return 6;
+  if (normalizedTitle.includes('cirali') || normalizedTitle.includes('çıralı')) return 5;
+  if (normalizedTitle.includes('lara')) return 9;
+  if (normalizedTitle.includes('konyaalti') || normalizedTitle.includes('konyaaltı')) return 4.5;
+  if (normalizedTitle.includes('cliff')) return 8.2;
+
+  return Math.max(3, event.serviceStops.length * 2.5);
+};
+
+const formatRouteDistance = (value: number) =>
+  `${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)} km`;
+
 type EventCalendarPanelProps = {
   embedded?: boolean;
 };
@@ -1068,6 +1087,7 @@ This Information Notice enters into force on the date it is published on the web
                     <>
                       {(() => {
                         const detailLines = parseEventDetailsLines(selectedEvent.details);
+                        const routeDistanceKm = getEventRouteDistanceKm(selectedEvent);
                         return (
                       <article className="rounded-xl border border-slate-200 dark:border-white/10 p-4 bg-slate-50 dark:bg-[#0f1922] text-left">
                         <div className="flex items-start justify-between gap-3">
@@ -1089,14 +1109,39 @@ This Information Notice enters into force on the date it is published on the web
                             ))}
                           </div>
                         )}
-                        <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
-                          <span className="text-slate-700 dark:text-white/80">Duration: {selectedEvent.durationHours}h</span>
-                          <span className="text-slate-700 dark:text-white/80">
-                            Seats: {selectedEvent.capacity - selectedEvent.booked}/{selectedEvent.capacity}
-                          </span>
-                          <span className="font-bold text-right" style={{ color: theme.accent }}>
-                            EUR {selectedEvent.price}
-                          </span>
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
+                          <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-white/45">
+                              Duration
+                            </p>
+                            <p className="mt-0.5 font-black text-slate-800 dark:text-white">
+                              {selectedEvent.durationHours}h
+                            </p>
+                          </div>
+                          <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-white/45">
+                              Route
+                            </p>
+                            <p className="mt-0.5 font-black text-slate-800 dark:text-white">
+                              {formatRouteDistance(routeDistanceKm)}
+                            </p>
+                          </div>
+                          <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-white/45">
+                              Seats
+                            </p>
+                            <p className="mt-0.5 font-black text-slate-800 dark:text-white">
+                              {selectedEvent.capacity - selectedEvent.booked}/{selectedEvent.capacity}
+                            </p>
+                          </div>
+                          <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-right dark:border-white/10 dark:bg-white/[0.03]">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-white/45">
+                              Price
+                            </p>
+                            <p className="mt-0.5 font-black" style={{ color: theme.accent }}>
+                              EUR {selectedEvent.price}
+                            </p>
+                          </div>
                         </div>
                       </article>
                         );
