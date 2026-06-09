@@ -874,7 +874,7 @@ This Information Notice enters into force on the date it is published on the web
         )}
 
         <div
-          className={`grid grid-cols-1 gap-6 ${embedded ? 'lg:grid-cols-[0.92fr_1.08fr] lg:items-stretch text-white' : 'lg:grid-cols-[1.2fr_1fr] items-start'}`}
+          className={`grid grid-cols-1 gap-6 ${embedded ? 'lg:grid-cols-[380px_minmax(0,1fr)] lg:items-stretch text-white' : 'lg:grid-cols-[1.2fr_1fr] items-start'}`}
         >
           <div
             className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-4 md:p-5 ${
@@ -966,12 +966,21 @@ This Information Notice enters into force on the date it is published on the web
               embedded ? 'lg:h-[520px] lg:overflow-y-auto lg:pr-3' : ''
             }`}
           >
-            <h3 className="text-xl font-black text-slate-900 dark:text-white">
-              {formatISODateLabel(activeDate)}
-            </h3>
-            <p className="text-sm mt-1" style={{ color: theme.accent }}>
-              {theme.label} schedule
-            </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">
+                  {formatISODateLabel(activeDate)}
+                </h3>
+                <p className="text-sm mt-1" style={{ color: theme.accent }}>
+                  {theme.label} schedule
+                </p>
+              </div>
+              {selectedDayEvents.length > 0 && (
+                <p className="text-sm font-bold" style={{ color: theme.accent }}>
+                  {selectedDayEvents.length} Active Events
+                </p>
+              )}
+            </div>
 
             <div className="mt-4 space-y-3">
               {eventsLoadError && (
@@ -998,27 +1007,60 @@ This Information Notice enters into force on the date it is published on the web
 
               {selectedDayEvents.length > 0 && (
                 <>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                     {selectedDayEvents.map((event) => (
-                      <button
+                      <article
                         key={event.id}
-                        type="button"
-                        onClick={() => setSelectedEventId(event.id)}
-                        className="w-full rounded-xl border p-3 text-left"
+                        className="flex min-h-[178px] flex-col rounded-2xl border bg-white/[0.035] p-3.5 text-left shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.055]"
                         style={
                           selectedEvent?.id === event.id
-                            ? { borderColor: theme.accent, backgroundColor: `${theme.accent}18` }
+                            ? {
+                                borderColor: theme.accent,
+                                boxShadow: `0 0 0 1px ${theme.accent}55, 0 20px 48px rgba(0,0,0,0.24)`
+                              }
                             : { borderColor: 'rgba(148,163,184,0.25)' }
                         }
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <p className="font-bold text-slate-900 dark:text-white">{event.title}</p>
-                          <span className="text-xs font-bold" style={{ color: theme.accent }}>
+                          <h4 className="text-base font-black leading-tight text-slate-900 dark:text-white">
+                            {event.title}
+                          </h4>
+                          <span className="shrink-0 text-sm font-black" style={{ color: theme.accent }}>
                             {event.time}
                           </span>
                         </div>
-                        <p className="text-xs mt-1 text-slate-600 dark:text-white/70">{event.summary}</p>
-                      </button>
+                        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-600 dark:text-white/70">
+                          {event.summary}
+                        </p>
+
+                        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-slate-500 dark:text-white/62">
+                          <span className="inline-flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[16px]">schedule</span>
+                            {event.durationHours} Saat
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[16px]">signal_cellular_alt</span>
+                            {event.durationHours >= 3 ? 'Orta' : 'Kolay'}
+                          </span>
+                        </div>
+
+                        <div className="mt-auto flex items-end justify-between gap-3 pt-3">
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-2xl font-black text-slate-900 dark:text-white">
+                              €{event.price}
+                            </span>
+                            <span className="text-xs font-semibold text-slate-500 dark:text-white/55">/ kişi</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedEventId(event.id)}
+                            className="rounded-lg border px-3 py-1.5 text-xs font-bold transition-all hover:-translate-y-0.5"
+                            style={{ borderColor: theme.accent, color: theme.accent }}
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </article>
                     ))}
                   </div>
 
