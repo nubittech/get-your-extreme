@@ -87,6 +87,7 @@ When you are ready to connect Supabase:
    - `date` date or text
    - `time` text
    - `duration_hours` numeric
+   - `route_distance_km` numeric
    - `capacity` integer
    - `booked` integer default `0`
    - `price` numeric

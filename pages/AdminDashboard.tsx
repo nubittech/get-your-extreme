@@ -71,6 +71,7 @@ const AdminDashboard: React.FC = () => {
     date: '',
     time: '08:00',
     durationHours: '2',
+    routeDistanceKm: '4.5',
     capacity: '12',
     price: '55',
     title: '',
@@ -245,11 +246,17 @@ const AdminDashboard: React.FC = () => {
     }
 
     const durationHours = Number(eventForm.durationHours);
+    const routeDistanceKm = Number(eventForm.routeDistanceKm);
     const capacity = Number(eventForm.capacity);
     const price = Number(eventForm.price);
 
     if (!Number.isFinite(durationHours) || durationHours <= 0) {
       alert('Duration must be greater than 0.');
+      return;
+    }
+
+    if (!Number.isFinite(routeDistanceKm) || routeDistanceKm <= 0) {
+      alert('Route KM must be greater than 0.');
       return;
     }
 
@@ -269,6 +276,7 @@ const AdminDashboard: React.FC = () => {
         category: eventForm.category,
         time: eventForm.time,
         durationHours,
+        routeDistanceKm,
         capacity,
         price,
         title,
@@ -307,6 +315,7 @@ const AdminDashboard: React.FC = () => {
         date: '',
         time: '08:00',
         durationHours: '2',
+        routeDistanceKm: '4.5',
         capacity: '12',
         price: '55',
         title: '',
@@ -331,6 +340,7 @@ const AdminDashboard: React.FC = () => {
       date: eventItem.date,
       time: eventItem.time,
       durationHours: String(eventItem.durationHours),
+      routeDistanceKm: eventItem.routeDistanceKm ? String(eventItem.routeDistanceKm) : '',
       capacity: String(eventItem.capacity),
       price: String(eventItem.price),
       title: eventItem.title,
@@ -350,6 +360,7 @@ const AdminDashboard: React.FC = () => {
       date: '',
       time: '08:00',
       durationHours: '2',
+      routeDistanceKm: '4.5',
       capacity: '12',
       price: '55',
       title: '',
@@ -928,7 +939,7 @@ const AdminDashboard: React.FC = () => {
                     ))}
                   </div>
                 )}
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
                   <label className="text-xs font-bold text-slate-600 dark:text-white/70">
                     Time
                     <input
@@ -947,6 +958,18 @@ const AdminDashboard: React.FC = () => {
                       min="0.5"
                       step="0.5"
                       value={eventForm.durationHours}
+                      onChange={handleEventFormChange}
+                      className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
+                    />
+                  </label>
+                  <label className="text-xs font-bold text-slate-600 dark:text-white/70">
+                    Route KM
+                    <input
+                      type="number"
+                      name="routeDistanceKm"
+                      min="0.1"
+                      step="0.1"
+                      value={eventForm.routeDistanceKm}
                       onChange={handleEventFormChange}
                       className="mt-1 w-full rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-[#16202a] px-3 py-2 text-sm text-slate-900 dark:text-white"
                     />
@@ -1086,7 +1109,7 @@ const AdminDashboard: React.FC = () => {
                             </span>
                             <p className="text-sm font-bold text-slate-900 dark:text-white">{item.title}</p>
                             <p className="text-xs text-[#9dadb9]">
-                              {item.date} {item.time} | EUR {item.price} | Seats {item.booked}/{item.capacity}
+                              {item.date} {item.time} | {item.routeDistanceKm ? `${item.routeDistanceKm} km | ` : ''}EUR {item.price} | Seats {item.booked}/{item.capacity}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
