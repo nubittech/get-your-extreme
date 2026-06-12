@@ -52,7 +52,7 @@ const parseEventDetailsLines = (value: string) => {
   return normalized
     .split('\n')
     .map((line) => line.trim())
-    .filter(Boolean);
+    .filter((line) => Boolean(line) && !/^<!--\s*routeDistanceKm:/i.test(line));
 };
 
 const getEventRouteDistanceKm = (event: EventScheduleItem) => {

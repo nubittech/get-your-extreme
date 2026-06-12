@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { deleteReservation, listReservations } from '../services/reservations';
 import { Reservation } from '../types/reservation';
-import { createEvent, deleteEvent, listEvents, updateEvent } from '../services/events';
+import { createEvent, deleteEvent, listEvents, stripRouteDistanceMarker, updateEvent } from '../services/events';
 import { EventScheduleItem } from '../types/event';
 import { ExperienceCategory, EXPERIENCE_CATEGORY_LABELS } from '../data/experienceThemes';
 import { useAuth } from '../context/AuthContext';
@@ -326,8 +326,13 @@ const AdminDashboard: React.FC = () => {
       setSelectedEventDates([]);
       setDatePickerMonth(getCurrentMonth());
       setIsDatePickerOpen(false);
-    } catch {
-      alert(editingEventId ? 'Event could not be updated.' : 'Event could not be created. Please check backend settings.');
+    } catch (error) {
+      const message = error instanceof Error ? `\n\n${error.message}` : '';
+      alert(
+        editingEventId
+          ? `Event could not be updated. Please check backend settings.${message}`
+          : `Event could not be created. Please check backend settings.${message}`
+      );
     } finally {
       setIsCreatingEvent(false);
     }
@@ -345,7 +350,7 @@ const AdminDashboard: React.FC = () => {
       price: String(eventItem.price),
       title: eventItem.title,
       summary: eventItem.summary,
-      details: eventItem.details,
+      details: stripRouteDistanceMarker(eventItem.details),
       serviceStops: eventItem.serviceStops.join(', ')
     });
     setSelectedEventDates([eventItem.date]);

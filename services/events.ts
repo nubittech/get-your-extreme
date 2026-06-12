@@ -6,6 +6,35 @@ const STORAGE_KEY = 'events_schedule';
 const API_MODE = import.meta.env.VITE_RESERVATIONS_API_MODE ?? 'local';
 
 const isSupabaseMode = () => API_MODE === 'supabase';
+const ROUTE_DISTANCE_MARKER_REGEX = /\n?<!--\s*routeDistanceKm:([0-9.]+)\s*-->/i;
+
+const getRouteDistanceFromDetails = (value: string) => {
+  const match = value.match(ROUTE_DISTANCE_MARKER_REGEX);
+  if (!match) return undefined;
+  const distance = Number(match[1]);
+  return Number.isFinite(distance) && distance > 0 ? distance : undefined;
+};
+
+export const stripRouteDistanceMarker = (value: string) =>
+  value.replace(ROUTE_DISTANCE_MARKER_REGEX, '').trim();
+
+const withRouteDistanceMarker = (details: string, routeDistanceKm?: number) => {
+  const cleanDetails = stripRouteDistanceMarker(details);
+  if (!routeDistanceKm || !Number.isFinite(routeDistanceKm) || routeDistanceKm <= 0) {
+    return cleanDetails;
+  }
+  return `${cleanDetails}\n<!-- routeDistanceKm:${routeDistanceKm} -->`;
+};
+
+const isMissingRouteDistanceColumnError = (error: unknown) => {
+  if (!error || typeof error !== 'object') return false;
+  const record = error as Record<string, unknown>;
+  const message = String(record.message ?? '');
+  return (
+    String(record.code ?? '') === 'PGRST204' &&
+    message.toLowerCase().includes('route_distance_km')
+  );
+};
 
 const isEventScheduleItem = (value: unknown): value is EventScheduleItem => {
   if (!value || typeof value !== 'object') return false;
@@ -64,7 +93,7 @@ const mapSupabaseRow = (row: Record<string, unknown>): EventScheduleItem => ({
       ? undefined
       : row.route_distance_km !== undefined || row.routeDistanceKm !== undefined
         ? Number(row.route_distance_km ?? row.routeDistanceKm)
-        : undefined,
+        : getRouteDistanceFromDetails(String(row.details ?? '')),
   capacity: Number(row.capacity ?? 0),
   booked: Number(row.booked ?? 0),
   price: Number(row.price ?? 0),
@@ -106,24 +135,42 @@ export const listEvents = async (): Promise<EventScheduleItem[]> => {
 export const createEvent = async (input: EventCreateInput): Promise<EventScheduleItem> => {
   if (isSupabaseMode()) {
     const supabase = requireSupabase();
-    const { data, error } = await supabase
+    const basePayload = {
+      category: input.category,
+      date: input.date,
+      time: input.time,
+      duration_hours: input.durationHours,
+      capacity: input.capacity,
+      booked: 0,
+      price: input.price,
+      title: input.title,
+      summary: input.summary,
+      details: input.details,
+      service_stops: input.serviceStops
+    };
+
+    let { data, error } = await supabase
       .from(SUPABASE_EVENTS_TABLE)
       .insert({
-        category: input.category,
-        date: input.date,
-        time: input.time,
-        duration_hours: input.durationHours,
-        route_distance_km: input.routeDistanceKm,
-        capacity: input.capacity,
-        booked: 0,
-        price: input.price,
-        title: input.title,
-        summary: input.summary,
-        details: input.details,
-        service_stops: input.serviceStops
+        ...basePayload,
+        route_distance_km: input.routeDistanceKm
       })
       .select('*')
       .single();
+
+    if (isMissingRouteDistanceColumnError(error)) {
+      const fallbackResult = await supabase
+        .from(SUPABASE_EVENTS_TABLE)
+        .insert({
+          ...basePayload,
+          details: withRouteDistanceMarker(input.details, input.routeDistanceKm)
+        })
+        .select('*')
+        .single();
+
+      data = fallbackResult.data;
+      error = fallbackResult.error;
+    }
 
     if (error || !data) {
       throw new Error(`Supabase event create failed: ${error?.message ?? 'Unknown error'}`);
@@ -203,6 +250,32 @@ export const updateEvent = async (
       .eq(matcher.key, matcher.value)
       .select('*')
       .single();
+
+    if (isMissingRouteDistanceColumnError(error)) {
+      const fallbackResult = await supabase
+        .from(SUPABASE_EVENTS_TABLE)
+        .update({
+          category: input.category,
+          date: input.date,
+          time: input.time,
+          duration_hours: input.durationHours,
+          capacity: input.capacity,
+          price: input.price,
+          title: input.title,
+          summary: input.summary,
+          details: withRouteDistanceMarker(input.details, input.routeDistanceKm),
+          service_stops: input.serviceStops
+        })
+        .eq(matcher.key, matcher.value)
+        .select('*')
+        .single();
+
+      if (fallbackResult.error || !fallbackResult.data) {
+        throw new Error(`Supabase event update failed: ${fallbackResult.error?.message ?? 'Unknown error'}`);
+      }
+
+      return mapSupabaseRow(fallbackResult.data as Record<string, unknown>);
+    }
 
     if (error || !data) {
       throw new Error(`Supabase event update failed: ${error?.message ?? 'Unknown error'}`);
