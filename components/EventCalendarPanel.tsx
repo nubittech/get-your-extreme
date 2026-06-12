@@ -1055,11 +1055,11 @@ This Information Notice enters into force on the date it is published on the web
                         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-slate-500 dark:text-white/62">
                           <span className="inline-flex items-center gap-1">
                             <span className="material-symbols-outlined text-[16px]">schedule</span>
-                            {event.durationHours} Saat
+                            {event.durationHours} Hours
                           </span>
                           <span className="inline-flex items-center gap-1">
                             <span className="material-symbols-outlined text-[16px]">signal_cellular_alt</span>
-                            {event.durationHours >= 3 ? 'Orta' : 'Kolay'}
+                            {event.durationHours >= 3 ? 'Intermediate' : 'Easy'}
                           </span>
                         </div>
 
