@@ -4,12 +4,13 @@ export interface EventScheduleItem {
   id: string;
   category: ExperienceCategory;
   date: string; // YYYY-MM-DD
-  time: string;
+  time: string | null;
   durationHours: number;
   routeDistanceKm?: number;
   capacity: number;
   booked: number;
-  price: number;
+  price: number | null;
+  whatsappContactRequired?: boolean;
   title: string;
   summary: string;
   details: string;
@@ -19,11 +20,12 @@ export interface EventScheduleItem {
 export interface EventCreateInput {
   category: ExperienceCategory;
   date: string;
-  time: string;
+  time: string | null;
   durationHours: number;
   routeDistanceKm?: number;
   capacity: number;
-  price: number;
+  price: number | null;
+  whatsappContactRequired: boolean;
   title: string;
   summary: string;
   details: string;

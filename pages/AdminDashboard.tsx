@@ -69,11 +69,12 @@ const AdminDashboard: React.FC = () => {
   const [eventForm, setEventForm] = useState({
     category: 'SUP' as ExperienceCategory,
     date: '',
-    time: '08:00',
+    time: '',
     durationHours: '2',
     routeDistanceKm: '4.5',
     capacity: '12',
-    price: '55',
+    price: '',
+    whatsappContactRequired: false,
     title: '',
     summary: '',
     details: '',
@@ -220,7 +221,8 @@ const AdminDashboard: React.FC = () => {
   const handleEventFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    setEventForm((current) => ({ ...current, [e.target.name]: e.target.value }));
+    const { name, type, value, checked } = e.target as HTMLInputElement;
+    setEventForm((current) => ({ ...current, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handleCreateEvent = async (e: React.FormEvent) => {
@@ -235,8 +237,8 @@ const AdminDashboard: React.FC = () => {
       .map((item) => item.trim())
       .filter(Boolean);
 
-    if (targetDates.length === 0 || !eventForm.time || !title || !summary || !details || serviceStops.length === 0) {
-      alert('Please fill all event fields including service stops.');
+    if (targetDates.length === 0 || !title || !summary || !details || serviceStops.length === 0) {
+      alert('Please complete the date, title, summary, details, and at least one service stop.');
       return;
     }
 
@@ -248,7 +250,7 @@ const AdminDashboard: React.FC = () => {
     const durationHours = Number(eventForm.durationHours);
     const routeDistanceKm = Number(eventForm.routeDistanceKm);
     const capacity = Number(eventForm.capacity);
-    const price = Number(eventForm.price);
+    const price = eventForm.price.trim() ? Number(eventForm.price) : null;
 
     if (!Number.isFinite(durationHours) || durationHours <= 0) {
       alert('Duration must be greater than 0.');
@@ -265,7 +267,7 @@ const AdminDashboard: React.FC = () => {
       return;
     }
 
-    if (!Number.isFinite(price) || price <= 0) {
+    if (price !== null && (!Number.isFinite(price) || price <= 0)) {
       alert('Price must be greater than 0.');
       return;
     }
@@ -274,11 +276,12 @@ const AdminDashboard: React.FC = () => {
     try {
       const basePayload = {
         category: eventForm.category,
-        time: eventForm.time,
+        time: eventForm.time || null,
         durationHours,
         routeDistanceKm,
         capacity,
         price,
+        whatsappContactRequired: eventForm.whatsappContactRequired,
         title,
         summary,
         details,
@@ -293,7 +296,7 @@ const AdminDashboard: React.FC = () => {
         setEvents((current) =>
           current
             .map((item) => (item.id === editingEventId ? updated : item))
-            .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
+            .sort((a, b) => `${a.date} ${a.time ?? ''}`.localeCompare(`${b.date} ${b.time ?? ''}`))
         );
         setEditingEventId(null);
       } else {
@@ -306,18 +309,19 @@ const AdminDashboard: React.FC = () => {
           createdEvents.push(created);
         }
         setEvents((current) =>
-          [...current, ...createdEvents].sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
+          [...current, ...createdEvents].sort((a, b) => `${a.date} ${a.time ?? ''}`.localeCompare(`${b.date} ${b.time ?? ''}`))
         );
       }
 
       setEventForm({
         category: 'SUP',
         date: '',
-        time: '08:00',
+        time: '',
         durationHours: '2',
         routeDistanceKm: '4.5',
         capacity: '12',
-        price: '55',
+        price: '',
+        whatsappContactRequired: false,
         title: '',
         summary: '',
         details: '',
@@ -343,11 +347,12 @@ const AdminDashboard: React.FC = () => {
     setEventForm({
       category: eventItem.category,
       date: eventItem.date,
-      time: eventItem.time,
+      time: eventItem.time ?? '',
       durationHours: String(eventItem.durationHours),
       routeDistanceKm: eventItem.routeDistanceKm ? String(eventItem.routeDistanceKm) : '',
       capacity: String(eventItem.capacity),
-      price: String(eventItem.price),
+      price: eventItem.price == null ? '' : String(eventItem.price),
+      whatsappContactRequired: eventItem.whatsappContactRequired ?? false,
       title: eventItem.title,
       summary: eventItem.summary,
       details: stripRouteDistanceMarker(eventItem.details),
@@ -363,11 +368,12 @@ const AdminDashboard: React.FC = () => {
     setEventForm({
       category: 'SUP',
       date: '',
-      time: '08:00',
+      time: '',
       durationHours: '2',
       routeDistanceKm: '4.5',
       capacity: '12',
-      price: '55',
+      price: '',
+      whatsappContactRequired: false,
       title: '',
       summary: '',
       details: '',
@@ -946,7 +952,7 @@ const AdminDashboard: React.FC = () => {
                 )}
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
                   <label className="text-xs font-bold text-slate-600 dark:text-white/70">
-                    Time
+                    Time (optional)
                     <input
                       type="time"
                       name="time"
@@ -991,7 +997,7 @@ const AdminDashboard: React.FC = () => {
                     />
                   </label>
                   <label className="text-xs font-bold text-slate-600 dark:text-white/70">
-                    Price (EUR)
+                    Price (EUR, optional)
                     <input
                       type="number"
                       name="price"
@@ -1002,6 +1008,16 @@ const AdminDashboard: React.FC = () => {
                     />
                   </label>
                 </div>
+                <label className="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-white/10 px-3 py-2 text-sm text-slate-700 dark:text-white/80">
+                  <input
+                    type="checkbox"
+                    name="whatsappContactRequired"
+                    checked={eventForm.whatsappContactRequired}
+                    onChange={handleEventFormChange}
+                    className="mt-0.5 size-4 rounded border-slate-300 text-[#1183d4] focus:ring-[#1183d4]"
+                  />
+                  <span>Güncel servis durumu ve detaylar için WhatsApp’tan bize ulaşın.</span>
+                </label>
                 <label className="block text-xs font-bold text-slate-600 dark:text-white/70">
                   Title
                   <input
@@ -1114,8 +1130,17 @@ const AdminDashboard: React.FC = () => {
                             </span>
                             <p className="text-sm font-bold text-slate-900 dark:text-white">{item.title}</p>
                             <p className="text-xs text-[#9dadb9]">
-                              {item.date} {item.time} | {item.routeDistanceKm ? `${item.routeDistanceKm} km | ` : ''}EUR {item.price} | Seats {item.booked}/{item.capacity}
+                              {[
+                                item.date,
+                                item.time,
+                                item.routeDistanceKm ? `${item.routeDistanceKm} km` : null,
+                                item.price != null ? `EUR ${item.price}` : null,
+                                `Seats ${item.booked}/${item.capacity}`
+                              ].filter(Boolean).join(' | ')}
                             </p>
+                            {item.whatsappContactRequired && (
+                              <p className="mt-1 text-xs font-semibold text-emerald-500">WhatsApp contact enabled</p>
+                            )}
                           </div>
                           <div className="flex items-center gap-2">
                             <button

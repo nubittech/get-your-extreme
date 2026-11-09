@@ -43,12 +43,13 @@ const isEventScheduleItem = (value: unknown): value is EventScheduleItem => {
     typeof item.id === 'string' &&
     typeof item.category === 'string' &&
     typeof item.date === 'string' &&
-    typeof item.time === 'string' &&
+    (typeof item.time === 'string' || item.time === null || item.time === undefined) &&
     typeof item.durationHours === 'number' &&
     (item.routeDistanceKm === undefined || typeof item.routeDistanceKm === 'number') &&
     typeof item.capacity === 'number' &&
     typeof item.booked === 'number' &&
-    typeof item.price === 'number' &&
+    (typeof item.price === 'number' || item.price === null || item.price === undefined) &&
+    (typeof item.whatsappContactRequired === 'boolean' || item.whatsappContactRequired === undefined) &&
     typeof item.title === 'string' &&
     typeof item.summary === 'string' &&
     typeof item.details === 'string' &&
@@ -66,7 +67,12 @@ const readLocalEvents = (): EventScheduleItem[] => {
   try {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.every(isEventScheduleItem)) {
-      return parsed;
+      return parsed.map((item) => ({
+        ...item,
+        time: item.time == null ? null : item.time,
+        price: item.price == null ? null : item.price,
+        whatsappContactRequired: item.whatsappContactRequired ?? false
+      })) as EventScheduleItem[];
     }
   } catch {
     // Fall back to defaults when local storage is corrupted.
@@ -86,7 +92,7 @@ const mapSupabaseRow = (row: Record<string, unknown>): EventScheduleItem => ({
   id: toEventId(row.id),
   category: String(row.category ?? 'SUP') as EventScheduleItem['category'],
   date: String(row.date ?? ''),
-  time: String(row.time ?? ''),
+  time: row.time == null ? null : String(row.time),
   durationHours: Number(row.duration_hours ?? row.durationHours ?? 0),
   routeDistanceKm:
     row.route_distance_km === null || row.routeDistanceKm === null
@@ -96,7 +102,8 @@ const mapSupabaseRow = (row: Record<string, unknown>): EventScheduleItem => ({
         : getRouteDistanceFromDetails(String(row.details ?? '')),
   capacity: Number(row.capacity ?? 0),
   booked: Number(row.booked ?? 0),
-  price: Number(row.price ?? 0),
+  price: row.price == null ? null : Number(row.price),
+  whatsappContactRequired: Boolean(row.whatsapp_contact_required ?? row.whatsappContactRequired ?? false),
   title: String(row.title ?? ''),
   summary: String(row.summary ?? ''),
   details: String(row.details ?? ''),
@@ -143,6 +150,7 @@ export const createEvent = async (input: EventCreateInput): Promise<EventSchedul
       capacity: input.capacity,
       booked: 0,
       price: input.price,
+      whatsapp_contact_required: input.whatsappContactRequired,
       title: input.title,
       summary: input.summary,
       details: input.details,
@@ -189,6 +197,7 @@ export const createEvent = async (input: EventCreateInput): Promise<EventSchedul
     capacity: input.capacity,
     booked: 0,
     price: input.price,
+    whatsappContactRequired: input.whatsappContactRequired,
     title: input.title,
     summary: input.summary,
     details: input.details,
@@ -242,6 +251,7 @@ export const updateEvent = async (
         route_distance_km: input.routeDistanceKm,
         capacity: input.capacity,
         price: input.price,
+        whatsapp_contact_required: input.whatsappContactRequired,
         title: input.title,
         summary: input.summary,
         details: input.details,
@@ -261,6 +271,7 @@ export const updateEvent = async (
           duration_hours: input.durationHours,
           capacity: input.capacity,
           price: input.price,
+          whatsapp_contact_required: input.whatsappContactRequired,
           title: input.title,
           summary: input.summary,
           details: withRouteDistanceMarker(input.details, input.routeDistanceKm),
@@ -299,6 +310,7 @@ export const updateEvent = async (
     routeDistanceKm: input.routeDistanceKm,
     capacity: input.capacity,
     price: input.price,
+    whatsappContactRequired: input.whatsappContactRequired,
     title: input.title,
     summary: input.summary,
     details: input.details,

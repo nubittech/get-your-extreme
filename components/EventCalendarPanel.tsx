@@ -95,7 +95,7 @@ type GeneratedTicket = {
   category: string;
   eventTitle: string;
   date: string;
-  time: string;
+  time: string | null;
   durationHours: number;
   pickupStop: string;
   fullName: string;
@@ -104,7 +104,7 @@ type GeneratedTicket = {
   phone: string;
   participants: number;
   participantNames: string[];
-  amount: number;
+  amount: number | null;
   serviceStops: string[];
 };
 
@@ -127,7 +127,7 @@ const buildTicketPayload = (
   phone: form.phone,
   participants: Number(form.participants),
   participantNames,
-  amount: event.price * Number(form.participants),
+  amount: event.price == null ? null : event.price * Number(form.participants),
   serviceStops: event.serviceStops
 });
 
@@ -136,7 +136,7 @@ const toTicketQrText = (ticket: GeneratedTicket) =>
     `Ref:${ticket.reference}`,
     `Category:${ticket.category}`,
     `Event:${ticket.eventTitle}`,
-    `Date:${ticket.date} ${ticket.time}`,
+    `Date:${ticket.date}${ticket.time ? ` ${ticket.time}` : ''}`,
     `Pickup:${ticket.pickupStop}`,
     `Name:${ticket.fullName}`,
     `Email:${ticket.email}`,
@@ -144,7 +144,7 @@ const toTicketQrText = (ticket: GeneratedTicket) =>
     `Phone:${ticket.phone}`,
     `Names:${ticket.participantNames.join(', ')}`,
     `Seats:${ticket.participants}`,
-    `Amount:EUR ${ticket.amount}`
+    ...(ticket.amount == null ? [] : [`Amount:EUR ${ticket.amount}`])
   ].join('|');
 
 const wrapTextLines = (value: string, maxChars: number) => {
@@ -220,7 +220,7 @@ const createTicketCanvas = async (ticket: GeneratedTicket, accent: string) => {
   ctx.font = '600 22px sans-serif';
   ctx.fillStyle = '#94a3b8';
   ctx.fillText(`Reference: ${ticket.reference}`, 96, 365);
-  ctx.fillText(`${ticket.date}  ${ticket.time}`, 96, 402);
+  ctx.fillText(`${ticket.date}${ticket.time ? `  ${ticket.time}` : ''}`, 96, 402);
   ctx.fillText(`Category: ${ticket.category}`, 96, 439);
 
   const rows = [
@@ -231,7 +231,7 @@ const createTicketCanvas = async (ticket: GeneratedTicket, accent: string) => {
     ['Participants', String(ticket.participants)],
     ['Pickup Stop', ticket.pickupStop],
     ['Duration', `${ticket.durationHours} hours`],
-    ['Amount', `EUR ${ticket.amount}`]
+    ...(ticket.amount == null ? [] : [['Amount', `EUR ${ticket.amount}`]])
   ];
 
   let y = 535;
@@ -685,6 +685,7 @@ This Information Notice enters into force on the date it is published on the web
   const handleReservationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEvent) return;
+    if (selectedEvent.whatsappContactRequired || selectedEvent.price == null) return;
 
     const seatsRequested = Number(reservationForm.participants);
     const seatsLeft = selectedEvent.capacity - selectedEvent.booked;
@@ -1044,13 +1045,25 @@ This Information Notice enters into force on the date it is published on the web
                           <h4 className="text-base font-black leading-tight text-slate-900 dark:text-white">
                             {event.title}
                           </h4>
-                          <span className="shrink-0 text-sm font-black" style={{ color: theme.accent }}>
-                            {event.time}
-                          </span>
+                          {event.time && (
+                            <span className="shrink-0 text-sm font-black" style={{ color: theme.accent }}>
+                              {event.time}
+                            </span>
+                          )}
                         </div>
                         <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-600 dark:text-white/70">
                           {event.summary}
                         </p>
+                        {event.whatsappContactRequired && (
+                          <a
+                            href="https://wa.me/905425550000"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-2 text-left text-xs font-semibold text-emerald-500 hover:underline"
+                          >
+                            Güncel servis durumu ve detaylar için WhatsApp’tan bize ulaşın.
+                          </a>
+                        )}
 
                         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-slate-500 dark:text-white/62">
                           <span className="inline-flex items-center gap-1">
@@ -1064,12 +1077,14 @@ This Information Notice enters into force on the date it is published on the web
                         </div>
 
                         <div className="mt-auto flex items-end justify-between gap-3 pt-3">
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-2xl font-black text-slate-900 dark:text-white">
-                              €{event.price}
-                            </span>
-                            <span className="text-xs font-semibold text-slate-500 dark:text-white/55">/ kişi</span>
-                          </div>
+                          {event.price != null && (
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-2xl font-black text-slate-900 dark:text-white">
+                                €{event.price}
+                              </span>
+                              <span className="text-xs font-semibold text-slate-500 dark:text-white/55">/ kişi</span>
+                            </div>
+                          )}
                           <button
                             type="button"
                             onClick={() => setSelectedEventId(event.id)}
@@ -1092,14 +1107,26 @@ This Information Notice enters into force on the date it is published on the web
                       <article className="rounded-xl border border-slate-200 dark:border-white/10 p-4 bg-slate-50 dark:bg-[#0f1922] text-left">
                         <div className="flex items-start justify-between gap-3">
                           <h4 className="font-bold text-slate-900 dark:text-white">{selectedEvent.title}</h4>
-                          <span
-                            className="rounded-full px-2.5 py-1 text-xs font-bold"
-                            style={{ color: theme.accent, backgroundColor: theme.accentSoft }}
-                          >
-                            {selectedEvent.time}
-                          </span>
+                          {selectedEvent.time && (
+                            <span
+                              className="rounded-full px-2.5 py-1 text-xs font-bold"
+                              style={{ color: theme.accent, backgroundColor: theme.accentSoft }}
+                            >
+                              {selectedEvent.time}
+                            </span>
+                          )}
                         </div>
                         <p className="mt-2 text-left text-sm text-slate-600 dark:text-white/70">{selectedEvent.summary}</p>
+                        {selectedEvent.whatsappContactRequired && (
+                          <a
+                            href="https://wa.me/905425550000"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-3 inline-flex rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-600 dark:text-emerald-300 hover:bg-emerald-500/15"
+                          >
+                            Güncel servis durumu ve detaylar için WhatsApp’tan bize ulaşın.
+                          </a>
+                        )}
                         {detailLines.length > 0 && (
                           <div className="mt-2 space-y-1.5 text-left text-sm text-slate-600 dark:text-white/80">
                             {detailLines.map((line) => (
@@ -1109,7 +1136,7 @@ This Information Notice enters into force on the date it is published on the web
                             ))}
                           </div>
                         )}
-                        <div className="mt-3 grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
+                        <div className={`mt-3 grid grid-cols-2 gap-2 text-sm ${selectedEvent.price == null ? 'md:grid-cols-3' : 'md:grid-cols-4'}`}>
                           <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]">
                             <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-white/45">
                               Duration
@@ -1134,14 +1161,16 @@ This Information Notice enters into force on the date it is published on the web
                               {selectedEvent.capacity - selectedEvent.booked}/{selectedEvent.capacity}
                             </p>
                           </div>
-                          <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-right dark:border-white/10 dark:bg-white/[0.03]">
-                            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-white/45">
-                              Price
-                            </p>
-                            <p className="mt-0.5 font-black" style={{ color: theme.accent }}>
-                              EUR {selectedEvent.price}
-                            </p>
-                          </div>
+                          {selectedEvent.price != null && (
+                            <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-right dark:border-white/10 dark:bg-white/[0.03]">
+                              <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-white/45">
+                                Price
+                              </p>
+                              <p className="mt-0.5 font-black" style={{ color: theme.accent }}>
+                                EUR {selectedEvent.price}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </article>
                         );
@@ -1165,6 +1194,23 @@ This Information Notice enters into force on the date it is published on the web
                         </div>
                       </div>
 
+                      {selectedEvent.whatsappContactRequired || selectedEvent.price == null ? (
+                        <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4 text-left">
+                          <p className="text-sm font-semibold text-slate-700 dark:text-white/85">
+                            {selectedEvent.whatsappContactRequired
+                              ? 'Güncel servis durumu ve detaylar için WhatsApp’tan bize ulaşın.'
+                              : 'Fiyat bilgisi için lütfen WhatsApp’tan bize ulaşın.'}
+                          </p>
+                          <a
+                            href="https://wa.me/905425550000"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-3 inline-flex rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700"
+                          >
+                            WhatsApp’tan bize ulaşın
+                          </a>
+                        </div>
+                      ) : (
                       <form className="rounded-xl border border-slate-200 dark:border-white/10 p-4 space-y-3" onSubmit={handleReservationSubmit}>
                         <p className="text-sm font-bold text-slate-900 dark:text-white">Complete Reservation</p>
 
@@ -1382,6 +1428,7 @@ This Information Notice enters into force on the date it is published on the web
                           </div>
                         )}
                       </form>
+                      )}
                     </>
                   )}
                 </>
