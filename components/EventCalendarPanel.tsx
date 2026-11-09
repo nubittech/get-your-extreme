@@ -893,11 +893,11 @@ This Information Notice enters into force on the date it is published on the web
         )}
 
         <div
-          className={`grid grid-cols-1 gap-6 ${embedded ? 'lg:grid-cols-[380px_minmax(0,1fr)] lg:items-stretch text-white' : 'lg:grid-cols-[1.2fr_1fr] items-start'}`}
+          className={`grid grid-cols-1 gap-4 ${embedded ? 'lg:grid-cols-[330px_minmax(0,1fr)] lg:items-stretch text-white' : 'lg:grid-cols-[1.2fr_1fr] items-start'}`}
         >
           <div
-            className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-4 md:p-5 ${
-              embedded ? 'lg:h-[520px]' : ''
+            className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-3 md:p-4 ${
+              embedded ? 'lg:h-[420px]' : ''
             }`}
           >
             <div className="flex items-center justify-between mb-4">
@@ -930,7 +930,7 @@ This Information Notice enters into force on the date it is published on the web
 
             <div className="grid grid-cols-7 gap-2">
               {Array.from({ length: leadingEmptyCells }).map((_, idx) => (
-                <div key={`empty-${idx}`} className={`${embedded ? 'h-10 md:h-11' : 'h-12 md:h-14'} rounded-md bg-transparent`}></div>
+                <div key={`empty-${idx}`} className={`${embedded ? 'h-9 md:h-10' : 'h-12 md:h-14'} rounded-md bg-transparent`}></div>
               ))}
 
               {Array.from({ length: daysInMonth }).map((_, idx) => {
@@ -950,7 +950,7 @@ This Information Notice enters into force on the date it is published on the web
                       }
                     }}
                     disabled={isPastDate}
-                    className={`${embedded ? 'h-10 md:h-11' : 'h-12 md:h-14'} rounded-md border text-sm font-bold relative ${
+                    className={`${embedded ? 'h-9 md:h-10' : 'h-12 md:h-14'} rounded-md border text-sm font-bold relative ${
                       embedded ? 'text-white' : ''
                     } ${isPastDate ? 'opacity-45 cursor-not-allowed' : ''}`}
                     style={
@@ -981,8 +981,8 @@ This Information Notice enters into force on the date it is published on the web
           </div>
 
           <div
-            className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-5 ${
-              embedded ? 'lg:h-[520px] lg:overflow-y-auto lg:pr-3' : ''
+            className={`rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#131d26] p-4 ${
+              embedded ? 'lg:h-[420px] lg:overflow-y-auto lg:pr-3' : ''
             }`}
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">

@@ -112,7 +112,7 @@ const Home: React.FC = () => {
           <p className="text-white text-lg md:text-xl font-medium leading-relaxed max-w-2xl mb-12 drop-shadow-lg text-shadow-sm">
             {theme.heroSubtitle}
           </p>
-          <div id="booking-form" className="w-full max-w-6xl mt-2">
+          <div id="booking-form" className="w-full max-w-5xl mt-2">
             <EventCalendarPanel embedded />
           </div>
         </div>
