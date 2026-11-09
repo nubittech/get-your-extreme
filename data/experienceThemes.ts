@@ -48,6 +48,7 @@ export const EXPERIENCE_THEMES: Record<ExperienceCategory, ExperienceTheme> = {
     accentSoft: '#fff0d9',
     headerGradient: 'linear-gradient(90deg, #2c1c06 0%, #1f1404 100%)',
     heroImage: MEDIA_ASSETS.bikeHero,
+    heroVideo: MEDIA_ASSETS.bikeHeroVideo,
     heroTitle: 'Ride Antalya with Guided Bike Programs',
     heroSubtitle:
       'Curated outdoor experiences for exploration, movement, and connection with nature. Cycling, hiking, camping, and discovery routes designed to enjoy the outdoors your way.',

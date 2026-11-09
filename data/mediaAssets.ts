@@ -5,6 +5,7 @@ export const MEDIA_ASSETS = {
   supHero: '/SUP-tour.jpg',
   supHeroVideo: '/water-adventures-preview.mov',
   bikeHero: '/outdoor9.jpeg',
+  bikeHeroVideo: '/outdoor-life-background.mp4',
   routeKaracagoren: encodeURI('/PHOTO-2026-02-25-03-47-25.jpg'),
   routeBeachparkLara: encodeURI('/Kondisyon Rotası K-Lara Balık (1).png'),
   routeBeachpark: encodeURI('/Konyaaltı Rotası (1).jpg'),
