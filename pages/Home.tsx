@@ -8,8 +8,8 @@ const heroCategoryItems: Array<{
   label: string;
   icon: string;
 }> = [
-  { key: 'SUP', label: EXPERIENCE_CATEGORY_LABELS.SUP, icon: 'surfing' },
   { key: 'BIKE', label: EXPERIENCE_CATEGORY_LABELS.BIKE, icon: 'directions_bike' },
+  { key: 'SUP', label: EXPERIENCE_CATEGORY_LABELS.SUP, icon: 'surfing' },
   { key: 'SKI', label: EXPERIENCE_CATEGORY_LABELS.SKI, icon: 'downhill_skiing' }
 ];
 
