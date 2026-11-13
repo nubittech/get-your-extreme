@@ -231,6 +231,30 @@ export const deleteEvent = async (eventId: string): Promise<void> => {
   writeLocalEvents(current.filter((item) => item.id !== eventId));
 };
 
+export const deleteEvents = async (eventIds: string[]): Promise<void> => {
+  if (eventIds.length === 0) return;
+
+  if (isSupabaseMode()) {
+    const supabase = requireSupabase();
+    const databaseIds = eventIds.map((eventId) => {
+      const numericId = Number(eventId);
+      return Number.isFinite(numericId) ? numericId : eventId;
+    });
+    const { error } = await supabase
+      .from(SUPABASE_EVENTS_TABLE)
+      .delete()
+      .in('id', databaseIds);
+
+    if (error) {
+      throw new Error(`Supabase events delete failed: ${error.message}`);
+    }
+    return;
+  }
+
+  const idsToDelete = new Set(eventIds);
+  writeLocalEvents(readLocalEvents().filter((item) => !idsToDelete.has(item.id)));
+};
+
 export const updateEvent = async (
   eventId: string,
   input: EventCreateInput
