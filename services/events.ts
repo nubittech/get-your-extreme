@@ -36,6 +36,16 @@ const isMissingRouteDistanceColumnError = (error: unknown) => {
   );
 };
 
+const isMissingWhatsappContactColumnError = (error: unknown) => {
+  if (!error || typeof error !== 'object') return false;
+  const record = error as Record<string, unknown>;
+  const message = String(record.message ?? '').toLowerCase();
+  return (
+    ['PGRST204', '42703'].includes(String(record.code ?? '')) &&
+    message.includes('whatsapp_contact_required')
+  );
+};
+
 const isEventScheduleItem = (value: unknown): value is EventScheduleItem => {
   if (!value || typeof value !== 'object') return false;
   const item = value as Record<string, unknown>;
@@ -172,6 +182,32 @@ export const createEvent = async (input: EventCreateInput): Promise<EventSchedul
         .insert({
           ...basePayload,
           details: withRouteDistanceMarker(input.details, input.routeDistanceKm)
+        })
+        .select('*')
+        .single();
+
+      data = fallbackResult.data;
+      error = fallbackResult.error;
+    }
+
+    // Keep event creation working on projects where the optional WhatsApp
+    // column has not been added yet. The migration below enables persisting
+    // this setting; never silently discard an explicitly enabled option.
+    if (isMissingWhatsappContactColumnError(error) && !input.whatsappContactRequired) {
+      const fallbackResult = await supabase
+        .from(SUPABASE_EVENTS_TABLE)
+        .insert({
+          category: input.category,
+          date: input.date,
+          time: input.time,
+          duration_hours: input.durationHours,
+          capacity: input.capacity,
+          booked: 0,
+          price: input.price,
+          title: input.title,
+          summary: input.summary,
+          details: withRouteDistanceMarker(input.details, input.routeDistanceKm),
+          service_stops: input.serviceStops
         })
         .select('*')
         .single();
